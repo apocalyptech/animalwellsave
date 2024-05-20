@@ -140,6 +140,11 @@ def main():
             help="Set the number of times-saved",
             )
 
+    parser.add_argument('--respawn-consumables',
+            action='store_true',
+            help="Respawn map consumables (fruit and firecrackers)",
+            )
+
     parser.add_argument('--firecrackers',
             type=int,
             help="Set the number of firecrackers.  Will unlock the Firecracker equipment as well, if not already active",
@@ -191,6 +196,7 @@ def main():
             args.equip_disable,
             args.spawn,
             args.health is not None,
+            args.respawn_consumables,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -232,11 +238,16 @@ def main():
                     print(header)
                     print('-'*len(header))
                     print('')
+                    if slot.elapsed_ticks_ingame == slot.elapsed_ticks_withpause:
+                        print(f' - Elapsed Time: {slot.elapsed_ticks_withpause}')
+                    else:
+                        print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
                     print(f' - Saved in Room: {slot.spawn_room}')
                     print(f' - Times Saved: {slot.num_saves}')
                     print(f' - Times Died: {slot.num_deaths}')
                     print(f' - Steps: {slot.num_steps:,}')
                     print(f' - Health: {slot.health}')
+                    print(f' - Firecrackers: {slot.firecrackers}')
                     if slot.equipment.enabled:
                         print(' - Equipment Unlocked:')
                         for equip in sorted(slot.equipment.enabled):
@@ -246,11 +257,8 @@ def main():
                         print(' - Inventory Unlocked:')
                         for inv in sorted(slot.inventory.enabled):
                             print(f'   - {inv}')
-                    print(f' - Firecrackers: {slot.firecrackers}')
-                    if slot.elapsed_ticks_ingame == slot.elapsed_ticks_withpause:
-                        print(f' - Elapsed Time: {slot.elapsed_ticks_withpause}')
-                    else:
-                        print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
+                    print(f' - Fruit Picked: {slot.picked_fruit}')
+                    print(f' - Firecrackers Picked: {slot.picked_firecrackers}')
                     if do_slot_actions:
                         print('')
 
@@ -278,6 +286,12 @@ def main():
                 if args.saves is not None:
                     print(f'{slot_label}: Updating save count to: {args.saves}')
                     slot.num_saves.value = args.saves
+                    do_save = True
+
+                if args.respawn_consumables:
+                    print(f'{slot_label}: Respawning fruit and firecrackers')
+                    slot.picked_fruit.clear()
+                    slot.picked_firecrackers.clear()
                     do_save = True
 
                 if args.firecrackers is not None:

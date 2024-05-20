@@ -23,7 +23,10 @@ import enum
 import struct
 import collections
 
-from .datafile import UInt8, UInt16, UInt32, Data, NumData, NumChoiceData, NumBitfieldData, LabelEnum
+from .datafile import UInt8, UInt16, UInt32, UInt64, \
+        Data, NumData, \
+        NumChoiceData, NumBitfieldData, BitCountData, \
+        LabelEnum
 
 # Animal Well savegame descriptions / format
 
@@ -191,6 +194,10 @@ class Slot():
         self.has_data = self.timestamp.has_data
 
         self.num_steps = NumData(self, UInt32, 0x108)
+
+        self.picked_fruit = BitCountData(self, UInt64, 2, 0x170)
+        self.picked_firecrackers = BitCountData(self, UInt64, 1, 0x180)
+
         self.num_saves = NumData(self, UInt16, 0x1A8)
 
         self.firecrackers = NumData(self, UInt8, 0x1B3)

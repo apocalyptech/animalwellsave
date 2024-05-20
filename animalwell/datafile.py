@@ -376,3 +376,77 @@ class NumBitfieldData(NumData):
         if choice in self.enabled:
             self.value = self.value & ~choice.value
 
+
+class BitCountData(Data):
+    """
+    A collection of bitfield data where all we *really* care about is the
+    number of bits that are set, and possibly the ability to clear/set them
+    en masse.  The primary examples here are picked fruits and firecrackers.
+
+    The individual bits of data in here aren't really meant to be altered
+    directly, and the `count` counter won't be automatically updated here
+    if any of the child data is altered directly.
+    """
+
+    def __init__(self, parent, num_type, count, offset=None):
+        """
+        The `parent` object should have `df` (filehandle) and `offset`
+        attributes.  `offset`, if passed in, will be computed relative to
+        the parent's offset.  If not passed in, our offset will be the
+        current filehandle position.
+
+        `num_type` should be a `NumType` structure, and `count` should be
+        the number of those structures which make up the bitfield.
+        """
+
+        super().__init__(parent, offset=offset)
+        self.num_type = num_type
+        if self.num_type.bounds != Bounds.UNSIGNED:
+            raise RuntimeError('BitCountData objects can only be populated with unsigned numeric data')
+        self._data_count = count
+        self.count = 0
+
+        # Read in data
+        self._data = []
+        for _ in range(self._data_count):
+            self._data.append(NumData(self, self.num_type))
+        self._fix_count()
+
+    def __str__(self):
+        """
+        When being represented as a string, we'll default to our bit count.
+        """
+        return str(self.count)
+
+    def _fix_count(self):
+        """
+        Resets our internal `count` structure for how many bits are set across
+        the entire data length.
+        """
+        self.count = 0
+        for data in self._data:
+            self.count += data.value.bit_count()
+
+    def _set_all(self, value):
+        """
+        Sets all child elements of the structure to the specified `value`.
+        Note that this does *not* update our `count` structure; calling
+        classes are expected to do that themselves.
+        """
+        for data in self._data:
+            data.value = value
+
+    def fill(self):
+        """
+        Fill the entire bit structure with 1s (ie: make it maximally-enabled).
+        """
+        self._set_all(2**(self.num_type.num_bytes*8)-1)
+        self.count = self.num_type.num_bytes * self._data_count
+
+    def clear(self):
+        """
+        Fill the entire bit structure with 0s (ie: make it minimally-enabled).
+        """
+        self._set_all(0)
+        self.count = 0
+
