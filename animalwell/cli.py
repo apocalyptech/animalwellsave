@@ -145,6 +145,18 @@ def main():
             help="Respawn map consumables (fruit and firecrackers)",
             )
 
+    ghost = parser.add_mutually_exclusive_group()
+
+    ghost.add_argument('--clear-ghosts',
+            action='store_true',
+            help="Clear all ghosts from the map",
+            )
+
+    ghost.add_argument('--respawn-ghosts',
+            action='store_true',
+            help="Respawn ghosts to the map",
+            )
+
     parser.add_argument('--firecrackers',
             type=int,
             help="Set the number of firecrackers.  Will unlock the Firecracker equipment as well, if not already active",
@@ -197,6 +209,8 @@ def main():
             args.spawn,
             args.health is not None,
             args.respawn_consumables,
+            args.clear_ghosts,
+            args.respawn_ghosts,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -257,8 +271,10 @@ def main():
                         print(' - Inventory Unlocked:')
                         for inv in sorted(slot.inventory.enabled):
                             print(f'   - {inv}')
-                    print(f' - Fruit Picked: {slot.picked_fruit}')
-                    print(f' - Firecrackers Picked: {slot.picked_firecrackers}')
+                    print(f' - Transient Map Data:')
+                    print(f'   - Fruit Picked: {slot.picked_fruit}')
+                    print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
+                    print(f'   - Ghosts Scared: {slot.ghosts_scared}')
                     if do_slot_actions:
                         print('')
 
@@ -292,6 +308,16 @@ def main():
                     print(f'{slot_label}: Respawning fruit and firecrackers')
                     slot.picked_fruit.clear()
                     slot.picked_firecrackers.clear()
+                    do_save = True
+
+                if args.clear_ghosts:
+                    print(f'{slot_label}: Clearing ghosts')
+                    slot.ghosts_scared.fill()
+                    do_save = True
+
+                if args.respawn_ghosts:
+                    print(f'{slot_label}: Respawning ghosts')
+                    slot.ghosts_scared.clear()
                     do_save = True
 
                 if args.firecrackers is not None:

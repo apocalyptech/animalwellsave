@@ -207,6 +207,7 @@ class Slot():
         self.elapsed_ticks_withpause = Ticks(self)
 
         self.num_deaths = NumData(self, UInt16, 0x1E4)
+        self.ghosts_scared = BitCountData(self, UInt16, 1)
 
         self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
 
