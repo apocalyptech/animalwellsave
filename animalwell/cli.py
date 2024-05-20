@@ -157,6 +157,11 @@ def main():
             help="Respawn ghosts to the map",
             )
 
+    parser.add_argument('--respawn-squirrels',
+            action='store_true',
+            help="Respawn squirrels to the map",
+            )
+
     parser.add_argument('--firecrackers',
             type=int,
             help="Set the number of firecrackers.  Will unlock the Firecracker equipment as well, if not already active",
@@ -211,6 +216,7 @@ def main():
             args.respawn_consumables,
             args.clear_ghosts,
             args.respawn_ghosts,
+            args.respawn_squirrels,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -275,6 +281,8 @@ def main():
                     print(f'   - Fruit Picked: {slot.picked_fruit}')
                     print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                     print(f'   - Ghosts Scared: {slot.ghosts_scared}')
+                    print(f' - Permanent Map Data:')
+                    print(f'   - Squirrels Scared: {slot.squirrels_scared}')
                     if do_slot_actions:
                         print('')
 
@@ -318,6 +326,11 @@ def main():
                 if args.respawn_ghosts:
                     print(f'{slot_label}: Respawning ghosts')
                     slot.ghosts_scared.clear()
+                    do_save = True
+
+                if args.respawn_squirrels:
+                    print(f'{slot_label}: Respawning squirrels')
+                    slot.squirrels_scared.clear()
                     do_save = True
 
                 if args.firecrackers is not None:
