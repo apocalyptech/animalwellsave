@@ -2,8 +2,9 @@ Python-Based CLI Animal Well Savegame Editor
 ============================================
 
 `pyanimalwell` is a very WIP save editor (and data backend) for editing
-Animal Well savegames.  At the moment it's extremely incomplete.  Make
-backups of your saves before using this!
+[Animal Well](https://store.steampowered.com/app/813230/ANIMAL_WELL/) savegames.
+At the moment it's extremely incomplete.  Make backups of your saves before
+using this!
 
 Work on decoding the savegame structure has mostly been done by myself,
 [Kein](https://github.com/Kein/), and [just-ero](https://github.com/just-ero),
