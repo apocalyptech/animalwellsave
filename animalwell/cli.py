@@ -113,6 +113,11 @@ def main():
             help='Operate on the specified slot (specify 0 for "all slots")',
             )
 
+    parser.add_argument('--health',
+            type=int,
+            help='Sets health (number of hearts)',
+            )
+
     parser.add_argument('--spawn',
             type=str,
             metavar='X,Y',
@@ -185,6 +190,7 @@ def main():
             args.equip_enable,
             args.equip_disable,
             args.spawn,
+            args.health is not None,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -247,6 +253,11 @@ def main():
                         print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
                     if do_slot_actions:
                         print('')
+
+                if args.health:
+                    print(f'{slot_label}: Updating health to: {args.health}')
+                    slot.health.value = args.health
+                    do_save = True
 
                 if args.spawn:
                     print(f'{slot_label}: Setting spawnpoint to ({args.spawn.x}, {args.spawn.y})')
