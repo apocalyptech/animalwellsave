@@ -258,7 +258,7 @@ def main():
                         print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
                     print(f' - Saved in Room: {slot.spawn_room}')
                     print(f' - Times Saved: {slot.num_saves}')
-                    print(f' - Times Died: {slot.num_deaths}')
+                    print(f' - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
                     print(f' - Steps: {slot.num_steps:,}')
                     print(f' - Health: {slot.health}')
                     print(f' - Firecrackers: {slot.firecrackers}')
