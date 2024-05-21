@@ -209,6 +209,19 @@ class Bunny(LabelEnum):
     SPIKE_ROOM =    (0x80000000, 'Spike Room') #20
 
 
+class Teleport(LabelEnum):
+    """
+    Active teleporters
+    """
+    FROG =     (0x02, 'Frog')
+    FISH =     (0x04, 'Fish')
+    BEAR =     (0x08, 'Bear')
+    DOG =      (0x10, 'Dog')
+    BIRD =     (0x20, 'Bird')
+    SQUIRREL = (0x40, 'Squirrel')
+    HIPPO =    (0x80, 'Hippo')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -360,6 +373,8 @@ class Slot():
         self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
 
         self.quest_state = NumBitfieldData(self, UInt32, QuestState, 0x1EC)
+
+        self.teleports = NumBitfieldData(self, UInt8, Teleport, 0x224)
 
 
 class Savegame():

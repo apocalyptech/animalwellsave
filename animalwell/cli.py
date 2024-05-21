@@ -21,7 +21,7 @@ import sys
 import enum
 import argparse
 import collections
-from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, QuestState
+from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, QuestState, Teleport
 
 
 class EnumSetAction(argparse.Action):
@@ -235,6 +235,12 @@ def main():
             help="Disable the specified inventory item.  Can be specified more than once, or use 'all' to disable all",
             )
 
+    parser.add_argument('--teleport-enable',
+            type=Teleport,
+            action=EnumSetAction,
+            help="Enable the specified teleport.  Can be specified more than once, or use 'all' to enable all",
+            )
+
     parser.add_argument('--map-enable',
             type=QuestState,
             action=EnumSetAction,
@@ -316,6 +322,7 @@ def main():
             args.equip_disable,
             args.inventory_enable,
             args.inventory_disable,
+            args.teleport_enable,
             args.map_enable,
             args.upgrade_wand,
             args.downgrade_wand,
@@ -416,7 +423,7 @@ def main():
                             print(f'   - {bunny}')
                     if slot.quest_state.enabled:
                         print(f' - Quest State Flags:')
-                        for state in slot.quest_state.enabled:
+                        for state in sorted(slot.quest_state.enabled):
                             print(f'   - {state}')
                     print(f' - Transient Map Data:')
                     print(f'   - Fruit Picked: {slot.picked_fruit}')
@@ -429,6 +436,10 @@ def main():
                     print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                     print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                     print(f'   - Walls Blasted: {slot.walls_blasted}')
+                    if slot.teleports.enabled:
+                        print(f' - Teleports Active: {len(slot.teleports.enabled)}')
+                        for teleport in sorted(slot.teleports.enabled):
+                            print(f'   - {teleport}')
                     if do_slot_actions:
                         print('')
 
@@ -531,19 +542,19 @@ def main():
 
                 changed_equipment = False
 
-                if args.equip_disable:
-                    for equip in sorted(args.equip_disable):
-                        if equip in slot.equipment.enabled:
-                            print(f'{slot_label}: Disabling equipment: {equip}')
-                            slot.equipment.disable(equip)
-                            changed_equipment = True
-                            do_save = True
-
                 if args.equip_enable:
                     for equip in sorted(args.equip_enable):
                         if equip not in slot.equipment.enabled:
                             print(f'{slot_label}: Enabling equipment: {equip}')
                             slot.equipment.enable(equip)
+                            changed_equipment = True
+                            do_save = True
+
+                if args.equip_disable:
+                    for equip in sorted(args.equip_disable):
+                        if equip in slot.equipment.enabled:
+                            print(f'{slot_label}: Disabling equipment: {equip}')
+                            slot.equipment.disable(equip)
                             changed_equipment = True
                             do_save = True
 
@@ -588,6 +599,13 @@ def main():
                         if inv not in slot.inventory.enabled:
                             print(f'{slot_label}: Enabling inventory item: {inv}')
                             slot.inventory.enable(inv)
+                            do_save = True
+
+                if args.teleport_enable:
+                    for teleport in sorted(args.teleport_enable):
+                        if teleport not in slot.teleports.enabled:
+                            print(f'{slot_label}: Enabling teleport: {teleport}')
+                            slot.teleports.enable(teleport)
                             do_save = True
 
                 if args.map_enable:
