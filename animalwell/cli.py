@@ -140,6 +140,11 @@ def main():
             help="Set the number of times-saved",
             )
 
+    parser.add_argument('--bubbles-popped',
+            type=int,
+            help="Set the number of bubbles popped",
+            )
+
     parser.add_argument('--egg-enable',
             type=Egg,
             action=EnumSetAction,
@@ -250,6 +255,7 @@ def main():
             args.egg_enable,
             args.bunny_enable,
             args.bunny_disable,
+            args.bubbles_popped,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -296,10 +302,13 @@ def main():
                     else:
                         print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
                     print(f' - Saved in Room: {slot.spawn_room}')
-                    print(f' - Times Saved: {slot.num_saves}')
-                    print(f' - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
-                    print(f' - Steps: {slot.num_steps:,}')
                     print(f' - Health: {slot.health}')
+                    print(f' - Counters:')
+                    print(f'   - Steps: {slot.num_steps:,}')
+                    print(f'   - Times Saved: {slot.num_saves}')
+                    print(f'   - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
+                    print(f'   - Firecrackers Collected: {slot.firecrackers_collected}')
+                    print(f'   - Bubbles Popped: {slot.bubbles_popped}')
                     print(f' - Consumables Inventory:')
                     print(f'   - Firecrackers: {slot.firecrackers}')
                     print(f'   - Keys: {slot.keys}')
@@ -358,6 +367,11 @@ def main():
                 if args.saves is not None:
                     print(f'{slot_label}: Updating save count to: {args.saves}')
                     slot.num_saves.value = args.saves
+                    do_save = True
+
+                if args.bubbles_popped is not None:
+                    print(f'{slot_label}: Updating bubbles-popped count to: {args.bubbles_popped}')
+                    slot.bubbles_popped.value = args.bubbles_popped
                     do_save = True
 
                 if args.egg_enable:

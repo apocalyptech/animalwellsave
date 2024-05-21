@@ -310,6 +310,9 @@ class Slot():
         self.bunnies = NumBitfieldData(self, UInt32, Bunny)
         self.squirrels_scared = BitCountData(self, UInt16, 1, 0x19C)
 
+        self.firecrackers_collected = NumData(self, UInt16, 0x1A2)
+        self.bubbles_popped = NumData(self, UInt16)
+
         self.num_saves = NumData(self, UInt16, 0x1A8)
 
         self.keys = NumData(self, UInt8, 0x1B1)
