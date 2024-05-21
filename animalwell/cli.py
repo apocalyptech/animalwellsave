@@ -21,7 +21,7 @@ import sys
 import enum
 import argparse
 import collections
-from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny
+from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, QuestState
 
 
 class EnumSetAction(argparse.Action):
@@ -30,6 +30,11 @@ class EnumSetAction(argparse.Action):
     to a set as they are chosen by the user.  Also hardcodes an `all`
     choice which can be used to add all available Enum members to the
     argument set.
+
+    When using this action, `choices` can be populated as a sequence of
+    enum members, if you want to only allow a *subset* of the enum.  (This
+    is useful for our QuestState enum, which includes a bunch of different
+    kinds of data.)
 
     Derived partially from https://stackoverflow.com/a/70124136/2013126
     """
@@ -44,10 +49,11 @@ class EnumSetAction(argparse.Action):
             raise TypeError('type must be an Enum when using EnumAction')
 
         # Set the available choices, including the "all" option
-        kwargs.setdefault(
-                'choices',
-                tuple(e.name.lower() for e in enum_type) + ('all',)
-                )
+        if 'choices' in kwargs:
+            self._enum_all_values = kwargs['choices']
+        else:
+            self._enum_all_values = enum_type
+        kwargs['choices'] = tuple(e.name.lower() for e in self._enum_all_values) + ('all',)
 
         # Finish up
         super().__init__(**kwargs)
@@ -64,7 +70,7 @@ class EnumSetAction(argparse.Action):
         if isinstance(this_value, str):
             uppercase = this_value.upper()
             if uppercase == 'ALL':
-                for item in self._enum:
+                for item in self._enum_all_values:
                     arg_value.add(item)
             else:
                 this_value = self._enum[uppercase]
@@ -229,6 +235,51 @@ def main():
             help="Disable the specified inventory item.  Can be specified more than once, or use 'all' to disable all",
             )
 
+    parser.add_argument('--map-enable',
+            type=QuestState,
+            action=EnumSetAction,
+            choices=[
+                QuestState.UNLOCK_MAP,
+                QuestState.UNLOCK_STAMPS,
+                QuestState.UNLOCK_PENCIL,
+                ],
+            help="Enable the specified map feature.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    parser.add_argument('--upgrade-wand',
+            action='store_true',
+            help='Upgrade the B. Wand to B.B. Wand',
+            )
+
+    parser.add_argument('--downgrade-wand',
+            action='store_true',
+            help='Downgrade the B.B. Wand to B. Wand',
+            )
+
+    egg65 = parser.add_mutually_exclusive_group()
+
+    egg65.add_argument('--egg65-enable',
+            action='store_true',
+            help='Enable Egg 65',
+            )
+
+    egg65.add_argument('--egg65-disable',
+            action='store_true',
+            help='Disable Egg 65',
+            )
+
+    cring = parser.add_mutually_exclusive_group()
+
+    cring.add_argument('--cring-enable',
+            action='store_true',
+            help='Enable C. Ring',
+            )
+
+    cring.add_argument('--cring-disable',
+            action='store_true',
+            help='Disable C. Ring',
+            )
+
     parser.add_argument('filename',
             nargs=1,
             type=str,
@@ -265,6 +316,13 @@ def main():
             args.equip_disable,
             args.inventory_enable,
             args.inventory_disable,
+            args.map_enable,
+            args.upgrade_wand,
+            args.downgrade_wand,
+            args.egg65_enable,
+            args.egg65_disable,
+            args.cring_enable,
+            args.cring_disable,
             args.spawn,
             args.health is not None,
             args.gold_hearts is not None,
@@ -356,6 +414,10 @@ def main():
                         print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
                         for bunny in sorted(slot.bunnies.enabled):
                             print(f'   - {bunny}')
+                    if slot.quest_state.enabled:
+                        print(f' - Quest State Flags:')
+                        for state in slot.quest_state.enabled:
+                            print(f'   - {state}')
                     print(f' - Transient Map Data:')
                     print(f'   - Fruit Picked: {slot.picked_fruit}')
                     print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
@@ -527,6 +589,49 @@ def main():
                             print(f'{slot_label}: Enabling inventory item: {inv}')
                             slot.inventory.enable(inv)
                             do_save = True
+
+                if args.map_enable:
+                    for map_var in sorted(args.map_enable):
+                        if map_var not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Enabling map unlock: {map_var}')
+                            slot.quest_state.enable(map_var)
+                            do_save = True
+
+                if args.upgrade_wand:
+                    if QuestState.BB_WAND not in slot.quest_state.enabled:
+                        print(f'{slot_label}: Upgrading B. Wand')
+                        slot.quest_state.enable(QuestState.BB_WAND)
+                        do_save = True
+
+                if args.downgrade_wand:
+                    if QuestState.BB_WAND in slot.quest_state.enabled:
+                        print(f'{slot_label}: Downgrading B.B. Wand')
+                        slot.quest_state.disable(QuestState.BB_WAND)
+                        do_save = True
+
+                if args.egg65_enable:
+                    if QuestState.EGG_65 not in slot.quest_state.enabled:
+                        print(f'{slot_label}: Unlocking Egg 65')
+                        slot.quest_state.enable(QuestState.EGG_65)
+                        do_save = True
+
+                if args.egg65_disable:
+                    if QuestState.EGG_65 in slot.quest_state.enabled:
+                        print(f'{slot_label}: Removing Egg 65')
+                        slot.quest_state.disable(QuestState.EGG_65)
+                        do_save = True
+
+                if args.cring_enable:
+                    if QuestState.CRING not in slot.quest_state.enabled:
+                        print(f'{slot_label}: Unlocking C. Ring')
+                        slot.quest_state.enable(QuestState.CRING)
+                        do_save = True
+
+                if args.cring_disable:
+                    if QuestState.CRING in slot.quest_state.enabled:
+                        print(f'{slot_label}: Removing C. Ring')
+                        slot.quest_state.disable(QuestState.CRING)
+                        do_save = True
 
         if args.info:
             print('')

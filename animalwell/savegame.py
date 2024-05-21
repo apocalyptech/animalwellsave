@@ -83,6 +83,27 @@ class Inventory(LabelEnum):
     PACK =       (0x80, 'F. Pack')
 
 
+class QuestState(LabelEnum):
+    """
+    Various quest-related states.  Some of this acts like inventory items,
+    but it's a bit of a grab bag.
+    """
+
+    HOUSE_OPEN =         (0x00000001, 'House Open')
+    CLOSET_OPEN =        (0x00000004, 'Closet Open')
+    UNLOCK_MAP =         (0x00000200, 'Map Unlocked')
+    UNLOCK_STAMPS =      (0x00000400, 'Stamps Unlocked')
+    UNLOCK_PENCIL =      (0x00000800, 'Pencil Unlocked')
+    DEFEATED_CHAMELEON = (0x00001000, 'Defeated Chameleon')
+    CRING =              (0x00002000, "Cheater's Ring")
+    WOKE_UP =            (0x00040000, 'Woke Up (start of game)')
+    BB_WAND =            (0x00080000, 'B.B. Wand Upgrade')
+    EGG_65 =             (0x00100000, 'Egg 65')
+    DEFEATED_BAT =       (0x01000000, 'Defeated Bat')
+    OSTRICH_STARTED =    (0x02000000, 'Wheel Ostrich Started') #?
+    DEFEATED_OSTRICH =   (0x04000000, 'Defeated Wheel Ostrich')
+
+
 class Egg(LabelEnum):
     """
     Eggs!
@@ -325,16 +346,18 @@ class Slot():
         self.elapsed_ticks_ingame = Ticks(self, 0x1BC)
         self.elapsed_ticks_withpause = Ticks(self)
 
+        self.spawn_room = MapCoord(self, 0x1D4)
+
+        self.equipment = NumBitfieldData(self, UInt16, Equipment, 0x1DC)
+        self.inventory = NumBitfieldData(self, UInt8, Inventory)
+
         self.num_hits = NumData(self, UInt16, 0x1E2)
         self.num_deaths = NumData(self, UInt16)
         self.ghosts_scared = BitCountData(self, UInt16, 1)
 
         self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
 
-        self.spawn_room = MapCoord(self, 0x1D4)
-
-        self.equipment = NumBitfieldData(self, UInt16, Equipment, 0x1DC)
-        self.inventory = NumBitfieldData(self, UInt8, Inventory)
+        self.quest_state = NumBitfieldData(self, UInt32, QuestState, 0x1EC)
 
 
 class Savegame():
