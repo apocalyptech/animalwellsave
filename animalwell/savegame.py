@@ -685,6 +685,7 @@ class Slot():
 
         self.minimap = Minimap(self, 0x3EC)
         self.pencilmap = Minimap(self, 0xD22D)
+        self.destructionmap = Minimap(self, 0x1A06E)
 
 
 class Savegame():
