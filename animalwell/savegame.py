@@ -160,6 +160,31 @@ class Egg(LabelEnum):
     GOLDEN =   (0x8000000000000000, 'Golden')
 
 
+class Bunny(LabelEnum):
+    """
+    Bunnies!  This enum currently omits all the illegal/invalid bunnies.
+    It's possible we may want to at least optionally expose those in the
+    future, though...
+    """
+
+    TUTORIAL =      (0x00000001, 'Tutorial') #4
+    ORIGAMI =       (0x00000004, 'Origami') #17
+    CROW =          (0x00000008, 'Crow') #10
+    GHOST =         (0x00000010, 'Ghost') #9
+    FISH_MURAL =    (0x00000040, 'Fish Mural') #8
+    MAP =           (0x00000080, 'Map Numbers') #5
+    TV =            (0x00000100, 'TV') #16
+    UV =            (0x00000200, 'UV') #7
+    BULB =          (0x00000400, 'Bulb') #13
+    CHINCHILLA =    (0x00000800, 'Chinchilla') #2
+    BUNNY_MURAL =   (0x00008000, 'Bunny Mural') #1
+    DUCK =          (0x00400000, 'Duck') #11
+    GHOST_DOG =     (0x02000000, 'Ghost Dog') #18
+    DREAM =         (0x10000000, 'Dream') #12
+    FLOOR_IS_LAVA = (0x40000000, 'Floor Is Lava') #14
+    SPIKE_ROOM =    (0x80000000, 'Spike Room') #20
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -282,7 +307,7 @@ class Slot():
         self.eggs = NumBitfieldData(self, UInt64, Egg)
         self.walls_blasted = BitCountData(self, UInt32, 1)
         self.detonators_triggered = BitCountData(self, UInt32, 1)
-
+        self.bunnies = NumBitfieldData(self, UInt32, Bunny)
         self.squirrels_scared = BitCountData(self, UInt16, 1, 0x19C)
 
         self.num_saves = NumData(self, UInt16, 0x1A8)

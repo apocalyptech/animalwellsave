@@ -21,7 +21,7 @@ import sys
 import enum
 import argparse
 import collections
-from .savegame import Savegame, Equipped, Equipment, Egg
+from .savegame import Savegame, Equipped, Equipment, Egg, Bunny
 
 
 class EnumSetAction(argparse.Action):
@@ -140,9 +140,22 @@ def main():
             help="Set the number of times-saved",
             )
 
-    parser.add_argument('--unlock-all-eggs',
-            action='store_true',
-            help="Unlock all 64 main eggs in the game",
+    parser.add_argument('--egg-enable',
+            type=Egg,
+            action=EnumSetAction,
+            help="Enable the specified egg.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    parser.add_argument('--bunny-enable',
+            type=Bunny,
+            action=EnumSetAction,
+            help="Enable the specified bunny.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    parser.add_argument('--bunny-disable',
+            type=Bunny,
+            action=EnumSetAction,
+            help="Disable the specified bunny.  Can be specified more than once, or use 'all' to enable all",
             )
 
     parser.add_argument('--respawn-consumables',
@@ -234,7 +247,9 @@ def main():
             args.clear_ghosts,
             args.respawn_ghosts,
             args.respawn_squirrels,
-            args.unlock_all_eggs,
+            args.egg_enable,
+            args.bunny_enable,
+            args.bunny_disable,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -312,6 +327,10 @@ def main():
                     print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                     print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                     print(f'   - Walls Blasted: {slot.walls_blasted}')
+                    if len(slot.bunnies.enabled) > 0:
+                        print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
+                        for bunny in sorted(slot.bunnies.enabled):
+                            print(f'   - {bunny}')
                     if do_slot_actions:
                         print('')
 
@@ -341,10 +360,26 @@ def main():
                     slot.num_saves.value = args.saves
                     do_save = True
 
-                if args.unlock_all_eggs:
-                    print(f'{slot_label}: Unlocking all eggs')
-                    slot.eggs.enable_all()
-                    do_save = True
+                if args.egg_enable:
+                    for egg in sorted(args.egg_enable):
+                        if egg not in slot.eggs.enabled:
+                            print(f'{slot_label}: Enabling egg: {egg}')
+                            slot.eggs.enable(egg)
+                            do_save = True
+
+                if args.bunny_disable:
+                    for bunny in sorted(args.bunny_disable):
+                        if bunny in slot.bunnies.enabled:
+                            print(f'{slot_label}: Disabling bunny: {bunny}')
+                            slot.bunnies.disable(bunny)
+                            do_save = True
+
+                if args.bunny_enable:
+                    for bunny in sorted(args.bunny_enable):
+                        if bunny not in slot.bunnies.enabled:
+                            print(f'{slot_label}: Enabling bunny: {bunny}')
+                            slot.bunnies.enable(bunny)
+                            do_save = True
 
                 if args.respawn_consumables:
                     print(f'{slot_label}: Respawning fruit and firecrackers')
