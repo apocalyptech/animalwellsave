@@ -101,6 +101,7 @@ class QuestState(LabelEnum):
     BB_WAND =            (0x00080000, 'B.B. Wand Upgrade')
     EGG_65 =             (0x00100000, 'Egg 65')
     DEFEATED_BAT =       (0x01000000, 'Defeated Bat')
+    # TODO: Figure out what this one actaully means
     OSTRICH_STARTED =    (0x02000000, 'Wheel Ostrich Started') #?
     DEFEATED_OSTRICH =   (0x04000000, 'Defeated Wheel Ostrich')
 
