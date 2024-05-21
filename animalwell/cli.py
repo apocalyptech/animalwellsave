@@ -274,6 +274,11 @@ def main():
             help='Clears any pencil drawings on the minimap',
             )
 
+    parser.add_argument('--clear-stamps',
+            action='store_true',
+            help='Clears any stamps on the minimap',
+            )
+
     parser.add_argument('--flame-collect',
             type=str,
             choices=['b', 'p', 'v', 'g', 'all'],
@@ -364,6 +369,7 @@ def main():
             args.reveal_map,
             args.clear_map,
             args.clear_pencil,
+            args.clear_stamps,
             args.flame_collect,
             args.flame_use,
             args.upgrade_wand,
@@ -475,6 +481,8 @@ def main():
                     print(f'   - Fruit Picked: {slot.picked_fruit}')
                     print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                     print(f'   - Ghosts Scared: {slot.ghosts_scared}')
+                    if QuestState.UNLOCK_STAMPS in slot.quest_state.enabled:
+                        print(f'   - Minimap Stamps: {len(slot.stamps)}')
                     print(f' - Permanent Map Data:')
                     print(f'   - Squirrels Scared: {slot.squirrels_scared}')
                     print(f'   - Chests Opened: {slot.chests_opened}')
@@ -486,6 +494,7 @@ def main():
                         print(f' - Teleports Active: {len(slot.teleports.enabled)}')
                         for teleport in sorted(slot.teleports.enabled):
                             print(f'   - {teleport}')
+
                     if do_slot_actions:
                         print('')
 
@@ -681,6 +690,11 @@ def main():
                 if args.clear_pencil:
                     print(f'{slot_label}: Clearing all minimap pencil drawings')
                     slot.pencilmap.clear_map(playable_only=False)
+                    do_save = True
+
+                if args.clear_stamps:
+                    print(f'{slot_label}: Clearing all minimap stamps')
+                    slot.stamps.clear()
                     do_save = True
 
                 if args.upgrade_wand:

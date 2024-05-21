@@ -255,6 +255,21 @@ class CandleState(LabelEnum):
     ROOM_16_13 = (0x100, 'Room (16, 13)');
 
 
+class StampIcon(LabelEnum):
+    """
+    Icons used for minimap stamps
+    """
+
+    CHEST =    (0, 'Chest')
+    HEART =    (1, 'Heart')
+    SKULL =    (2, 'Skull')
+    DIAMOND =  (3, 'Diamond')
+    SPIRAL =   (4, 'Spiral')
+    FLAME =    (5, 'Flame')
+    GRID =     (6, 'Grid')
+    QUESTION = (7, 'Question')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -492,6 +507,116 @@ class Minimap(Data):
         self.fill_map(playable_only=playable_only, fill_byte=b'\x00')
 
 
+class Stamp(Data):
+    """
+    Holds information about a single minimap stamp.
+    """
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        # Data
+        self.x = NumData(self, UInt16)
+        self.y = NumData(self, UInt16)
+        self.icon = NumChoiceData(self, UInt16, StampIcon)
+
+    def __str__(self):
+        return f'{self.icon} at ({self.x}, {self.y})'
+
+    def clear(self):
+        """
+        Clears ourselves out (ie: removing the stamp)
+        """
+        self.x.value = 0
+        self.y.value = 0
+        self.icon.value = 0
+
+    def copy_from(self, other):
+        """
+        Copies data from another Stamp into ourselves (used when deleting)
+        """
+        self.x.value = other.x.value
+        self.y.value = other.y.value
+        self.icon.value = other.icon.value
+
+
+class Stamps(Data):
+    """
+    Holds information about map stamps on the minimap, and provides some
+    management functions.
+    """
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        # Data
+        self._num_stamps = NumData(self, UInt8)
+        self.selected_icon = NumChoiceData(self, UInt16, StampIcon)
+        self._stamps = []
+        for _ in range(64):
+            self._stamps.append(Stamp(self))
+
+    def __len__(self):
+        """
+        Support for `len()`
+        """
+        return self._num_stamps.value
+
+    def __iter__(self):
+        """
+        Support iterating over our existing stamps
+        """
+        return iter(self._stamps[:self._num_stamps.value])
+
+    def __getitem__(self, index):
+        """
+        Support referencing Stamps by index
+        """
+        if index < 0:
+            # Don't feel like coping with negative indicies
+            raise IndexError('negative indicies are not currently supported')
+        if index >= self._num_stamps.value:
+            # Just copying the stock Python error text for this
+            raise IndexError('list index out of range')
+        return self._stamps[index]
+
+    def __delitem__(self, index):
+        """
+        Delete a Stamp from the list.  This mimics what the game does,
+        namely: move the last stamp on top of this one, and then remove
+        the last stamp from the list.
+        """
+        if index < 0:
+            # Don't feel like coping with negative indicies
+            raise IndexError('negative indicies are not currently supported')
+        if index >= self._num_stamps.value:
+            # Just copying the stock Python error text for this
+            raise IndexError('list assignment index out of range')
+        self._num_stamps.value -= 1
+        if index < self._num_stamps.value:
+            self._stamps[index].copy_from(self._stamps[self._num_stamps.value])
+        self._stamps[self._num_stamps.value].clear()
+
+    def append(self, x, y, icon):
+        """
+        Adds a Stamp to the end of the list.
+        """
+        if self._num_stamps.value >= 64:
+            raise IndexError('maximum number of stamps is 64')
+        self._stamps[self._num_stamps.value].x.value = x
+        self._stamps[self._num_stamps.value].y.value = y
+        self._stamps[self._num_stamps.value].icon.value = icon
+        self._num_stamps.value += 1
+
+    def clear(self):
+        """
+        Completely removes all Stamps from the minimap
+        """
+        for stamp in self:
+            stamp.clear()
+        self._num_stamps.value = 0
+
+
 class Slot():
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -556,6 +681,7 @@ class Slot():
         self.flames = Flames(self, 0x21E)
 
         self.teleports = NumBitfieldData(self, UInt8, Teleport, 0x224)
+        self.stamps = Stamps(self)
 
         self.minimap = Minimap(self, 0x3EC)
         self.pencilmap = Minimap(self, 0xD22D)
