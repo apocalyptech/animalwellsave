@@ -96,7 +96,8 @@ class QuestState(LabelEnum):
     UNLOCK_PENCIL =      (0x00000800, 'Pencil Unlocked')
     DEFEATED_CHAMELEON = (0x00001000, 'Defeated Chameleon')
     CRING =              (0x00002000, "Cheater's Ring")
-    WOKE_UP =            (0x00040000, 'Woke Up (start of game)')
+    # Eh, don't bother with this one
+    #WOKE_UP =            (0x00040000, 'Woke Up (start of game)')
     BB_WAND =            (0x00080000, 'B.B. Wand Upgrade')
     EGG_65 =             (0x00100000, 'Egg 65')
     DEFEATED_BAT =       (0x01000000, 'Defeated Bat')
