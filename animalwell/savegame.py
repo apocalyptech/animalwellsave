@@ -82,6 +82,84 @@ class Inventory(LabelEnum):
     PACK =       (0x80, 'F. Pack')
 
 
+class Egg(LabelEnum):
+    """
+    Eggs!
+    """
+
+    REFERENCE = (0x0000000000000001, 'Reference')
+    BROWN =     (0x0000000000000002, 'Brown')
+    RAW =       (0x0000000000000004, 'Raw')
+    PICKLED =   (0x0000000000000008, 'Pickled')
+    BIG =       (0x0000000000000010, 'Big')
+    SWAN =      (0x0000000000000020, 'Swan')
+    FORBIDDEN = (0x0000000000000040, 'Forbidden')
+    SHADOW =    (0x0000000000000080, 'Shadow')
+
+    VANITY =      (0x0000000000000100, 'Vanity')
+    SERVICE =     (0x0000000000000200, 'Egg as a Service')
+    DEPRAVED =    (0x0000000000000400, 'Depraved')
+    CHAOS =       (0x0000000000000800, 'Chaos')
+    UPSIDE_DOWN = (0x0000000000001000, 'Upside Down')
+    EVIL =        (0x0000000000002000, 'Evil')
+    SWEET =       (0x0000000000004000, 'Sweet')
+    CHOCOLATE =   (0x0000000000008000, 'Chocolate')
+
+    VALUE =           (0x0000000000010000, 'Value')
+    PLANT =           (0x0000000000020000, 'Plant')
+    RED =             (0x0000000000040000, 'Red')
+    ORANGE =          (0x0000000000080000, 'Orange')
+    SOUR =            (0x0000000000100000, 'Sour')
+    POST_MODERN =     (0x0000000000200000, 'Post-Modern')
+    UNIVERSAL_BASIC = (0x0000000000400000, 'Universal Basic')
+    LAISSEZ_FAIRE =   (0x0000000000800000, 'Laissez-Faire')
+
+    ZEN =            (0x0000000001000000, 'Zen')
+    FUTURE =         (0x0000000002000000, 'Future')
+    FRIENDSHIP =     (0x0000000004000000, 'Friendship')
+    TRUTH =          (0x0000000008000000, 'Truth')
+    TRANSCENDENTAL = (0x0000000010000000, 'Transcendental')
+    ANCIENT =        (0x0000000020000000, 'Ancient')
+    MAGIC =          (0x0000000040000000, 'Magic')
+    MYSTIC =         (0x0000000080000000, 'Mystic')
+
+    HOLIDAY =  (0x0000000100000000, 'Holiday')
+    RAIN =     (0x0000000200000000, 'Rain')
+    RAZZLE =   (0x0000000400000000, 'Razzle')
+    DAZZLE =   (0x0000000800000000, 'Dazzle')
+    VIRTUAL =  (0x0000001000000000, 'Virtual')
+    NORMAL =   (0x0000002000000000, 'Normal')
+    GREAT =    (0x0000004000000000, 'Great')
+    GORGEOUS = (0x0000008000000000, 'Gorgeous')
+
+    PLANET =    (0x0000010000000000, 'Planet')
+    MOON =      (0x0000020000000000, 'Moon')
+    GALAXY =    (0x0000040000000000, 'Galaxy')
+    SUNSET =    (0x0000080000000000, 'Sunset')
+    GOODNIGHT = (0x0000100000000000, 'Goodnight')
+    DREAM =     (0x0000200000000000, 'Dream')
+    TRAVEL =    (0x0000400000000000, 'Travel')
+    PROMISE =   (0x0000800000000000, 'Promise')
+
+    ICE =        (0x0001000000000000, 'Ice')
+    FIRE =       (0x0002000000000000, 'Fire')
+    BUBBLE =     (0x0004000000000000, 'Bubble')
+    DESERT =     (0x0008000000000000, 'Desert')
+    CLOVER =     (0x0010000000000000, 'Clover')
+    BRICK =      (0x0020000000000000, 'Brick')
+    NEON =       (0x0040000000000000, 'Neon')
+    IRIDESCENT = (0x0080000000000000, 'Iridescent')
+
+    RUST =     (0x0100000000000000, 'Rust')
+    SCARLET =  (0x0200000000000000, 'Scarlet')
+    SAPPHIRE = (0x0400000000000000, 'Sapphire')
+    RUBY =     (0x0800000000000000, 'Ruby')
+    JADE =     (0x1000000000000000, 'Jade')
+    OBSIDIAN = (0x2000000000000000, 'Obsidian')
+    CRYSTAL =  (0x4000000000000000, 'Crystal')
+    GOLDEN =   (0x8000000000000000, 'Golden')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -200,7 +278,8 @@ class Slot():
         self.yellow_buttons_pressed = BitCountData(self, UInt64, 3)
 
         self.picked_fruit = BitCountData(self, UInt64, 2, 0x170)
-        self.picked_firecrackers = BitCountData(self, UInt64, 1, 0x180)
+        self.picked_firecrackers = BitCountData(self, UInt64, 1)
+        self.eggs = NumBitfieldData(self, UInt64, Egg)
 
         self.squirrels_scared = BitCountData(self, UInt16, 1, 0x19C)
 

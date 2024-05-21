@@ -353,12 +353,21 @@ class NumBitfieldData(NumData):
         """
         # TODO: this is pretty stupidly inefficient, especially if you're
         # setting a bunch of bitfields in a row.
-        if self.bitfield is None:
-            raise RuntimeError('field is not a bitfield')
         if not isinstance(choice, self.bitfield):
             choice = self.bitfield(choice)
         if choice not in self.enabled:
             self.value = self.value | choice.value
+
+    def enable_all(self):
+        """
+        Enables all known bits in the bitfield.  This doesn't blindly turn
+        *all* bits on in case our bitfield mapping is incomplete -- we don't
+        want to alter data we don't know about.
+        """
+        new_value = self.value
+        for item in self.bitfield:
+            new_value |= item.value
+        self.value = new_value
 
     def disable(self, choice):
         """
@@ -369,12 +378,21 @@ class NumBitfieldData(NumData):
         """
         # TODO: this is pretty stupidly inefficient, especially if you're
         # setting a bunch of bitfields in a row.
-        if self.bitfield is None:
-            raise RuntimeError('field is not a bitfield')
         if not isinstance(choice, self.bitfield):
             choice = self.bitfield(choice)
         if choice in self.enabled:
             self.value = self.value & ~choice.value
+
+    def disable_all(self):
+        """
+        Disables all known bits in the bitfield.  This doesn't blindly turn
+        *all* bits off in case our bitfield mapping is incomplete -- we don't
+        want to alter data we don't know about.
+        """
+        new_value = self.value
+        for item in self.bitfield:
+            new_value &= ~item.value
+        self.value = new_value
 
 
 class BitCountData(Data):

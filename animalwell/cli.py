@@ -21,7 +21,7 @@ import sys
 import enum
 import argparse
 import collections
-from .savegame import Savegame, Equipped, Equipment
+from .savegame import Savegame, Equipped, Equipment, Egg
 
 
 class EnumSetAction(argparse.Action):
@@ -140,6 +140,11 @@ def main():
             help="Set the number of times-saved",
             )
 
+    parser.add_argument('--unlock-all-eggs',
+            action='store_true',
+            help="Unlock all 64 main eggs in the game",
+            )
+
     parser.add_argument('--respawn-consumables',
             action='store_true',
             help="Respawn map consumables (fruit and firecrackers)",
@@ -229,6 +234,7 @@ def main():
             args.clear_ghosts,
             args.respawn_ghosts,
             args.respawn_squirrels,
+            args.unlock_all_eggs,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -292,6 +298,9 @@ def main():
                         print(' - Inventory Unlocked:')
                         for inv in sorted(slot.inventory.enabled):
                             print(f'   - {inv}')
+                    print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
+                    for egg in sorted(slot.eggs.enabled):
+                        print(f'   - {egg}')
                     print(f' - Transient Map Data:')
                     print(f'   - Fruit Picked: {slot.picked_fruit}')
                     print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
@@ -328,6 +337,11 @@ def main():
                 if args.saves is not None:
                     print(f'{slot_label}: Updating save count to: {args.saves}')
                     slot.num_saves.value = args.saves
+                    do_save = True
+
+                if args.unlock_all_eggs:
+                    print(f'{slot_label}: Unlocking all eggs')
+                    slot.eggs.enable_all()
                     do_save = True
 
                 if args.respawn_consumables:
