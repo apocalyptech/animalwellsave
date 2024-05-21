@@ -280,6 +280,8 @@ class Slot():
         self.picked_fruit = BitCountData(self, UInt64, 2, 0x170)
         self.picked_firecrackers = BitCountData(self, UInt64, 1)
         self.eggs = NumBitfieldData(self, UInt64, Egg)
+        self.walls_blasted = BitCountData(self, UInt32, 1)
+        self.detonators_triggered = BitCountData(self, UInt32, 1)
 
         self.squirrels_scared = BitCountData(self, UInt16, 1, 0x19C)
 

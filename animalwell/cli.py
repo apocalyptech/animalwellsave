@@ -310,6 +310,8 @@ def main():
                     print(f'   - Chests Opened: {slot.chests_opened}')
                     print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
                     print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
+                    print(f'   - Detonators Triggered: {slot.detonators_triggered}')
+                    print(f'   - Walls Blasted: {slot.walls_blasted}')
                     if do_slot_actions:
                         print('')
 
