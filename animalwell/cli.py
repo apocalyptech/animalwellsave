@@ -164,7 +164,17 @@ def main():
 
     parser.add_argument('--firecrackers',
             type=int,
-            help="Set the number of firecrackers.  Will unlock the Firecracker equipment as well, if not already active",
+            help="Set the number of firecrackers in your inventory.  Will unlock the Firecracker equipment as well, if not already active",
+            )
+
+    parser.add_argument('--keys',
+            type=int,
+            help="Set the number of keys in your inventory",
+            )
+
+    parser.add_argument('--matches',
+            type=int,
+            help="Set the number of matches in your inventory",
             )
 
     parser.add_argument('--equip-enable',
@@ -209,6 +219,8 @@ def main():
             args.deaths is not None,
             args.saves is not None,
             args.firecrackers is not None,
+            args.keys is not None,
+            args.matches is not None,
             args.equip_enable,
             args.equip_disable,
             args.spawn,
@@ -267,7 +279,10 @@ def main():
                     print(f' - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
                     print(f' - Steps: {slot.num_steps:,}')
                     print(f' - Health: {slot.health}')
-                    print(f' - Firecrackers: {slot.firecrackers}')
+                    print(f' - Consumables Inventory:')
+                    print(f'   - Firecrackers: {slot.firecrackers}')
+                    print(f'   - Keys: {slot.keys}')
+                    print(f'   - Matches: {slot.matches}')
                     if slot.equipment.enabled:
                         print(' - Equipment Unlocked:')
                         for equip in sorted(slot.equipment.enabled):
@@ -331,6 +346,16 @@ def main():
                 if args.respawn_squirrels:
                     print(f'{slot_label}: Respawning squirrels')
                     slot.squirrels_scared.clear()
+                    do_save = True
+
+                if args.keys is not None:
+                    print(f'{slot_label}: Updating key count to: {args.keys}')
+                    slot.keys.value = args.keys
+                    do_save = True
+
+                if args.matches is not None:
+                    print(f'{slot_label}: Updating match count to: {args.matches}')
+                    slot.matches.value = args.matches
                     do_save = True
 
                 if args.firecrackers is not None:
