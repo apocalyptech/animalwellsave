@@ -77,7 +77,8 @@ class Inventory(LabelEnum):
     S_MEDAL =    (0x02, 'S. Medal')
     HOUSE_KEY =  (0x08, 'House Key')
     OFFICE_KEY = (0x10, 'Office Key')
-    UNUSED_KEY = (0x20, 'Unused Key')
+    # Eh, don't bother with this one for now
+    #UNUSED_KEY = (0x20, 'Unused Key')
     E_MEDAL =    (0x40, 'E. Medal')
     PACK =       (0x80, 'F. Pack')
 

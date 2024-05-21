@@ -21,7 +21,7 @@ import sys
 import enum
 import argparse
 import collections
-from .savegame import Savegame, Equipped, Equipment, Egg, Bunny
+from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny
 
 
 class EnumSetAction(argparse.Action):
@@ -217,6 +217,18 @@ def main():
             help="Disable the specified equipment.  Can be specified more than once, or use 'all' to disable all",
             )
 
+    parser.add_argument('--inventory-enable',
+            type=Inventory,
+            action=EnumSetAction,
+            help="Enable the specified inventory item.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    parser.add_argument('--inventory-disable',
+            type=Inventory,
+            action=EnumSetAction,
+            help="Disable the specified inventory item.  Can be specified more than once, or use 'all' to disable all",
+            )
+
     parser.add_argument('filename',
             nargs=1,
             type=str,
@@ -251,6 +263,8 @@ def main():
             args.matches is not None,
             args.equip_enable,
             args.equip_disable,
+            args.inventory_enable,
+            args.inventory_disable,
             args.spawn,
             args.health is not None,
             args.gold_hearts is not None,
@@ -499,6 +513,20 @@ def main():
                             to_equip = equipment_to_equipped[sorted(slot.equipment.enabled)[0]]
                             print(f'{slot_label}: Setting currently-equipped item to: {to_equip}')
                             slot.selected_equipment.value = to_equip
+
+                if args.inventory_disable:
+                    for inv in sorted(args.inventory_disable):
+                        if inv in slot.inventory.enabled:
+                            print(f'{slot_label}: Disabling inventory item: {inv}')
+                            slot.inventory.disable(inv)
+                            do_save = True
+
+                if args.inventory_enable:
+                    for inv in sorted(args.inventory_enable):
+                        if inv not in slot.inventory.enabled:
+                            print(f'{slot_label}: Enabling inventory item: {inv}')
+                            slot.inventory.enable(inv)
+                            do_save = True
 
         if args.info:
             print('')
