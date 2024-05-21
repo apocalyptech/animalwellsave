@@ -21,7 +21,8 @@ import sys
 import enum
 import argparse
 import collections
-from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, QuestState, Teleport, FlameState
+from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, Teleport, \
+        QuestState, FlameState, CandleState
 
 
 class EnumSetAction(argparse.Action):
@@ -211,6 +212,12 @@ def main():
             help="Set the number of matches in your inventory",
             )
 
+    parser.add_argument('--light-candles',
+            type=CandleState,
+            action=EnumSetAction,
+            help="Light the specified candles.  Can be specified more than once, or use 'all' to enable all",
+            )
+
     parser.add_argument('--equip-enable',
             type=Equipment,
             action=EnumSetAction,
@@ -332,6 +339,7 @@ def main():
             args.firecrackers is not None,
             args.keys is not None,
             args.matches is not None,
+            args.light_candles,
             args.equip_enable,
             args.equip_disable,
             args.inventory_enable,
@@ -550,6 +558,13 @@ def main():
                     print(f'{slot_label}: Updating match count to: {args.matches}')
                     slot.matches.value = args.matches
                     do_save = True
+
+                if args.light_candles:
+                    for candle in sorted(args.light_candles):
+                        if candle not in slot.candles.enabled:
+                            print(f'{slot_label}: Lighting candle: {candle}')
+                            slot.candles.enable(candle)
+                            do_save = True
 
                 if args.firecrackers is not None:
                     print(f'{slot_label}: Updating firecracker count to: {args.firecrackers}')

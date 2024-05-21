@@ -238,6 +238,23 @@ class FlameState(LabelEnum):
     USED = (5, 'Used')
 
 
+class CandleState(LabelEnum):
+    """
+    Used to keep track of which candles are lit in the game.  The
+    names are the room coordinates where they're found
+    """
+
+    ROOM_04_06 = (0x001, 'Room (4, 6)');
+    ROOM_08_06 = (0x002, 'Room (8, 6)');
+    ROOM_04_07 = (0x004, 'Room (4, 7)');
+    ROOM_06_07 = (0x008, 'Room (6, 7)');
+    ROOM_06_09 = (0x010, 'Room (6, 9)');
+    ROOM_15_09 = (0x020, 'Room (15, 9)');
+    ROOM_05_13 = (0x040, 'Room (5, 13)');
+    ROOM_10_13 = (0x080, 'Room (10, 13)');
+    ROOM_16_13 = (0x100, 'Room (16, 13)');
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -432,7 +449,8 @@ class Slot():
         self.equipment = NumBitfieldData(self, UInt16, Equipment, 0x1DC)
         self.inventory = NumBitfieldData(self, UInt8, Inventory)
 
-        self.num_hits = NumData(self, UInt16, 0x1E2)
+        self.candles = NumBitfieldData(self, UInt16, CandleState, 0x1E0)
+        self.num_hits = NumData(self, UInt16)
         self.num_deaths = NumData(self, UInt16)
         self.ghosts_scared = BitCountData(self, UInt16, 1)
 
