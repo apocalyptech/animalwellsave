@@ -298,6 +298,9 @@ def main():
                     print(f'   - Ghosts Scared: {slot.ghosts_scared}')
                     print(f' - Permanent Map Data:')
                     print(f'   - Squirrels Scared: {slot.squirrels_scared}')
+                    print(f'   - Chests Opened: {slot.chests_opened}')
+                    print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
+                    print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                     if do_slot_actions:
                         print('')
 

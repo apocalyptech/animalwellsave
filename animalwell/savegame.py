@@ -195,6 +195,10 @@ class Slot():
 
         self.num_steps = NumData(self, UInt32, 0x108)
 
+        self.chests_opened = BitCountData(self, UInt64, 2, 0x120)
+        self.button_doors_opened = BitCountData(self, UInt64, 2)
+        self.yellow_buttons_pressed = BitCountData(self, UInt64, 3)
+
         self.picked_fruit = BitCountData(self, UInt64, 2, 0x170)
         self.picked_firecrackers = BitCountData(self, UInt64, 1, 0x180)
 

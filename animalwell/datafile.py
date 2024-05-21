@@ -386,6 +386,10 @@ class BitCountData(Data):
     The individual bits of data in here aren't really meant to be altered
     directly, and the `count` counter won't be automatically updated here
     if any of the child data is altered directly.
+
+    There's sort of no real reason why this functionality couldn't just be
+    rolled into NumBitfieldData, especially given that we might eventually
+    want to be able to modify bitfields for some of this...
     """
 
     def __init__(self, parent, num_type, count, offset=None):
