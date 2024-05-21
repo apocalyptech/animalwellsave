@@ -617,6 +617,109 @@ class Stamps(Data):
         self._num_stamps.value = 0
 
 
+class Mural(Data):
+    """
+    Class to store information about the Bunny Mural.  This class is
+    extremely basic and doesn't support anything remotely resembling
+    editing pixel-by-pixel yet.  All it really supports is doing
+    mass updates, such as setting it to the default or solved states,
+    or wiping all pixels to the "background" color.
+    """
+
+    WIDTH = 40
+    HEIGHT = 20
+    BITS_PER_PIXEL = 2
+    BYTES_PER_ROW = int(WIDTH/(8/BITS_PER_PIXEL))
+    TOTAL_BYTES = BYTES_PER_ROW*HEIGHT
+
+    DATA_DEFAULT = b'\x00\x00\x00\x00\x00\x00\x0a\x28\x00\x00' + \
+            b'\x00\x02\x00\x00\x00\x80\x25\x96\x00\x00' + \
+            b'\x80\x08\x00\x00\x00\x80\x24\x86\x00\x00' + \
+            b'\x00\x02\x00\x02\x00\x80\x24\x86\x00\x00' + \
+            b'\x00\x00\x00\x00\x00\x80\x94\x85\x00\x00' + \
+            b'\x00\x00\x00\x00\x00\x80\x55\x25\x00\x08' + \
+            b'\x00\x00\x00\x00\x80\x6a\x55\x95\x00\x22' + \
+            b'\x00\x00\x00\xa0\x6a\x55\x55\x95\x00\x08' + \
+            b'\xc0\x00\x8a\x5a\x55\x55\x54\x91\x00\x00' + \
+            b'\x30\x80\x65\x55\x55\x55\x54\x91\x00\x00' + \
+            b'\x0c\x80\x65\x55\x55\x55\x55\x95\x00\x00' + \
+            b'\x03\x00\x5a\x55\x55\x55\x45\x25\x00\x00' + \
+            b'\xc0\x00\x56\x55\x55\x55\x11\x25\x00\x20' + \
+            b'\x30\x00\x56\x55\x55\x55\x55\x95\x0a\x00' + \
+            b'\x0c\x80\x55\x55\x55\x55\x55\x55\x25\x00' + \
+            b'\x03\x83\x55\x55\xa5\x5a\x55\x29\x00\x00' + \
+            b'\xc0\x80\x55\x95\x0a\xa0\x5a\x95\x02\x00' + \
+            b'\x30\xa0\x55\x25\x00\x00\xa0\x55\x09\x00' + \
+            b'\x0c\x60\x55\x02\x00\x00\x00\xaa\x02\x00' + \
+            b'\x00\x58\xa5\x00\x00\x00\x00\x00\x00\x00'
+
+    DATA_SOLVED = b'\x37\x00\x00\x00\x40\x01\x05\x00\x00\x00' + \
+            b'\x0c\x00\x40\x00\x40\x46\x05\x0c\x18\x09' + \
+            b'\x08\x01\x90\x31\x40\x46\x05\x37\xf4\x07' + \
+            b'\x48\x04\x40\x0e\x40\x19\x01\x0c\xf0\x03' + \
+            b'\x32\x09\x00\x02\x00\x59\x00\x18\xf4\x07' + \
+            b'\x02\x48\x00\x02\x00\x54\x05\x44\x98\x09' + \
+            b'\x02\x98\x01\x08\x00\x55\x14\x10\x80\x00' + \
+            b'\x0e\x42\x00\x58\x05\x15\x52\x20\x8c\x00' + \
+            b'\x32\x82\x00\x55\x55\x55\x50\x82\x8c\x08' + \
+            b'\x82\x80\x40\x55\x55\x55\x55\x81\x88\x32' + \
+            b'\x88\x80\x50\x55\x55\x55\x55\x81\x88\xc0' + \
+            b'\x88\x80\x54\x55\x55\x55\x55\x20\x20\x88' + \
+            b'\x88\x20\x54\x55\x55\x55\x15\x20\x20\x20' + \
+            b'\x8c\x23\x54\x55\x55\x55\xe5\xef\x23\x2c' + \
+            b'\xef\xfe\x56\x55\x55\x55\xe5\xff\xef\xef' + \
+            b'\xbe\xfd\x56\x55\x55\x55\xe5\xff\xff\xbb' + \
+            b'\x7b\xf6\x54\x55\x55\x55\x01\xfc\xe7\xee' + \
+            b'\xef\xf9\x50\x55\x55\x55\x00\xf0\x99\xbb' + \
+            b'\xbe\xef\x43\x55\x55\x15\x00\xff\xe6\xee' + \
+            b'\xfb\xbe\x0f\x00\x00\x00\xfc\xbf\xbb\xbb'
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        # Subsequent data might rely on us having seeked to the end of the
+        # data, so do so now.
+        self.df.seek(Minimap.MAP_BYTE_TOTAL, os.SEEK_CUR)
+
+    def _fill_with_data(self, data):
+        """
+        Fills the mural with the specified raw data
+        """
+        if len(data) != Mural.TOTAL_BYTES:
+            raise RuntimeError(f'mural data bytes must be {Mural.TOTAL_BYTES} long')
+        self.df.seek(self.offset)
+        self.df.write(data)
+
+    def to_default(self):
+        self._fill_with_data(Mural.DATA_DEFAULT)
+
+    def to_solved(self):
+        self._fill_with_data(Mural.DATA_SOLVED)
+
+    def clear(self):
+        """
+        Clears out the mural entirely
+        """
+        data = b'\x00'*Mural.TOTAL_BYTES
+        self._fill_with_data(data)
+
+    def print_binary_data(self):
+        """
+        Prints out the binary data in a format easily copied into a Python
+        script (as with the DATA_* vars, above).  The last line will require
+        trimming off the `+ \` at the end.
+        """
+        self.df.seek(self.offset)
+        data = self.df.read(Mural.TOTAL_BYTES)
+        interval = 10
+        s = 0
+        while s < len(data):
+            print("b'{}' + \\".format(
+                ''.join([f'\\x{x:02x}' for x in data[s:s+interval]])
+                ))
+            s += interval
+
+
 class Slot():
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -686,6 +789,8 @@ class Slot():
         self.minimap = Minimap(self, 0x3EC)
         self.pencilmap = Minimap(self, 0xD22D)
         self.destructionmap = Minimap(self, 0x1A06E)
+
+        self.mural = Mural(self, 0x26EAF)
 
 
 class Savegame():

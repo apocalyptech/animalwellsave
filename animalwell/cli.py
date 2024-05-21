@@ -279,6 +279,23 @@ def main():
             help='Clears any stamps on the minimap',
             )
 
+    mural = parser.add_mutually_exclusive_group()
+
+    mural.add_argument('--mural-clear',
+            action='store_true',
+            help='Clear all mural pixels to the background color',
+            )
+
+    mural.add_argument('--mural-default',
+            action='store_true',
+            help='Revert the mural to its default state',
+            )
+
+    mural.add_argument('--mural-solved',
+            action='store_true',
+            help='Set the mural to its solved state',
+            )
+
     parser.add_argument('--flame-collect',
             type=str,
             choices=['b', 'p', 'v', 'g', 'all'],
@@ -370,6 +387,9 @@ def main():
             args.clear_map,
             args.clear_pencil,
             args.clear_stamps,
+            args.mural_clear,
+            args.mural_default,
+            args.mural_solved,
             args.flame_collect,
             args.flame_use,
             args.upgrade_wand,
@@ -695,6 +715,21 @@ def main():
                 if args.clear_stamps:
                     print(f'{slot_label}: Clearing all minimap stamps')
                     slot.stamps.clear()
+                    do_save = True
+
+                if args.mural_clear:
+                    print(f'{slot_label}: Clearing all mural pixels')
+                    slot.mural.clear()
+                    do_save = True
+
+                if args.mural_default:
+                    print(f'{slot_label}: Setting mural to its default state')
+                    slot.mural.to_default()
+                    do_save = True
+
+                if args.mural_solved:
+                    print(f'{slot_label}: Setting mural to its solved state (NOTE: you will need to activate one pixel to get the door to open)')
+                    slot.mural.to_solved()
                     do_save = True
 
                 if args.upgrade_wand:
