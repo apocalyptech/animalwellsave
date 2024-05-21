@@ -319,6 +319,7 @@ class Slot():
         self.matches = NumData(self, UInt8)
         self.firecrackers = NumData(self, UInt8)
         self.health = NumData(self, UInt8)
+        self.gold_hearts = NumData(self, UInt8)
 
         self.elapsed_ticks_ingame = Ticks(self, 0x1BC)
         self.elapsed_ticks_withpause = Ticks(self)

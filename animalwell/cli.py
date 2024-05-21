@@ -118,6 +118,11 @@ def main():
             help='Sets health (number of hearts)',
             )
 
+    parser.add_argument('--gold-hearts',
+            type=int,
+            help='Sets the number of gold hearts',
+            )
+
     parser.add_argument('--spawn',
             type=str,
             metavar='X,Y',
@@ -248,6 +253,7 @@ def main():
             args.equip_disable,
             args.spawn,
             args.health is not None,
+            args.gold_hearts is not None,
             args.respawn_consumables,
             args.clear_ghosts,
             args.respawn_ghosts,
@@ -302,7 +308,14 @@ def main():
                     else:
                         print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
                     print(f' - Saved in Room: {slot.spawn_room}')
-                    print(f' - Health: {slot.health}')
+                    if slot.gold_hearts > 0:
+                        if slot.gold_hearts == 1:
+                            plural = ''
+                        else:
+                            plural = 's'
+                        print(f' - Health: {slot.health} ({slot.gold_hearts} gold heart{plural})')
+                    else:
+                        print(f' - Health: {slot.health}')
                     print(f' - Counters:')
                     print(f'   - Steps: {slot.num_steps:,}')
                     print(f'   - Times Saved: {slot.num_saves}')
@@ -346,6 +359,11 @@ def main():
                 if args.health:
                     print(f'{slot_label}: Updating health to: {args.health}')
                     slot.health.value = args.health
+                    do_save = True
+
+                if args.gold_hearts:
+                    print(f'{slot_label}: Updating gold hearts count to: {args.gold_hearts}')
+                    slot.gold_hearts.value = args.gold_hearts
                     do_save = True
 
                 if args.spawn:

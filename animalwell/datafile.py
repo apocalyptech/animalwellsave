@@ -204,6 +204,26 @@ class NumData(Data):
         else:
             return self.value == other
 
+    def __lt__(self, other):
+        """
+        Compare using our `value` attribute.  This should allow us to test
+        versus other `NumData` objects, or by raw numeric values.
+        """
+        if issubclass(type(other), NumData):
+            return self.value < other.value
+        else:
+            return self.value < other
+
+    def __gt__(self, other):
+        """
+        Compare using our `value` attribute.  This should allow us to test
+        versus other `NumData` objects, or by raw numeric values.
+        """
+        if issubclass(type(other), NumData):
+            return self.value > other.value
+        else:
+            return self.value > other
+
 
 class LabelEnum(enum.Enum):
     """
