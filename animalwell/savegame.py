@@ -397,6 +397,101 @@ class MapCoord(Data):
         return f'({self.x}, {self.y})'
 
 
+class Minimap(Data):
+    """
+    Class to hold minimap information.  At time of writing we don't have
+    "generic" drawing functions to let us say "turn pixel x,y on/off".
+    The functions are very geared towards filling/clearing big chunks
+    of data; the minimum resolution they work with is really whole rooms.
+    """
+
+    # Room dimensions in pixels
+    ROOM_W = 40
+    ROOM_H = 22
+    ROOM_BYTE_W = int(ROOM_W/8)
+
+    # Total minimap room dimensions -- this includes "empty" padding
+    # rooms on both the top and bottom
+    MAP_ROOM_W = 20
+    MAP_ROOM_H = 24
+    MAP_BYTE_W = ROOM_BYTE_W*MAP_ROOM_W
+    MAP_BYTE_ROOM_H = ROOM_BYTE_W*ROOM_H*MAP_ROOM_W
+    MAP_BYTE_TOTAL = MAP_BYTE_ROOM_H*MAP_ROOM_H
+
+    # "Playable" minimap room dimensions
+    MAP_PLAYABLE_ROOM_W = 16
+    MAP_PLAYABLE_ROOM_H = 16
+    MAP_PLAYABLE_ROOM_START = (2, 4)
+    MAP_PLAYABLE_BYTE_W = ROOM_BYTE_W*MAP_PLAYABLE_ROOM_W
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        # Subsequent data might rely on us having seeked to the end of the
+        # data, so do so now.
+        self.df.seek(Minimap.MAP_BYTE_TOTAL, os.SEEK_CUR)
+
+    def room_start_offset(self, x, y):
+        """
+        Computes the starting offset (upper left corner) within our data for
+        the given room coordinate
+        """
+        return self.offset + y*Minimap.MAP_BYTE_ROOM_H + (x*Minimap.ROOM_BYTE_W)
+
+    def _inner_fill(self, initial_location, row_fill, num_pixel_rows):
+        """
+        Inner function to assist in filling areas of the map.  `initial_location`
+        should be the upper-left corner of where to fill.  `row_fill` is the data
+        that will be written into each row.  `num_pixel_rows` is the number of
+        rows to fill in.
+        """
+        skip_size = Minimap.MAP_BYTE_W - len(row_fill)
+        self.df.seek(initial_location)
+        for _ in range(num_pixel_rows):
+            self.df.write(row_fill)
+            self.df.seek(skip_size, os.SEEK_CUR)
+
+    def fill_room(self, x, y, fill_byte=b'\xFF'):
+        """
+        Fills in the specified room.
+        """
+        self._inner_fill(
+                self.room_start_offset(x, y),
+                fill_byte * Minimap.ROOM_BYTE_W,
+                Minimap.ROOM_H,
+                )
+
+    def clear_room(self, x, y):
+        """
+        Fills in the specified room.
+        """
+        self.fill_room(x, y, fill_byte=b'\x00')
+
+    def fill_map(self, playable_only=True, fill_byte=b'\xFF'):
+        """
+        Fills in the entire map.  If `playable_only` is `True`, this will be limited
+        to the inner playable area.  If `False`, even the outer padding areas
+        will be filled.
+        """
+        if playable_only:
+            initial_location = self.room_start_offset(*Minimap.MAP_PLAYABLE_ROOM_START)
+            row_fill = fill_byte * Minimap.ROOM_BYTE_W * Minimap.MAP_PLAYABLE_ROOM_W
+            num_pixel_rows = Minimap.ROOM_H * Minimap.MAP_PLAYABLE_ROOM_H
+        else:
+            initial_location = self.room_start_offset(0, 0)
+            row_fill = fill_byte * Minimap.ROOM_BYTE_W * Minimap.MAP_ROOM_W
+            num_pixel_rows = Minimap.ROOM_H * Minimap.MAP_ROOM_H
+        self._inner_fill(initial_location, row_fill, num_pixel_rows)
+
+    def clear_map(self, playable_only=True):
+        """
+        Clears the entire map.  If `playable_only` is `True`, this will be limited
+        to the inner playable area.  If `False`, even the outer padding areas
+        will be filled.
+        """
+        self.fill_map(playable_only=playable_only, fill_byte=b'\x00')
+
+
 class Slot():
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -461,6 +556,9 @@ class Slot():
         self.flames = Flames(self, 0x21E)
 
         self.teleports = NumBitfieldData(self, UInt8, Teleport, 0x224)
+
+        self.minimap = Minimap(self, 0x3EC)
+        self.pencilmap = Minimap(self, 0xD22D)
 
 
 class Savegame():

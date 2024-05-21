@@ -259,6 +259,21 @@ def main():
             help="Enable the specified map feature.  Can be specified more than once, or use 'all' to enable all",
             )
 
+    parser.add_argument('--reveal-map',
+            action='store_true',
+            help='Reveals the entire map on the minimap',
+            )
+
+    parser.add_argument('--clear-map',
+            action='store_true',
+            help='Clears the entire map on the minimap',
+            )
+
+    parser.add_argument('--clear-pencil',
+            action='store_true',
+            help='Clears any pencil drawings on the minimap',
+            )
+
     parser.add_argument('--flame-collect',
             type=str,
             choices=['b', 'p', 'v', 'g', 'all'],
@@ -346,6 +361,9 @@ def main():
             args.inventory_disable,
             args.teleport_enable,
             args.map_enable,
+            args.reveal_map,
+            args.clear_map,
+            args.clear_pencil,
             args.flame_collect,
             args.flame_use,
             args.upgrade_wand,
@@ -649,6 +667,21 @@ def main():
                             print(f'{slot_label}: Enabling map unlock: {map_var}')
                             slot.quest_state.enable(map_var)
                             do_save = True
+
+                if args.reveal_map:
+                    print(f'{slot_label}: Revealing entire minimap')
+                    slot.minimap.fill_map()
+                    do_save = True
+
+                if args.clear_map:
+                    print(f'{slot_label}: Clearing entire minimap')
+                    slot.minimap.clear_map(playable_only=False)
+                    do_save = True
+
+                if args.clear_pencil:
+                    print(f'{slot_label}: Clearing all minimap pencil drawings')
+                    slot.pencilmap.clear_map(playable_only=False)
+                    do_save = True
 
                 if args.upgrade_wand:
                     if QuestState.BB_WAND not in slot.quest_state.enabled:
