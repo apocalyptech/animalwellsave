@@ -338,6 +338,10 @@ def main():
                     print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
                     for egg in sorted(slot.eggs.enabled):
                         print(f'   - {egg}')
+                    if len(slot.bunnies.enabled) > 0:
+                        print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
+                        for bunny in sorted(slot.bunnies.enabled):
+                            print(f'   - {bunny}')
                     print(f' - Transient Map Data:')
                     print(f'   - Fruit Picked: {slot.picked_fruit}')
                     print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
@@ -349,10 +353,6 @@ def main():
                     print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                     print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                     print(f'   - Walls Blasted: {slot.walls_blasted}')
-                    if len(slot.bunnies.enabled) > 0:
-                        print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
-                        for bunny in sorted(slot.bunnies.enabled):
-                            print(f'   - {bunny}')
                     if do_slot_actions:
                         print('')
 
