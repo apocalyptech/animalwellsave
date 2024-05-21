@@ -74,7 +74,10 @@ class Inventory(LabelEnum):
     Inventory unlocks
     """
 
+    MOCK_DISC =  (0x01, 'Mock Disc')
     S_MEDAL =    (0x02, 'S. Medal')
+    # Don't bother with this one for now
+    #CAKE    =    (0x04, 'Cake')
     HOUSE_KEY =  (0x08, 'House Key')
     OFFICE_KEY = (0x10, 'Office Key')
     # Eh, don't bother with this one for now
@@ -222,6 +225,19 @@ class Teleport(LabelEnum):
     HIPPO =    (0x80, 'Hippo')
 
 
+class FlameState(LabelEnum):
+    """
+    Used for storing the flame states
+    """
+
+    SEALED = (0, 'Sealed')
+    CRACKED_1 = (1, 'Glass Cracked')
+    CRACKED_2 = (2, 'Glass Cracked More')
+    BROKEN = (3, 'Glass Broken')
+    COLLECTED = (4, 'Collected')
+    USED = (5, 'Used')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -251,6 +267,56 @@ class Timestamp(Data):
 
     def __str__(self):
         return f'{self.year:04d}-{self.month:02d}-{self.day:02d} {self.hour:02d}:{self.minute:02d}:{self.second:02d}'
+
+
+class Flame(NumChoiceData):
+    """
+    A single flame status.  This is just a NumChoiceData with an extra
+    `name` attribute, so that utilities can report on which flame is
+    being used, when iterating over the whole set.
+    """
+
+    def __init__(self, parent, name, offset=None):
+        super().__init__(parent, UInt8, FlameState)
+        self.name = name
+
+
+class Flames(Data):
+    """
+    Structure to hold information about all the collectible flames in the game.
+    Provides iteration and lookup by lowercase letter, in addition to the
+    single-letter attributes.
+    """
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        # Data
+        self.b = Flame(self, 'B. Flame')
+        self.p = Flame(self, 'P. Flame')
+        self.v = Flame(self, 'V. Flame')
+        self.g = Flame(self, 'G. Flame')
+
+        self.flames = [self.b, self.p, self.v, self.g]
+        self._by_letter = {
+                'b': self.b,
+                'p': self.p,
+                'v': self.v,
+                'g': self.g,
+                }
+
+    def __iter__(self):
+        """
+        Can iterate over all four flames
+        """
+        return iter(self.flames)
+
+    def __getitem__(self, key):
+        """
+        Can also lookup flames by lowercase letter (mostly just to support
+        the CLI util a bit more easily)
+        """
+        return self._by_letter[key]
 
 
 class Ticks(NumData):
@@ -373,6 +439,8 @@ class Slot():
         self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
 
         self.quest_state = NumBitfieldData(self, UInt32, QuestState, 0x1EC)
+
+        self.flames = Flames(self, 0x21E)
 
         self.teleports = NumBitfieldData(self, UInt8, Teleport, 0x224)
 

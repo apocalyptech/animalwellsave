@@ -21,7 +21,7 @@ import sys
 import enum
 import argparse
 import collections
-from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, QuestState, Teleport
+from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, QuestState, Teleport, FlameState
 
 
 class EnumSetAction(argparse.Action):
@@ -252,6 +252,20 @@ def main():
             help="Enable the specified map feature.  Can be specified more than once, or use 'all' to enable all",
             )
 
+    parser.add_argument('--flame-collect',
+            type=str,
+            choices=['b', 'p', 'v', 'g', 'all'],
+            action='append',
+            help="Mark the specified flames as collected (but not placed in the pedestals).  Can be specified more than once, or use 'all' to do all at once",
+            )
+
+    parser.add_argument('--flame-use',
+            type=str,
+            choices=['b', 'p', 'v', 'g', 'all'],
+            action='append',
+            help="Mark the specified flames as used (but not placed in the pedestals).  Can be specified more than once, or use 'all' to do all at once",
+            )
+
     parser.add_argument('--upgrade-wand',
             action='store_true',
             help='Upgrade the B. Wand to B.B. Wand',
@@ -324,6 +338,8 @@ def main():
             args.inventory_disable,
             args.teleport_enable,
             args.map_enable,
+            args.flame_collect,
+            args.flame_use,
             args.upgrade_wand,
             args.downgrade_wand,
             args.egg65_enable,
@@ -425,6 +441,10 @@ def main():
                         print(f' - Quest State Flags:')
                         for state in sorted(slot.quest_state.enabled):
                             print(f'   - {state}')
+                    if any([flame.choice != FlameState.SEALED for flame in slot.flames]):
+                        print(f' - Flame States:')
+                        for flame in slot.flames:
+                            print(f'   - {flame.name}: {flame}')
                     print(f' - Transient Map Data:')
                     print(f'   - Fruit Picked: {slot.picked_fruit}')
                     print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
@@ -649,6 +669,22 @@ def main():
                     if QuestState.CRING in slot.quest_state.enabled:
                         print(f'{slot_label}: Removing C. Ring')
                         slot.quest_state.disable(QuestState.CRING)
+                        do_save = True
+
+                for arg, status in [
+                        (args.flame_collect, FlameState.COLLECTED),
+                        (args.flame_use, FlameState.USED),
+                        ]:
+                    if arg:
+                        if 'all' in arg:
+                            flames = slot.flames
+                        else:
+                            flames = []
+                            for letter in arg:
+                                flames.append(slot.flames[letter])
+                        for flame in flames:
+                            print(f'{slot_label}: Updating {flame.name} status to: {status}')
+                            flame.value = status
                         do_save = True
 
         if args.info:
