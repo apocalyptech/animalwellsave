@@ -146,6 +146,33 @@ def main():
             help='Operate on the specified slot (specify 0 for "all slots")',
             )
 
+    parser.add_argument('--import', '--import-slot',
+            type=str,
+            dest='import_slot',
+            metavar='FILENAME',
+            help="""
+                Import slot data from a standalone file into the specified slot.  The file must be
+                exactly 159,760 bytes, though no other checking is done for validity.  The import
+                will be done prior to any other specified actions.
+                """,
+            )
+
+    parser.add_argument('--export', '--export-slot',
+            type=str,
+            dest='export_slot',
+            metavar='FILENAME',
+            help="""
+                Export the specified slot data to a standalone file.  The file will not be loadable
+                by Animal Well directly, but can be imported into a different save.  The export will
+                be done after any other specified actions.
+                """,
+            )
+
+    parser.add_argument('-f', '--force',
+            action='store_true',
+            help='When exporting slot data, do not prompt to confirm overwriting a file',
+            )
+
     parser.add_argument('--health',
             type=int,
             help='Sets health (number of hearts)',
@@ -491,12 +518,19 @@ def main():
             args.bubbles_popped,
             args.quest_state_enable,
             args.quest_state_disable,
+            args.import_slot,
+            args.export_slot,
             ]):
         if slot_indexes:
             loop_into_slots = True
             do_slot_actions = True
         else:
             parser.error('Slot actions were specified but no slots were chosen')
+
+    # If the user wants to import/export, only allow a single slot
+    if args.import_slot or args.export_slot:
+        if len(slot_indexes) > 1:
+            parser.error('--import-slot and --export-slot may only be used with a single slot')
 
     # Load the savegame
     with Savegame(args.filename) as save:
@@ -508,6 +542,7 @@ def main():
             print('')
             print(f' - Checksum: 0x{save.checksum:02X}')
 
+        # Make a note of fixing the checksum, if we were told to do so
         if args.fix_checksum:
             do_save = True
 
@@ -517,8 +552,445 @@ def main():
                 slot = save.slots[slot_idx]
                 slot_label = f'Slot {slot.index+1}'
 
-                # If we don't actually have any slot data, don't bother doing anything
-                if not slot.has_data:
+                # If we've been told to import slot data, do so now
+                if args.import_slot:
+                    print(f'{slot_label}: Importing slot data from: {args.import_slot}')
+                    with open(args.import_slot, 'rb') as df:
+                        slot.import_data(df.read())
+                    do_save = True
+
+                # Actions to perform only if we have slot data follow...
+                if slot.has_data:
+
+                    # Show general slot info first, if we've been told to
+                    if args.info:
+                        header = f'{slot_label}: {slot.timestamp}'
+                        print('')
+                        print(header)
+                        print('-'*len(header))
+                        print('')
+                        if slot.elapsed_ticks_ingame == slot.elapsed_ticks_withpause:
+                            print(f' - Elapsed Time: {slot.elapsed_ticks_withpause}')
+                        else:
+                            print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
+                        print(f' - Saved in Room: {slot.spawn_room}')
+                        if slot.gold_hearts > 0:
+                            if slot.gold_hearts == 1:
+                                plural = ''
+                            else:
+                                plural = 's'
+                            print(f' - Health: {slot.health} ({slot.gold_hearts} gold heart{plural})')
+                        else:
+                            print(f' - Health: {slot.health}')
+                        print(f' - Counters:')
+                        print(f'   - Steps: {slot.num_steps:,}')
+                        print(f'   - Times Saved: {slot.num_saves}')
+                        print(f'   - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
+                        print(f'   - Firecrackers Collected: {slot.firecrackers_collected}')
+                        print(f'   - Bubbles Popped: {slot.bubbles_popped}')
+                        print(f' - Consumables Inventory:')
+                        print(f'   - Firecrackers: {slot.firecrackers}')
+                        print(f'   - Keys: {slot.keys}')
+                        print(f'   - Matches: {slot.matches}')
+                        if slot.equipment.enabled:
+                            print(' - Equipment Unlocked:')
+                            for equip in sorted(slot.equipment.enabled):
+                                print(f'   - {equip}')
+                            print(f' - Selected Equipment: {slot.selected_equipment}')
+                        if slot.inventory.enabled:
+                            print(' - Inventory Unlocked:')
+                            for inv in sorted(slot.inventory.enabled):
+                                print(f'   - {inv}')
+                        print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
+                        for egg in sorted(slot.eggs.enabled):
+                            print(f'   - {egg}')
+                        if len(slot.bunnies.enabled) > 0:
+                            print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
+                            for bunny in sorted(slot.bunnies.enabled):
+                                print(f'   - {bunny}')
+                        if slot.quest_state.enabled:
+                            print(f' - Quest State Flags:')
+                            for state in sorted(slot.quest_state.enabled):
+                                print(f'   - {state}')
+                        if any([flame.choice != FlameState.SEALED for flame in slot.flames]):
+                            print(f' - Flame States:')
+                            for flame in slot.flames:
+                                print(f'   - {flame.name}: {flame}')
+                        print(f' - Transient Map Data:')
+                        print(f'   - Fruit Picked: {slot.picked_fruit}')
+                        print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
+                        print(f'   - Ghosts Scared: {slot.ghosts_scared}')
+                        if QuestState.UNLOCK_STAMPS in slot.quest_state.enabled:
+                            print(f'   - Minimap Stamps: {len(slot.stamps)}')
+                        print(f' - Permanent Map Data:')
+                        print(f'   - Squirrels Scared: {slot.squirrels_scared}')
+                        print(f'   - Chests Opened: {slot.chests_opened}')
+                        print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
+                        print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
+                        print(f'   - Detonators Triggered: {slot.detonators_triggered}')
+                        print(f'   - Walls Blasted: {slot.walls_blasted}')
+                        if slot.teleports.enabled:
+                            print(f' - Teleports Active: {len(slot.teleports.enabled)}')
+                            for teleport in sorted(slot.teleports.enabled):
+                                print(f'   - {teleport}')
+
+                        if do_slot_actions:
+                            print('')
+
+                    # Keep track of if we're modifying any disc equipment
+                    doing_disc_actions = False
+
+                    if args.health:
+                        print(f'{slot_label}: Updating health to: {args.health}')
+                        slot.health.value = args.health
+                        do_save = True
+
+                    if args.gold_hearts:
+                        print(f'{slot_label}: Updating gold hearts count to: {args.gold_hearts}')
+                        slot.gold_hearts.value = args.gold_hearts
+                        do_save = True
+
+                    if args.spawn:
+                        print(f'{slot_label}: Setting spawnpoint to ({args.spawn.x}, {args.spawn.y})')
+                        slot.spawn_room.x.value = args.spawn.x
+                        slot.spawn_room.y.value = args.spawn.y
+                        do_save = True
+
+                    if args.steps is not None:
+                        print(f'{slot_label}: Updating steps taken to: {args.steps}')
+                        slot.num_steps.value = args.steps
+                        do_save = True
+
+                    if args.deaths is not None:
+                        print(f'{slot_label}: Updating death count to: {args.deaths}')
+                        slot.num_deaths.value = args.deaths
+                        do_save = True
+
+                    if args.saves is not None:
+                        print(f'{slot_label}: Updating save count to: {args.saves}')
+                        slot.num_saves.value = args.saves
+                        do_save = True
+
+                    if args.bubbles_popped is not None:
+                        print(f'{slot_label}: Updating bubbles-popped count to: {args.bubbles_popped}')
+                        slot.bubbles_popped.value = args.bubbles_popped
+                        do_save = True
+
+                    if args.egg_enable:
+                        for egg in sorted(args.egg_enable):
+                            if egg not in slot.eggs.enabled:
+                                print(f'{slot_label}: Enabling egg: {egg}')
+                                slot.eggs.enable(egg)
+                                do_save = True
+
+                    if args.bunny_disable:
+                        for bunny in sorted(args.bunny_disable):
+                            if bunny in slot.bunnies.enabled:
+                                print(f'{slot_label}: Disabling bunny: {bunny}')
+                                slot.bunnies.disable(bunny)
+                                do_save = True
+
+                    if args.bunny_enable:
+                        for bunny in sorted(args.bunny_enable):
+                            if bunny not in slot.bunnies.enabled:
+                                print(f'{slot_label}: Enabling bunny: {bunny}')
+                                slot.bunnies.enable(bunny)
+                                do_save = True
+
+                    if args.respawn_consumables:
+                        print(f'{slot_label}: Respawning fruit and firecrackers')
+                        slot.picked_fruit.clear()
+                        slot.picked_firecrackers.clear()
+                        do_save = True
+
+                    if args.clear_ghosts:
+                        print(f'{slot_label}: Clearing ghosts')
+                        slot.ghosts_scared.fill()
+                        do_save = True
+
+                    if args.respawn_ghosts:
+                        print(f'{slot_label}: Respawning ghosts')
+                        slot.ghosts_scared.clear()
+                        do_save = True
+
+                    if args.respawn_squirrels:
+                        print(f'{slot_label}: Respawning squirrels')
+                        slot.squirrels_scared.clear()
+                        do_save = True
+
+                    if args.keys is not None:
+                        print(f'{slot_label}: Updating key count to: {args.keys}')
+                        slot.keys.value = args.keys
+                        do_save = True
+
+                    if args.matches is not None:
+                        print(f'{slot_label}: Updating match count to: {args.matches}')
+                        slot.matches.value = args.matches
+                        do_save = True
+
+                    if args.light_candles:
+                        for candle in sorted(args.light_candles):
+                            if candle not in slot.candles.enabled:
+                                print(f'{slot_label}: Lighting candle: {candle}')
+                                slot.candles.enable(candle)
+                                do_save = True
+
+                    if args.firecrackers is not None:
+                        print(f'{slot_label}: Updating firecracker count to: {args.firecrackers}')
+                        slot.firecrackers.value = args.firecrackers
+                        do_save = True
+                        if args.firecrackers > 0 and Equipment.FIRECRACKER not in slot.equipment.enabled:
+                            if args.equip_enable is None:
+                                args.equip_enable = set()
+                            args.equip_enable.add(Equipment.FIRECRACKER)
+
+                    changed_equipment = False
+
+                    if args.equip_enable:
+                        for equip in sorted(args.equip_enable):
+                            if equip not in slot.equipment.enabled:
+                                print(f'{slot_label}: Enabling equipment: {equip}')
+                                slot.equipment.enable(equip)
+                                changed_equipment = True
+                                do_save = True
+                            if equip == Equipment.DISC:
+                                doing_disc_actions = True
+
+                    if args.equip_disable:
+                        for equip in sorted(args.equip_disable):
+                            if equip in slot.equipment.enabled:
+                                print(f'{slot_label}: Disabling equipment: {equip}')
+                                slot.equipment.disable(equip)
+                                changed_equipment = True
+                                do_save = True
+                            if equip == Equipment.DISC:
+                                doing_disc_actions = True
+
+                    # If we changed enabled equipment, we may need to change the currently-
+                    # selected equipment field as well.
+                    if changed_equipment:
+                        if len(slot.equipment.enabled) == 0:
+                            # If there's no equipment enabled, just revert our current selection to None
+                            print(f'{slot_label}: Setting currently-equipped item to none')
+                            slot.selected_equipment.value = Equipped.NONE
+                        else:
+                            # Otherwise, we may need to update.  Create a couple mappings between these
+                            # two enums so we can update our selected equipment if need be.
+                            equipped_to_equipment = {}
+                            equipment_to_equipped = {}
+                            for item in Equipped:
+                                try:
+                                    equipped_to_equipment[item] = Equipment[item.name]
+                                except KeyError:
+                                    pass
+                            for item in Equipment:
+                                try:
+                                    equipment_to_equipped[item] = Equipped[item.name]
+                                except KeyError:
+                                    pass
+                            if slot.selected_equipment.choice == Equipped.NONE \
+                                    or equipped_to_equipment[slot.selected_equipment.choice] not in slot.equipment.enabled:
+                                # Enable the first equipment we have (alphabetically)
+                                to_equip = equipment_to_equipped[sorted(slot.equipment.enabled)[0]]
+                                print(f'{slot_label}: Setting currently-equipped item to: {to_equip}')
+                                slot.selected_equipment.value = to_equip
+
+                    if args.inventory_disable:
+                        for inv in sorted(args.inventory_disable):
+                            if inv in slot.inventory.enabled:
+                                print(f'{slot_label}: Disabling inventory item: {inv}')
+                                slot.inventory.disable(inv)
+                                do_save = True
+                            if inv == Inventory.MOCK_DISC:
+                                doing_disc_actions = True
+
+                    if args.inventory_enable:
+                        for inv in sorted(args.inventory_enable):
+                            if inv not in slot.inventory.enabled:
+                                print(f'{slot_label}: Enabling inventory item: {inv}')
+                                slot.inventory.enable(inv)
+                                do_save = True
+                            if inv == Inventory.MOCK_DISC:
+                                doing_disc_actions = True
+
+                    if args.teleport_enable:
+                        for teleport in sorted(args.teleport_enable):
+                            if teleport not in slot.teleports.enabled:
+                                print(f'{slot_label}: Enabling teleport: {teleport}')
+                                slot.teleports.enable(teleport)
+                                do_save = True
+
+                    if args.map_enable:
+                        for map_var in sorted(args.map_enable):
+                            if map_var not in slot.quest_state.enabled:
+                                print(f'{slot_label}: Enabling map unlock: {map_var}')
+                                slot.quest_state.enable(map_var)
+                                do_save = True
+
+                    if args.reveal_map:
+                        print(f'{slot_label}: Revealing entire minimap')
+                        slot.minimap.fill_map()
+                        do_save = True
+
+                    if args.clear_map:
+                        print(f'{slot_label}: Clearing entire minimap')
+                        slot.minimap.clear_map(playable_only=False)
+                        do_save = True
+
+                    if args.clear_pencil:
+                        print(f'{slot_label}: Clearing all minimap pencil drawings')
+                        slot.pencilmap.clear_map(playable_only=False)
+                        do_save = True
+
+                    if args.clear_stamps:
+                        print(f'{slot_label}: Clearing all minimap stamps')
+                        slot.stamps.clear()
+                        do_save = True
+
+                    if args.mural_clear:
+                        print(f'{slot_label}: Clearing all mural pixels')
+                        slot.mural.clear()
+                        do_save = True
+
+                    if args.mural_default:
+                        print(f'{slot_label}: Setting mural to its default state')
+                        slot.mural.to_default()
+                        do_save = True
+
+                    if args.mural_solved:
+                        print(f'{slot_label}: Setting mural to its solved state (NOTE: you will need to activate one pixel to get the door to open)')
+                        slot.mural.to_solved()
+                        do_save = True
+
+                    if args.upgrade_wand:
+                        if QuestState.BB_WAND not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Upgrading B. Wand')
+                            slot.quest_state.enable(QuestState.BB_WAND)
+                            do_save = True
+
+                    if args.downgrade_wand:
+                        if QuestState.BB_WAND in slot.quest_state.enabled:
+                            print(f'{slot_label}: Downgrading B.B. Wand')
+                            slot.quest_state.disable(QuestState.BB_WAND)
+                            do_save = True
+
+                    if args.egg65_enable:
+                        if QuestState.EGG_65 not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Unlocking Egg 65')
+                            slot.quest_state.enable(QuestState.EGG_65)
+                            do_save = True
+
+                    if args.egg65_disable:
+                        if QuestState.EGG_65 in slot.quest_state.enabled:
+                            print(f'{slot_label}: Removing Egg 65')
+                            slot.quest_state.disable(QuestState.EGG_65)
+                            do_save = True
+
+                    if args.cring_enable:
+                        if QuestState.CRING not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Unlocking C. Ring')
+                            slot.quest_state.enable(QuestState.CRING)
+                            do_save = True
+
+                    if args.cring_disable:
+                        if QuestState.CRING in slot.quest_state.enabled:
+                            print(f'{slot_label}: Removing C. Ring')
+                            slot.quest_state.disable(QuestState.CRING)
+                            do_save = True
+
+                    for arg, status in [
+                            (args.flame_collect, FlameState.COLLECTED),
+                            (args.flame_use, FlameState.USED),
+                            ]:
+                        if arg:
+                            if 'all' in arg:
+                                flames = slot.flames
+                            else:
+                                flames = []
+                                for letter in arg:
+                                    flames.append(slot.flames[letter])
+                            for flame in flames:
+                                print(f'{slot_label}: Updating {flame.name} status to: {status}')
+                                flame.value = status
+                            do_save = True
+
+                    # Fix game state for Disc / Mock Disc, if we're modifying those,
+                    # unless told otherwise.  See:
+                    # https://docs.google.com/spreadsheets/d/1HXG7iUJMF4kKN4oZjtEN8KkaN-RdC6qa3zK74F7bHm0/edit?usp=sharing
+                    if doing_disc_actions and args.fix_disc_state:
+
+                        do_save = True
+
+                        if Inventory.MOCK_DISC in slot.inventory.enabled \
+                                and Equipment.DISC in slot.equipment.enabled:
+
+                            # Both Disc + Mock Disc
+                            print(textwrap.dedent("""
+                                *** ERROR ***
+
+                                This slot would have both Disc and Mock Disc active in your inventory,
+                                which is not a valid gamestate and can lead to weird behavior depending on
+                                what the actual quest state is.  By default, this editor prevents writing
+                                that combination, so the savegame edits have been aborted.
+
+                                To allow that combination of items anyway, re-run the command with the
+                                following argument added:
+
+                                    --dont-fix-disc-state
+
+                                *** ERROR ***
+                                """))
+                            return False
+
+                        elif Inventory.MOCK_DISC in slot.inventory.enabled:
+
+                            # Just the Mock Disc.  Ony one valid state here
+                            print(f'{slot_label}: Fixing Disc Quest State to accomodate Mock Disc in inventory.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                            slot.quest_state.enable(QuestState.STATUE_NO_DISC)
+                            slot.quest_state.enable(QuestState.SHRINE_NO_DISC)
+
+                        elif Equipment.DISC in slot.equipment.enabled:
+
+                            # Just the Disc.  A couple valid states here
+                            if args.prefer_disc_shrine_state:
+                                print(f'{slot_label}: Fixing Disc Quest State to Moved-to-shrine status.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                                slot.quest_state.enable(QuestState.STATUE_NO_DISC)
+                                slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
+                            else:
+                                print(f'{slot_label}: Fixing Disc Quest State to initial swap status.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                                slot.quest_state.disable(QuestState.STATUE_NO_DISC)
+                                slot.quest_state.enable(QuestState.SHRINE_NO_DISC)
+
+                        else:
+
+                            # Neither!  Technically there are two valid states for
+                            # this -- you can replace the disc at its original location
+                            # after having the Mock Disc in the shrine.  We're going to
+                            # ignore that possiblity, though, and just essentially
+                            # revert to the game-start state.
+                            print(f'{slot_label}: Fixing Disc Quest State to game-start conditions.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                            slot.quest_state.disable(QuestState.STATUE_NO_DISC)
+                            slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
+
+                    # Doing Quest State alterations down here since we'd probably
+                    # want to allow the user to manually override our disc-related
+                    # states.
+                    if args.quest_state_disable:
+                        for quest_state in sorted(args.quest_state_disable):
+                            if quest_state in slot.quest_state.enabled:
+                                print(f'{slot_label}: Disabling quest state: {quest_state}')
+                                slot.quest_state.disable(quest_state)
+                                do_save = True
+
+                    if args.quest_state_enable:
+                        for quest_state in sorted(args.quest_state_enable):
+                            if quest_state not in slot.quest_state.enabled:
+                                print(f'{slot_label}: Enabling quest state: {quest_state}')
+                                slot.quest_state.enable(quest_state)
+                                do_save = True
+
+                else:
+                    # If we don't actually have any slot data, don't bother doing anything
                     if args.info:
                         header = f'{slot_label}: No data!'
                         print('')
@@ -526,435 +998,25 @@ def main():
                         print('-'*len(header))
                     if do_slot_actions:
                         print(f'{slot_label}: No data detected, so slot modifications skipped')
-                    continue
 
-                # Show general slot info first, if we've been told to
-                if args.info:
-                    header = f'{slot_label}: {slot.timestamp}'
-                    print('')
-                    print(header)
-                    print('-'*len(header))
-                    print('')
-                    if slot.elapsed_ticks_ingame == slot.elapsed_ticks_withpause:
-                        print(f' - Elapsed Time: {slot.elapsed_ticks_withpause}')
-                    else:
-                        print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
-                    print(f' - Saved in Room: {slot.spawn_room}')
-                    if slot.gold_hearts > 0:
-                        if slot.gold_hearts == 1:
-                            plural = ''
+                # Finally, if we've been told to export slot data, do so now
+                if args.export_slot:
+                    print(f'{slot_label}: Exporting slot data to: {args.export_slot}')
+                    do_write = True
+                    if os.path.exists(args.export_slot):
+                        if args.force:
+                            print('NOTICE: Overwriting existing file!')
                         else:
-                            plural = 's'
-                        print(f' - Health: {slot.health} ({slot.gold_hearts} gold heart{plural})')
+                            do_write = False
+                            response = input(f'WARNING: Filename "{args.export_slot}" already exists.  Overwrite? (y/N)> ')
+                            if response.strip().lower()[:1] == 'y':
+                                do_write = True
+                    if do_write:
+                        with open(args.export_slot, 'wb') as df:
+                            df.write(slot.export_data())
+                        print('Slot data exported!')
                     else:
-                        print(f' - Health: {slot.health}')
-                    print(f' - Counters:')
-                    print(f'   - Steps: {slot.num_steps:,}')
-                    print(f'   - Times Saved: {slot.num_saves}')
-                    print(f'   - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
-                    print(f'   - Firecrackers Collected: {slot.firecrackers_collected}')
-                    print(f'   - Bubbles Popped: {slot.bubbles_popped}')
-                    print(f' - Consumables Inventory:')
-                    print(f'   - Firecrackers: {slot.firecrackers}')
-                    print(f'   - Keys: {slot.keys}')
-                    print(f'   - Matches: {slot.matches}')
-                    if slot.equipment.enabled:
-                        print(' - Equipment Unlocked:')
-                        for equip in sorted(slot.equipment.enabled):
-                            print(f'   - {equip}')
-                        print(f' - Selected Equipment: {slot.selected_equipment}')
-                    if slot.inventory.enabled:
-                        print(' - Inventory Unlocked:')
-                        for inv in sorted(slot.inventory.enabled):
-                            print(f'   - {inv}')
-                    print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
-                    for egg in sorted(slot.eggs.enabled):
-                        print(f'   - {egg}')
-                    if len(slot.bunnies.enabled) > 0:
-                        print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
-                        for bunny in sorted(slot.bunnies.enabled):
-                            print(f'   - {bunny}')
-                    if slot.quest_state.enabled:
-                        print(f' - Quest State Flags:')
-                        for state in sorted(slot.quest_state.enabled):
-                            print(f'   - {state}')
-                    if any([flame.choice != FlameState.SEALED for flame in slot.flames]):
-                        print(f' - Flame States:')
-                        for flame in slot.flames:
-                            print(f'   - {flame.name}: {flame}')
-                    print(f' - Transient Map Data:')
-                    print(f'   - Fruit Picked: {slot.picked_fruit}')
-                    print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
-                    print(f'   - Ghosts Scared: {slot.ghosts_scared}')
-                    if QuestState.UNLOCK_STAMPS in slot.quest_state.enabled:
-                        print(f'   - Minimap Stamps: {len(slot.stamps)}')
-                    print(f' - Permanent Map Data:')
-                    print(f'   - Squirrels Scared: {slot.squirrels_scared}')
-                    print(f'   - Chests Opened: {slot.chests_opened}')
-                    print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
-                    print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
-                    print(f'   - Detonators Triggered: {slot.detonators_triggered}')
-                    print(f'   - Walls Blasted: {slot.walls_blasted}')
-                    if slot.teleports.enabled:
-                        print(f' - Teleports Active: {len(slot.teleports.enabled)}')
-                        for teleport in sorted(slot.teleports.enabled):
-                            print(f'   - {teleport}')
-
-                    if do_slot_actions:
-                        print('')
-
-                # Keep track of if we're modifying any disc equipment
-                doing_disc_actions = False
-
-                if args.health:
-                    print(f'{slot_label}: Updating health to: {args.health}')
-                    slot.health.value = args.health
-                    do_save = True
-
-                if args.gold_hearts:
-                    print(f'{slot_label}: Updating gold hearts count to: {args.gold_hearts}')
-                    slot.gold_hearts.value = args.gold_hearts
-                    do_save = True
-
-                if args.spawn:
-                    print(f'{slot_label}: Setting spawnpoint to ({args.spawn.x}, {args.spawn.y})')
-                    slot.spawn_room.x.value = args.spawn.x
-                    slot.spawn_room.y.value = args.spawn.y
-                    do_save = True
-
-                if args.steps is not None:
-                    print(f'{slot_label}: Updating steps taken to: {args.steps}')
-                    slot.num_steps.value = args.steps
-                    do_save = True
-
-                if args.deaths is not None:
-                    print(f'{slot_label}: Updating death count to: {args.deaths}')
-                    slot.num_deaths.value = args.deaths
-                    do_save = True
-
-                if args.saves is not None:
-                    print(f'{slot_label}: Updating save count to: {args.saves}')
-                    slot.num_saves.value = args.saves
-                    do_save = True
-
-                if args.bubbles_popped is not None:
-                    print(f'{slot_label}: Updating bubbles-popped count to: {args.bubbles_popped}')
-                    slot.bubbles_popped.value = args.bubbles_popped
-                    do_save = True
-
-                if args.egg_enable:
-                    for egg in sorted(args.egg_enable):
-                        if egg not in slot.eggs.enabled:
-                            print(f'{slot_label}: Enabling egg: {egg}')
-                            slot.eggs.enable(egg)
-                            do_save = True
-
-                if args.bunny_disable:
-                    for bunny in sorted(args.bunny_disable):
-                        if bunny in slot.bunnies.enabled:
-                            print(f'{slot_label}: Disabling bunny: {bunny}')
-                            slot.bunnies.disable(bunny)
-                            do_save = True
-
-                if args.bunny_enable:
-                    for bunny in sorted(args.bunny_enable):
-                        if bunny not in slot.bunnies.enabled:
-                            print(f'{slot_label}: Enabling bunny: {bunny}')
-                            slot.bunnies.enable(bunny)
-                            do_save = True
-
-                if args.respawn_consumables:
-                    print(f'{slot_label}: Respawning fruit and firecrackers')
-                    slot.picked_fruit.clear()
-                    slot.picked_firecrackers.clear()
-                    do_save = True
-
-                if args.clear_ghosts:
-                    print(f'{slot_label}: Clearing ghosts')
-                    slot.ghosts_scared.fill()
-                    do_save = True
-
-                if args.respawn_ghosts:
-                    print(f'{slot_label}: Respawning ghosts')
-                    slot.ghosts_scared.clear()
-                    do_save = True
-
-                if args.respawn_squirrels:
-                    print(f'{slot_label}: Respawning squirrels')
-                    slot.squirrels_scared.clear()
-                    do_save = True
-
-                if args.keys is not None:
-                    print(f'{slot_label}: Updating key count to: {args.keys}')
-                    slot.keys.value = args.keys
-                    do_save = True
-
-                if args.matches is not None:
-                    print(f'{slot_label}: Updating match count to: {args.matches}')
-                    slot.matches.value = args.matches
-                    do_save = True
-
-                if args.light_candles:
-                    for candle in sorted(args.light_candles):
-                        if candle not in slot.candles.enabled:
-                            print(f'{slot_label}: Lighting candle: {candle}')
-                            slot.candles.enable(candle)
-                            do_save = True
-
-                if args.firecrackers is not None:
-                    print(f'{slot_label}: Updating firecracker count to: {args.firecrackers}')
-                    slot.firecrackers.value = args.firecrackers
-                    do_save = True
-                    if args.firecrackers > 0 and Equipment.FIRECRACKER not in slot.equipment.enabled:
-                        if args.equip_enable is None:
-                            args.equip_enable = set()
-                        args.equip_enable.add(Equipment.FIRECRACKER)
-
-                changed_equipment = False
-
-                if args.equip_enable:
-                    for equip in sorted(args.equip_enable):
-                        if equip not in slot.equipment.enabled:
-                            print(f'{slot_label}: Enabling equipment: {equip}')
-                            slot.equipment.enable(equip)
-                            changed_equipment = True
-                            do_save = True
-                        if equip == Equipment.DISC:
-                            doing_disc_actions = True
-
-                if args.equip_disable:
-                    for equip in sorted(args.equip_disable):
-                        if equip in slot.equipment.enabled:
-                            print(f'{slot_label}: Disabling equipment: {equip}')
-                            slot.equipment.disable(equip)
-                            changed_equipment = True
-                            do_save = True
-                        if equip == Equipment.DISC:
-                            doing_disc_actions = True
-
-                # If we changed enabled equipment, we may need to change the currently-
-                # selected equipment field as well.
-                if changed_equipment:
-                    if len(slot.equipment.enabled) == 0:
-                        # If there's no equipment enabled, just revert our current selection to None
-                        print(f'{slot_label}: Setting currently-equipped item to none')
-                        slot.selected_equipment.value = Equipped.NONE
-                    else:
-                        # Otherwise, we may need to update.  Create a couple mappings between these
-                        # two enums so we can update our selected equipment if need be.
-                        equipped_to_equipment = {}
-                        equipment_to_equipped = {}
-                        for item in Equipped:
-                            try:
-                                equipped_to_equipment[item] = Equipment[item.name]
-                            except KeyError:
-                                pass
-                        for item in Equipment:
-                            try:
-                                equipment_to_equipped[item] = Equipped[item.name]
-                            except KeyError:
-                                pass
-                        if slot.selected_equipment.choice == Equipped.NONE \
-                                or equipped_to_equipment[slot.selected_equipment.choice] not in slot.equipment.enabled:
-                            # Enable the first equipment we have (alphabetically)
-                            to_equip = equipment_to_equipped[sorted(slot.equipment.enabled)[0]]
-                            print(f'{slot_label}: Setting currently-equipped item to: {to_equip}')
-                            slot.selected_equipment.value = to_equip
-
-                if args.inventory_disable:
-                    for inv in sorted(args.inventory_disable):
-                        if inv in slot.inventory.enabled:
-                            print(f'{slot_label}: Disabling inventory item: {inv}')
-                            slot.inventory.disable(inv)
-                            do_save = True
-                        if inv == Inventory.MOCK_DISC:
-                            doing_disc_actions = True
-
-                if args.inventory_enable:
-                    for inv in sorted(args.inventory_enable):
-                        if inv not in slot.inventory.enabled:
-                            print(f'{slot_label}: Enabling inventory item: {inv}')
-                            slot.inventory.enable(inv)
-                            do_save = True
-                        if inv == Inventory.MOCK_DISC:
-                            doing_disc_actions = True
-
-                if args.teleport_enable:
-                    for teleport in sorted(args.teleport_enable):
-                        if teleport not in slot.teleports.enabled:
-                            print(f'{slot_label}: Enabling teleport: {teleport}')
-                            slot.teleports.enable(teleport)
-                            do_save = True
-
-                if args.map_enable:
-                    for map_var in sorted(args.map_enable):
-                        if map_var not in slot.quest_state.enabled:
-                            print(f'{slot_label}: Enabling map unlock: {map_var}')
-                            slot.quest_state.enable(map_var)
-                            do_save = True
-
-                if args.reveal_map:
-                    print(f'{slot_label}: Revealing entire minimap')
-                    slot.minimap.fill_map()
-                    do_save = True
-
-                if args.clear_map:
-                    print(f'{slot_label}: Clearing entire minimap')
-                    slot.minimap.clear_map(playable_only=False)
-                    do_save = True
-
-                if args.clear_pencil:
-                    print(f'{slot_label}: Clearing all minimap pencil drawings')
-                    slot.pencilmap.clear_map(playable_only=False)
-                    do_save = True
-
-                if args.clear_stamps:
-                    print(f'{slot_label}: Clearing all minimap stamps')
-                    slot.stamps.clear()
-                    do_save = True
-
-                if args.mural_clear:
-                    print(f'{slot_label}: Clearing all mural pixels')
-                    slot.mural.clear()
-                    do_save = True
-
-                if args.mural_default:
-                    print(f'{slot_label}: Setting mural to its default state')
-                    slot.mural.to_default()
-                    do_save = True
-
-                if args.mural_solved:
-                    print(f'{slot_label}: Setting mural to its solved state (NOTE: you will need to activate one pixel to get the door to open)')
-                    slot.mural.to_solved()
-                    do_save = True
-
-                if args.upgrade_wand:
-                    if QuestState.BB_WAND not in slot.quest_state.enabled:
-                        print(f'{slot_label}: Upgrading B. Wand')
-                        slot.quest_state.enable(QuestState.BB_WAND)
-                        do_save = True
-
-                if args.downgrade_wand:
-                    if QuestState.BB_WAND in slot.quest_state.enabled:
-                        print(f'{slot_label}: Downgrading B.B. Wand')
-                        slot.quest_state.disable(QuestState.BB_WAND)
-                        do_save = True
-
-                if args.egg65_enable:
-                    if QuestState.EGG_65 not in slot.quest_state.enabled:
-                        print(f'{slot_label}: Unlocking Egg 65')
-                        slot.quest_state.enable(QuestState.EGG_65)
-                        do_save = True
-
-                if args.egg65_disable:
-                    if QuestState.EGG_65 in slot.quest_state.enabled:
-                        print(f'{slot_label}: Removing Egg 65')
-                        slot.quest_state.disable(QuestState.EGG_65)
-                        do_save = True
-
-                if args.cring_enable:
-                    if QuestState.CRING not in slot.quest_state.enabled:
-                        print(f'{slot_label}: Unlocking C. Ring')
-                        slot.quest_state.enable(QuestState.CRING)
-                        do_save = True
-
-                if args.cring_disable:
-                    if QuestState.CRING in slot.quest_state.enabled:
-                        print(f'{slot_label}: Removing C. Ring')
-                        slot.quest_state.disable(QuestState.CRING)
-                        do_save = True
-
-                for arg, status in [
-                        (args.flame_collect, FlameState.COLLECTED),
-                        (args.flame_use, FlameState.USED),
-                        ]:
-                    if arg:
-                        if 'all' in arg:
-                            flames = slot.flames
-                        else:
-                            flames = []
-                            for letter in arg:
-                                flames.append(slot.flames[letter])
-                        for flame in flames:
-                            print(f'{slot_label}: Updating {flame.name} status to: {status}')
-                            flame.value = status
-                        do_save = True
-
-                # Fix game state for Disc / Mock Disc, if we're modifying those,
-                # unless told otherwise.  See:
-                # https://docs.google.com/spreadsheets/d/1HXG7iUJMF4kKN4oZjtEN8KkaN-RdC6qa3zK74F7bHm0/edit?usp=sharing
-                if doing_disc_actions and args.fix_disc_state:
-
-                    do_save = True
-
-                    if Inventory.MOCK_DISC in slot.inventory.enabled \
-                            and Equipment.DISC in slot.equipment.enabled:
-
-                        # Both Disc + Mock Disc
-                        print(textwrap.dedent("""
-                            *** ERROR ***
-
-                            This slot would have both Disc and Mock Disc active in your inventory,
-                            which is not a valid gamestate and can lead to weird behavior depending on
-                            what the actual quest state is.  By default, this editor prevents writing
-                            that combination, so the savegame edits have been aborted.
-
-                            To allow that combination of items anyway, re-run the command with the
-                            following argument added:
-
-                                --dont-fix-disc-state
-
-                            *** ERROR ***
-                            """))
-                        return False
-
-                    elif Inventory.MOCK_DISC in slot.inventory.enabled:
-
-                        # Just the Mock Disc.  Ony one valid state here
-                        print(f'{slot_label}: Fixing Disc Quest State to accomodate Mock Disc in inventory.  (Specify --dont-fix-disc-state to disable this behavior.)')
-                        slot.quest_state.enable(QuestState.STATUE_NO_DISC)
-                        slot.quest_state.enable(QuestState.SHRINE_NO_DISC)
-
-                    elif Equipment.DISC in slot.equipment.enabled:
-
-                        # Just the Disc.  A couple valid states here
-                        if args.prefer_disc_shrine_state:
-                            print(f'{slot_label}: Fixing Disc Quest State to Moved-to-shrine status.  (Specify --dont-fix-disc-state to disable this behavior.)')
-                            slot.quest_state.enable(QuestState.STATUE_NO_DISC)
-                            slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
-                        else:
-                            print(f'{slot_label}: Fixing Disc Quest State to initial swap status.  (Specify --dont-fix-disc-state to disable this behavior.)')
-                            slot.quest_state.disable(QuestState.STATUE_NO_DISC)
-                            slot.quest_state.enable(QuestState.SHRINE_NO_DISC)
-
-                    else:
-
-                        # Neither!  Technically there are two valid states for
-                        # this -- you can replace the disc at its original location
-                        # after having the Mock Disc in the shrine.  We're going to
-                        # ignore that possiblity, though, and just essentially
-                        # revert to the game-start state.
-                        print(f'{slot_label}: Fixing Disc Quest State to game-start conditions.  (Specify --dont-fix-disc-state to disable this behavior.)')
-                        slot.quest_state.disable(QuestState.STATUE_NO_DISC)
-                        slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
-
-                # Doing Quest State alterations down here since we'd probably
-                # want to allow the user to manually override our disc-related
-                # states.
-                if args.quest_state_disable:
-                    for quest_state in sorted(args.quest_state_disable):
-                        if quest_state in slot.quest_state.enabled:
-                            print(f'{slot_label}: Disabling quest state: {quest_state}')
-                            slot.quest_state.disable(quest_state)
-                            do_save = True
-
-                if args.quest_state_enable:
-                    for quest_state in sorted(args.quest_state_enable):
-                        if quest_state not in slot.quest_state.enabled:
-                            print(f'{slot_label}: Enabling quest state: {quest_state}')
-                            slot.quest_state.enable(quest_state)
-                            do_save = True
-
+                        print('NOTICE: Slot data NOT exported')
 
         if args.info:
             print('')

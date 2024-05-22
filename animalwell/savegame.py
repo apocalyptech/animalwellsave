@@ -731,13 +731,23 @@ class Slot():
     stored.
     """
 
+    TOTAL_BYTES = 159_760
+
     def __init__(self, savegame, index, offset):
         self.savegame = savegame
         self.index = index
         self.df = self.savegame.df
         self.offset = offset
         self.has_data = False
-        self.df.seek(offset)
+
+        # Actually load in all the data
+        self._parse()
+
+    def _parse(self):
+        """
+        Parses our slot structure
+        """
+        self.df.seek(self.offset)
 
         self.timestamp = Timestamp(self)
         # If the timestamp is all zeroes, assume that the slot is empty
@@ -796,6 +806,23 @@ class Slot():
         self.destructionmap = Minimap(self, 0x1A06E)
 
         self.mural = Mural(self, 0x26EAF)
+
+    def export_data(self):
+        """
+        Reads in all current slot data as a single bytestring
+        """
+        self.df.seek(self.offset)
+        return self.df.read(Slot.TOTAL_BYTES)
+
+    def import_data(self, data):
+        """
+        Overwrites slot data with the specified bytestring
+        """
+        if len(data) != Slot.TOTAL_BYTES:
+            raise RuntimeError(f'imported slot data must be exactly {Slot.TOTAL_BYTES} bytes')
+        self.df.seek(self.offset)
+        self.df.write(data)
+        self._parse()
 
 
 class Savegame():
