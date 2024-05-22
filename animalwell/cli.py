@@ -134,6 +134,12 @@ def main():
             help='Show known information about the save',
             )
 
+    parser.add_argument('--fix', '--fix-checksum',
+            action='store_true',
+            dest='fix_checksum',
+            help='Update the savegame checksum, even if no other edit actions have been specified.',
+            )
+
     parser.add_argument('-s', '--slot',
             choices=[0, 1, 2, 3],
             type=int,
@@ -501,6 +507,9 @@ def main():
             print('-'*len(header))
             print('')
             print(f' - Checksum: 0x{save.checksum:02X}')
+
+        if args.fix_checksum:
+            do_save = True
 
         # Process slots, if we've been told to
         if loop_into_slots:
