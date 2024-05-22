@@ -20,6 +20,7 @@ import os
 import sys
 import enum
 import argparse
+import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, Teleport, \
         QuestState, FlameState, CandleState
@@ -104,6 +105,10 @@ class CoordAction(argparse.Action):
 
 
 def main():
+    """
+    Main CLI app.  Returns `True` if a file was saved out, or `False`
+    otherwise.
+    """
 
     parser = argparse.ArgumentParser(
             description='CLI Animal Well Savegame Editor',
@@ -344,6 +349,30 @@ def main():
             help='Disable C. Ring',
             )
 
+    parser.add_argument('--dont-fix-disc-state',
+            dest='fix_disc_state',
+            action='store_false',
+            help="""
+                When enabling the Disc (in equipment) or Mock Disc (in inventory), this
+                utility will attempt to normalize the game's quest variables to prevent
+                ghost dog spawning and other progression weirdness.  To avoid making these
+                corrections, specify this argument.  Without this option, the utility will
+                *not* allow you to enable both the Disc and Mock Disc at the same time,
+                since there is no valid game state with that combination.
+                """,
+            )
+
+    parser.add_argument('--prefer-disc-shrine-state',
+            action='store_true',
+            help="""
+                When enabling the Disc equipment, with fixing disc state enabled (see
+                `--dont-fix-disc-state` option above), by default this utility will set
+                the game state to having swapped the Mock Disc at the first statue.  To
+                instead fix the state to having moved the Mock Disc to the M. Disc
+                Shrine, specify this option.
+                """,
+            )
+
     parser.add_argument('filename',
             nargs=1,
             type=str,
@@ -518,6 +547,9 @@ def main():
                     if do_slot_actions:
                         print('')
 
+                # Keep track of if we're modifying any disc equipment
+                doing_disc_actions = False
+
                 if args.health:
                     print(f'{slot_label}: Updating health to: {args.health}')
                     slot.health.value = args.health
@@ -631,6 +663,8 @@ def main():
                             slot.equipment.enable(equip)
                             changed_equipment = True
                             do_save = True
+                        if equip == Equipment.DISC:
+                            doing_disc_actions = True
 
                 if args.equip_disable:
                     for equip in sorted(args.equip_disable):
@@ -639,6 +673,8 @@ def main():
                             slot.equipment.disable(equip)
                             changed_equipment = True
                             do_save = True
+                        if equip == Equipment.DISC:
+                            doing_disc_actions = True
 
                 # If we changed enabled equipment, we may need to change the currently-
                 # selected equipment field as well.
@@ -675,6 +711,8 @@ def main():
                             print(f'{slot_label}: Disabling inventory item: {inv}')
                             slot.inventory.disable(inv)
                             do_save = True
+                        if inv == Inventory.MOCK_DISC:
+                            doing_disc_actions = True
 
                 if args.inventory_enable:
                     for inv in sorted(args.inventory_enable):
@@ -682,6 +720,8 @@ def main():
                             print(f'{slot_label}: Enabling inventory item: {inv}')
                             slot.inventory.enable(inv)
                             do_save = True
+                        if inv == Inventory.MOCK_DISC:
+                            doing_disc_actions = True
 
                 if args.teleport_enable:
                     for teleport in sorted(args.teleport_enable):
@@ -784,6 +824,65 @@ def main():
                             flame.value = status
                         do_save = True
 
+                # Fix game state for Disc / Mock Disc, if we're modifying those,
+                # unless told otherwise.  See:
+                # https://docs.google.com/spreadsheets/d/1HXG7iUJMF4kKN4oZjtEN8KkaN-RdC6qa3zK74F7bHm0/edit?usp=sharing
+                if doing_disc_actions and args.fix_disc_state:
+
+                    do_save = True
+
+                    if Inventory.MOCK_DISC in slot.inventory.enabled \
+                            and Equipment.DISC in slot.equipment.enabled:
+
+                        # Both Disc + Mock Disc
+                        print(textwrap.dedent("""
+                            *** ERROR ***
+
+                            This slot would have both Disc and Mock Disc active in your inventory,
+                            which is not a valid gamestate and can lead to weird behavior depending on
+                            what the actual quest state is.  By default, this editor prevents writing
+                            that combination, so the savegame edits have been aborted.
+
+                            To allow that combination of items anyway, re-run the command with the
+                            following argument added:
+
+                                --dont-fix-disc-state
+
+                            *** ERROR ***
+                            """))
+                        return False
+
+                    elif Inventory.MOCK_DISC in slot.inventory.enabled:
+
+                        # Just the Mock Disc.  Ony one valid state here
+                        print(f'{slot_label}: Fixing Disc Quest State to accomodate Mock Disc in inventory.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                        slot.quest_state.enable(QuestState.STATUE_NO_DISC)
+                        slot.quest_state.enable(QuestState.SHRINE_NO_DISC)
+
+                    elif Equipment.DISC in slot.equipment.enabled:
+
+                        # Just the Disc.  A couple valid states here
+                        if args.prefer_disc_shrine_state:
+                            print(f'{slot_label}: Fixing Disc Quest State to Moved-to-shrine status.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                            slot.quest_state.enable(QuestState.STATUE_NO_DISC)
+                            slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
+                        else:
+                            print(f'{slot_label}: Fixing Disc Quest State to initial swap status.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                            slot.quest_state.disable(QuestState.STATUE_NO_DISC)
+                            slot.quest_state.enable(QuestState.SHRINE_NO_DISC)
+
+                    else:
+
+                        # Neither!  Technically there are two valid states for
+                        # this -- you can replace the disc at its original location
+                        # after having the Mock Disc in the shrine.  We're going to
+                        # ignore that possiblity, though, and just essentially
+                        # revert to the game-start state.
+                        print(f'{slot_label}: Fixing Disc Quest State to game-start conditions.  (Specify --dont-fix-disc-state to disable this behavior.)')
+                        slot.quest_state.disable(QuestState.STATUE_NO_DISC)
+                        slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
+
+
         if args.info:
             print('')
 
@@ -791,6 +890,9 @@ def main():
         if do_save:
             save.save()
             print(f'Wrote changes!  New checksum: 0x{save.checksum:02X}')
+            return True
+        else:
+            return False
 
 if __name__ == '__main__':
     main()

@@ -99,14 +99,19 @@ class QuestState(LabelEnum):
     UNLOCK_PENCIL =      (0x00000800, 'Pencil Unlocked')
     DEFEATED_CHAMELEON = (0x00001000, 'Defeated Chameleon')
     CRING =              (0x00002000, "Cheater's Ring")
+    USED_S_MEDAL =       (0x00008000, "Inserted S. Medal")
     # Eh, don't bother with this one
     #WOKE_UP =            (0x00040000, 'Woke Up (start of game)')
     BB_WAND =            (0x00080000, 'B.B. Wand Upgrade')
     EGG_65 =             (0x00100000, 'Egg 65')
+    USED_E_MEDAL =       (0x00200000, 'Inserted E. Medal')
     DEFEATED_BAT =       (0x01000000, 'Defeated Bat')
-    # TODO: Figure out what this one actaully means
-    OSTRICH_STARTED =    (0x02000000, 'Wheel Ostrich Started') #?
+    FREED_OSTRICH =      (0x02000000, 'Freed Wheel Ostrich')
     DEFEATED_OSTRICH =   (0x04000000, 'Defeated Wheel Ostrich')
+    FIGHTING_EEL =       (0x08000000, 'Fighting Eel')
+    DEFEATED_EEL =       (0x10000000, 'Defeated Eel')
+    SHRINE_NO_DISC =     (0x20000000, 'No Disc in Dog Shrine')
+    STATUE_NO_DISC =     (0x40000000, 'No Disc in Ghost Dog Head')
 
 
 class Egg(LabelEnum):
