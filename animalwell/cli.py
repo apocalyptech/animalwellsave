@@ -349,6 +349,30 @@ def main():
             help='Disable C. Ring',
             )
 
+    parser.add_argument('--quest-state-enable',
+            type=QuestState,
+            action=EnumSetAction,
+            help="""
+                Enable the specified quest state flag.  These are generally not
+                recommended to mess with by hand -- various flags in here are
+                already wrapped up in dedicated arguments.  Messing with them
+                could cause strange behavior ingame.  Caveat emptor!  Can be
+                specified more than once, or use 'all' to enable all.
+                """,
+            )
+
+    parser.add_argument('--quest-state-disable',
+            type=QuestState,
+            action=EnumSetAction,
+            help="""
+                Disable the specified quest state flag.  These are generally not
+                recommended to mess with by hand -- various flags in here are
+                already wrapped up in dedicated arguments.  Messing with them
+                could cause strange behavior ingame.  Caveat emptor!  Can be
+                specified more than once, or use 'all' to disable all.
+                """,
+            )
+
     parser.add_argument('--dont-fix-disc-state',
             dest='fix_disc_state',
             action='store_false',
@@ -358,7 +382,9 @@ def main():
                 ghost dog spawning and other progression weirdness.  To avoid making these
                 corrections, specify this argument.  Without this option, the utility will
                 *not* allow you to enable both the Disc and Mock Disc at the same time,
-                since there is no valid game state with that combination.
+                since there is no valid game state with that combination.  Note that the
+                quest state alterations happen *after* this fix, so you can also manually
+                set those flags with that option.
                 """,
             )
 
@@ -438,6 +464,8 @@ def main():
             args.bunny_enable,
             args.bunny_disable,
             args.bubbles_popped,
+            args.quest_state_enable,
+            args.quest_state_disable,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -881,6 +909,23 @@ def main():
                         print(f'{slot_label}: Fixing Disc Quest State to game-start conditions.  (Specify --dont-fix-disc-state to disable this behavior.)')
                         slot.quest_state.disable(QuestState.STATUE_NO_DISC)
                         slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
+
+                # Doing Quest State alterations down here since we'd probably
+                # want to allow the user to manually override our disc-related
+                # states.
+                if args.quest_state_disable:
+                    for quest_state in sorted(args.quest_state_disable):
+                        if quest_state in slot.quest_state.enabled:
+                            print(f'{slot_label}: Disabling quest state: {quest_state}')
+                            slot.quest_state.disable(quest_state)
+                            do_save = True
+
+                if args.quest_state_enable:
+                    for quest_state in sorted(args.quest_state_enable):
+                        if quest_state not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Enabling quest state: {quest_state}')
+                            slot.quest_state.enable(quest_state)
+                            do_save = True
 
 
         if args.info:
