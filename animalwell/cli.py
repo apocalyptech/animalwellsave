@@ -104,6 +104,21 @@ class CoordAction(argparse.Action):
         setattr(namespace, self.dest, Point(*parts))
 
 
+def delete_common_set_items(set1, set2):
+    """
+    Deletes any items in both set1 and set2 which appear in both sets.
+    Used to avoid doing flip-flopping when the same value is specified
+    in both an `enable` and `disable` option.  (Which presumably could
+    happen when using `all` with one of those and then a specific
+    override on the other.)
+    """
+    if set1 is None or set2 is None:
+        return
+    common = set1 & set2
+    set1 -= common
+    set2 -= common
+
+
 def main():
     """
     Main CLI app.  Returns `True` if a file was saved out, or `False`
@@ -414,6 +429,10 @@ def main():
         slot_indexes = [0, 1, 2]
     else:
         slot_indexes = [args.slot-1]
+    delete_common_set_items(args.bunny_enable, args.bunny_disable)
+    delete_common_set_items(args.equip_enable, args.equip_disable)
+    delete_common_set_items(args.inventory_enable, args.inventory_disable)
+    delete_common_set_items(args.quest_state_enable, args.quest_state_disable)
 
     # Find out if we have anything to do
     loop_into_slots = False
@@ -937,6 +956,8 @@ def main():
             print(f'Wrote changes!  New checksum: 0x{save.checksum:02X}')
             return True
         else:
+            if do_slot_actions:
+                print('No file modifications were necessary!')
             return False
 
 if __name__ == '__main__':
