@@ -296,7 +296,7 @@ class Unlockable(LabelEnum):
     CAT =          (0x00080, 'Cat Figurine')
     FISH =         (0x00100, 'Fish Figurine')
     DONKEY =       (0x00200, 'Donkey Figurine')
-    PENGUIN =      (0x00400, 'Penguin Figurine')
+    DECO_RABBIT =  (0x00400, 'Decorative Rabbit')
     MAMA_CHA =     (0x00800, 'mama cha')
     GIRAFFE =      (0x01000, 'Giraffe Figurine')
     INCENSE =      (0x02000, 'Incense Burner')
