@@ -23,7 +23,8 @@ import argparse
 import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, Teleport, \
-        QuestState, FlameState, CandleState
+        QuestState, FlameState, CandleState, \
+        has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -117,6 +118,27 @@ def delete_common_set_items(set1, set2):
     common = set1 & set2
     set1 -= common
     set2 -= common
+
+
+def check_file_overwrite(args, filename):
+    """
+    Checks to see if a file that we intend to write to exists.  If the --force
+    option has been specified, there will only be a printed alert about the
+    overwrite.  Otherwise, we will ask the user for confirmation.
+
+    Will return `True` if we should go ahead with the save, or `False`
+    otherwise.
+    """
+    do_write = True
+    if os.path.exists(filename):
+        if args.force:
+            print('NOTICE: Overwriting existing file!')
+        else:
+            do_write = False
+            response = input(f'WARNING: Filename "{filename}" already exists.  Overwrite? (y/N)> ')
+            if response.strip().lower()[:1] == 'y':
+                do_write = True
+    return do_write
 
 
 def main():
@@ -332,6 +354,41 @@ def main():
             help='Clears any stamps on the minimap',
             )
 
+    if has_image_support:
+
+        parser.add_argument('--pencil-image-export',
+                type=str,
+                metavar='FILENAME',
+                help="""
+                    Exports the current pencil minimap layer as an image with the specified filename.
+                    The image export will always be the "full" image size, not just the playable area.
+                    """,
+                )
+
+        parser.add_argument('--pencil-image-import',
+                type=str,
+                metavar='FILENAME',
+                help="""
+                    Import the specified image filename to the minimap "pencil" layer.  The image
+                    will be blindly resized to the minimap size without respect to aspect ratio.
+                    The usual import area is 800x528, or 640x352 when using `--pencil-image-playable`.
+                    The image will be converted to monochrome and dithered.  To prevent major
+                    artifacts when passing in pre-dithered monochrome images, be sure to use the
+                    exact image dimensions.
+                    """,
+                )
+
+        parser.add_argument('--pencil-image-playable',
+                action='store_false',
+                dest='pencil_image_full',
+                help='When importing an image to the pencil layer, only import into the playable area, rather than the entire map space.',
+                )
+
+        parser.add_argument('--pencil-image-invert',
+                action='store_true',
+                help='When importing an image to the pencil layer, invert the black/white pixels.',
+                )
+
     mural = parser.add_mutually_exclusive_group()
 
     mural.add_argument('--mural-clear',
@@ -494,6 +551,8 @@ def main():
             args.clear_map,
             args.clear_pencil,
             args.clear_stamps,
+            has_image_support and args.pencil_image_export,
+            has_image_support and args.pencil_image_import,
             args.mural_clear,
             args.mural_default,
             args.mural_solved,
@@ -847,6 +906,26 @@ def main():
                         slot.stamps.clear()
                         do_save = True
 
+                    if has_image_support:
+
+                        if args.pencil_image_import:
+                            print(f'{slot_label}: Importing image "{args.pencil_image_import}" to pencil minimap layer')
+                            slot.pencilmap.import_image(
+                                    args.pencil_image_import,
+                                    args.pencil_image_full,
+                                    args.pencil_image_invert,
+                                    )
+                            do_save = True
+
+                        if args.pencil_image_export:
+                            print(f'{slot_label}: Exporting pencil minimap layer to: {args.pencil_image_export}')
+                            if check_file_overwrite(args, args.pencil_image_export):
+                                slot.pencilmap.export_image(args.pencil_image_export)
+                                print('Image exported!')
+                            else:
+                                print('NOTICE: Pencil minimap data NOT exported')
+
+
                     if args.mural_clear:
                         print(f'{slot_label}: Clearing all mural pixels')
                         slot.mural.clear()
@@ -1002,16 +1081,7 @@ def main():
                 # Finally, if we've been told to export slot data, do so now
                 if args.export_slot:
                     print(f'{slot_label}: Exporting slot data to: {args.export_slot}')
-                    do_write = True
-                    if os.path.exists(args.export_slot):
-                        if args.force:
-                            print('NOTICE: Overwriting existing file!')
-                        else:
-                            do_write = False
-                            response = input(f'WARNING: Filename "{args.export_slot}" already exists.  Overwrite? (y/N)> ')
-                            if response.strip().lower()[:1] == 'y':
-                                do_write = True
-                    if do_write:
+                    if check_file_overwrite(args, args.export_slot):
                         with open(args.export_slot, 'wb') as df:
                             df.write(slot.export_data())
                         print('Slot data exported!')

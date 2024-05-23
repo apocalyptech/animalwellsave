@@ -28,6 +28,12 @@ from .datafile import UInt8, UInt16, UInt32, UInt64, \
         NumChoiceData, NumBitfieldData, BitCountData, \
         LabelEnum
 
+try:
+    from PIL import Image
+    has_image_support = True
+except ModuleNotFoundError:
+    has_image_support = False
+
 # Animal Well savegame descriptions / format
 
 class Equipped(LabelEnum):
@@ -510,6 +516,98 @@ class Minimap(Data):
         will be filled.
         """
         self.fill_map(playable_only=playable_only, fill_byte=b'\x00')
+
+    def import_image(self, filename, full_map=True, invert=False):
+        """
+        Imports the image stored `filename` into our minimap data.  This method
+        only really makes sense for the pencil layer, but it could theoretically
+        be used for the main layer as well.  By default, this will import the
+        image into the full minimap space (including "padding" rooms).  If
+        `full_map` is `False`, it will instead import to just the playable area.
+
+        The image will be rescaled to fit the available space without any
+        respect for aspect ratio, and then converted to monochrome with dithering
+        if needed.  A correctly-sized pre-dithered monochrome image can be passed
+        in to provide a 1:1 pixel mapping.
+
+        If `invert` is `True`, the import will invert pixels.
+
+        Image size for the full map is 800x528.  Image size for the playable area
+        is 640x352.
+        """
+        global has_image_support
+        if not has_image_support:
+            raise RuntimeError('Pillow module does not seem to be available; import_image is not usable')
+        if full_map:
+            dim_x = Minimap.ROOM_W*Minimap.MAP_ROOM_W
+            dim_y = Minimap.ROOM_H*Minimap.MAP_ROOM_H
+            row_skip = 0
+            start = 0
+        else:
+            dim_x = Minimap.ROOM_W*Minimap.MAP_PLAYABLE_ROOM_W
+            dim_y = Minimap.ROOM_H*Minimap.MAP_PLAYABLE_ROOM_H
+            row_skip = Minimap.MAP_BYTE_W-Minimap.MAP_PLAYABLE_BYTE_W
+            start = Minimap.ROOM_BYTE_W*Minimap.MAP_PLAYABLE_ROOM_START[0] + Minimap.MAP_BYTE_ROOM_H*Minimap.MAP_PLAYABLE_ROOM_START[1]
+
+        # Load the image
+        im = Image.open(filename)
+
+        # Resize if needed
+        if im.width != dim_x or im.height != dim_y:
+            im = im.resize((dim_x, dim_y))
+
+        # Convert to mono + dither, if needed
+        if im.mode != '1':
+            im = im.convert('1', dither=Image.Dither.FLOYDSTEINBERG)
+
+        # Now do the import.
+        # TODO: This is probably the least-efficient and terrible way to do this
+        self.df.seek(self.offset+start)
+        for y in range(im.height):
+            x = 0
+            for x0 in range(int(im.width/8)):
+                byte = 0
+                x += 8
+                for idx in range(8):
+                    x -= 1
+                    pixel = im.getpixel((x, y))
+                    if pixel > 0:
+                        pixel = 1
+                    if invert:
+                        if pixel == 1:
+                            pixel = 0
+                        else:
+                            pixel = 1
+                    byte <<= 1
+                    byte |= pixel
+                x += 8
+                self.df.write(struct.pack('<B', byte))
+            self.df.seek(row_skip, os.SEEK_CUR)
+
+    def export_image(self, filename):
+        """
+        Exports our monochrome image to the filename `filename`.  The format
+        should be dynamically decided by Pillow based on the filename
+        extension.  The export size is always the "full" minimap, including
+        the padded rooms.
+        """
+        global has_image_support
+        if not has_image_support:
+            raise RuntimeError('Pillow module does not seem to be available; export_image is not usable')
+        self.df.seek(self.offset)
+        raw_data = self.df.read(Minimap.MAP_BYTE_TOTAL)
+        new_data = []
+        for byte in raw_data:
+            for _ in range(8):
+                new_data.append(byte & 0x1)
+                byte >>= 1
+        im = Image.new(
+                '1',
+                (Minimap.ROOM_W*Minimap.MAP_ROOM_W, Minimap.ROOM_H*Minimap.MAP_ROOM_H),
+                )
+        im.putdata(new_data)
+        im.save(filename)
+
 
 
 class Stamp(Data):
