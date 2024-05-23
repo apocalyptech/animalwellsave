@@ -224,6 +224,18 @@ class NumData(Data):
         else:
             return self.value > other
 
+    def __add__(self, other):
+        """
+        Support addition
+        """
+        return self.value + other
+
+    def __sub__(self, other):
+        """
+        Support subtraction
+        """
+        return self.value - other
+
 
 class LabelEnum(enum.Enum):
     """

@@ -281,6 +281,30 @@ class StampIcon(LabelEnum):
     QUESTION = (7, 'Question')
 
 
+class Unlockable(LabelEnum):
+    """
+    Various global unlockables, which apply outside of slots
+    """
+
+    STOPWATCH =    (0x00001, 'Stopwatch')
+    PEDOMETER =    (0x00002, 'Pedometer')
+    PINK_PHONE =   (0x00004, 'Pink Phone')
+    SOUVENIR_CUP = (0x00008, 'Souvenir Cup')
+    ORIGAMI =      (0x00010, 'Origami Figurines')
+    TWO_RABBITS =  (0x00020, 'Two Rabbits')
+    OWL =          (0x00040, 'Owl Figurine')
+    CAT =          (0x00080, 'Cat Figurine')
+    FISH =         (0x00100, 'Fish Figurine')
+    DONKEY =       (0x00200, 'Donkey Figurine')
+    PENGUIN =      (0x00400, 'Penguin Figurine')
+    MAMA_CHA =     (0x00800, 'mama cha')
+    GIRAFFE =      (0x01000, 'Giraffe Figurine')
+    INCENSE =      (0x02000, 'Incense Burner')
+    PEACOCK =      (0x04000, 'Peacock Figurine')
+    OTTER =        (0x08000, 'Otter Figurine')
+    DUCK =         (0x10000, 'Duck Figurine')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -810,7 +834,7 @@ class Mural(Data):
         """
         Prints out the binary data in a format easily copied into a Python
         script (as with the DATA_* vars, above).  The last line will require
-        trimming off the `+ \` at the end.
+        trimming off the "+ \" at the end.
         """
         self.df.seek(self.offset)
         data = self.df.read(Mural.TOTAL_BYTES)
@@ -984,7 +1008,10 @@ class Savegame():
         if self.version.value != 9:
             raise RuntimeError(f'Unknown savefile version: {self.version}')
 
-        self.checksum = NumData(self, UInt8, 0xD)
+        self.last_used_slot = NumData(self, UInt8, 0xC)
+        self.checksum = NumData(self, UInt8)
+
+        self.unlockables = NumBitfieldData(self, UInt32, Unlockable, 0x10)
 
         self.slots = [
                 Slot(self, 0, 0x00018),

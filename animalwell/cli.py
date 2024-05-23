@@ -24,7 +24,7 @@ import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, Teleport, \
         QuestState, FlameState, CandleState, \
-        has_image_support
+        Unlockable, has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -430,6 +430,18 @@ def main():
             help='Downgrade the B.B. Wand to B. Wand',
             )
 
+    parser.add_argument('--unlocks-enable',
+            type=Unlockable,
+            action=EnumSetAction,
+            help="Enable the specified global unlockable.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    parser.add_argument('--unlocks-disable',
+            type=Unlockable,
+            action=EnumSetAction,
+            help="Disable the specified global unlockable.  Can be specified more than once, or use 'all' to disable all",
+            )
+
     egg65 = parser.add_mutually_exclusive_group()
 
     egg65.add_argument('--egg65-enable',
@@ -599,7 +611,12 @@ def main():
             print(header)
             print('-'*len(header))
             print('')
+            print(f' - Last-Used Slot: {save.last_used_slot+1}')
             print(f' - Checksum: 0x{save.checksum:02X}')
+            if save.unlockables.enabled:
+                print(' - Unlockables:')
+                for unlocked in sorted(save.unlockables.enabled):
+                    print(f'   - {unlocked}')
 
         # Make a note of fixing the checksum, if we were told to do so
         if args.fix_checksum:
@@ -1087,6 +1104,21 @@ def main():
                         print('Slot data exported!')
                     else:
                         print('NOTICE: Slot data NOT exported')
+
+        # Process global unlockables
+        if args.unlocks_disable:
+            for unlock in sorted(args.unlocks_disable):
+                if unlock in save.unlockables.enabled:
+                    print(f'Globals: Disabling unlockable: {unlock}')
+                    save.unlockables.disable(unlock)
+                    do_save = True
+
+        if args.unlocks_enable:
+            for unlock in sorted(args.unlocks_enable):
+                if unlock not in save.unlockables.enabled:
+                    print(f'Globals: Enabling unlockable: {unlock}')
+                    save.unlockables.enable(unlock)
+                    do_save = True
 
         if args.info:
             print('')
