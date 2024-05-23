@@ -336,6 +336,19 @@ class NumChoiceData(NumData):
         else:
             return self.choice.label
 
+    def __eq__(self, other):
+        """
+        Compare using our `value` attribute.  This should allow us to test for
+        equality versus other `NumData` objects, by `LabelEnum` value, or by
+        raw numeric values.
+        """
+        if issubclass(type(other), NumData):
+            return self.value == other.value
+        elif issubclass(type(other), LabelEnum):
+            return self.value == other.value
+        else:
+            return self.value == other
+
 
 class NumBitfieldData(NumData):
     """

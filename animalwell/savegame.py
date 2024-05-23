@@ -23,7 +23,7 @@ import enum
 import struct
 import collections
 
-from .datafile import UInt8, UInt16, UInt32, UInt64, \
+from .datafile import UInt8, UInt16, UInt32, UInt64, Float, \
         Data, NumData, \
         NumChoiceData, NumBitfieldData, BitCountData, \
         LabelEnum
@@ -303,6 +303,17 @@ class Unlockable(LabelEnum):
     PEACOCK =      (0x04000, 'Peacock Figurine')
     OTTER =        (0x08000, 'Otter Figurine')
     DUCK =         (0x10000, 'Duck Figurine')
+
+
+class KangarooShardState(LabelEnum):
+    """
+    The state that an individual K. Shard can be in
+    """
+
+    NONE = (0, 'None')
+    DROPPED = (1, 'Dropped')
+    COLLECTED = (2, 'Collected')
+    INSERTED = (3, 'Inserted')
 
 
 class Timestamp(Data):
@@ -847,6 +858,139 @@ class Mural(Data):
             s += interval
 
 
+class KangarooEncounter(Data):
+    """
+    Holds information about kangaroo encounters, which is how the game keeps
+    track of K. Shard / K. Medal states.
+    """
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        # Data
+        self.shard_pos_x = NumData(self, Float)
+        self.shard_pos_y = NumData(self, Float)
+        self.room_x = NumData(self, UInt8)
+        self.room_y = NumData(self, UInt8)
+        self.state = NumChoiceData(self, UInt8, KangarooShardState)
+        self.encounter_id = NumData(self, UInt8)
+
+    def clear(self):
+        """
+        Clears out our state
+        """
+        self.shard_pos_x.value = 0
+        self.shard_pos_y.value = 0
+        self.room_x.value = 0
+        self.room_y.value = 0
+        self.state.value = KangarooShardState.NONE
+        self.encounter_id.value = 0
+
+
+class KangarooState(Data):
+    """
+    Holds information about all three kangaroo states
+    """
+
+    # Each ID is mapped to a specific room, and if we inject any data in
+    # here, it'd probably be nice to set the shard positions as well (though
+    # we're only likely to be setting "collected" or "inserted" states,
+    # at which time the shard positions are useless).  The positions here
+    # were taken from the drop data seen in my own savefiles -- the shard
+    # positions on a live game would be different for you depending on
+    # where the kangaroo was when it dropped the shard.  For collected +
+    # inserted shards, there's really no point to any of this data; the
+    # game doesn't care if it's all zeroes.  Still, nice to be proper.
+    Preset = collections.namedtuple('Preset',
+            ['shard_pos_x', 'shard_pos_y', 'room_x', 'room_y'],
+            )
+    ID_TO_DATA = {
+            0: Preset(38, 104, 6, 6),
+            1: Preset(156, 136, 9, 11),
+            2: Preset(16, 144, 12, 11),
+            3: Preset(147, 144, 9, 13),
+            4: Preset(154, 128, 16, 16),
+            }
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        self.encounters = []
+        self._available_ids = {0, 1, 2, 3, 4}
+        for _ in range(3):
+            enc = KangarooEncounter(self)
+            if enc.state.choice != KangarooShardState.NONE:
+                self._available_ids -= {enc.encounter_id.value}
+            self.encounters.append(enc)
+        self.next_encounter_id = NumData(self, UInt8)
+
+        # This could be a LabelEnum; 0=Idle, 1=Fleeing, 2=Attacking.
+        # Though I honestly don't understand the 0 or 1 behaviors.  0
+        # seems to mostly result in no kangaroo at all, whereas 1
+        # seems to just result in an attacking kangaroo like 2.
+        self.state = NumData(self, UInt8)
+
+    def __len__(self):
+        return 3
+
+    def __iter__(self):
+        return iter(self.encounters)
+
+    def num_collected(self):
+        return sum([1 for e in self if e.state == KangarooShardState.COLLECTED])
+
+    def num_inserted(self):
+        return sum([1 for e in self if e.state == KangarooShardState.INSERTED])
+
+    def get_cur_kangaroo_room_str(self):
+        """
+        Returns the current kangaroo room coordinates as a string suitable for
+        printing.
+        """
+        if self.next_encounter_id.value in KangarooState.ID_TO_DATA:
+            data = KangarooState.ID_TO_DATA[self.next_encounter_id.value]
+            return f'({data.room_x}, {data.room_y})'
+        else:
+            return 'unknown'
+
+    def force_kangaroo_room(self, room_id):
+        """
+        Forces the Kangaroo to appear in the specified room.  They will likely be
+        already in the attacking state when you arrive.
+        """
+        self.next_encounter_id.value = room_id
+        # As mentioned above, I don't actually understand these IDs really.  Setting
+        # 1 or 2 seems to always lead to attacking.  I'm setting 2 just because that
+        # seems the "safest" to ensure the spawn, though I'd really prefer something
+        # that would let the kangaroo start in that "lurking" state instead...
+        # TODO: ^
+        self.state.value = 2
+
+    def set_shard_state(self, count, state):
+        """
+        Sets the specified number of shards to the given state, and will zero
+        out any remaining shards afterwards.
+        """
+        if count < 1:
+            raise RuntimeError('count must be at least 1')
+        if count > 3:
+            raise RuntimeError('count can be at most 3')
+        for idx, shard in enumerate(self):
+            if idx >= count or state == KangarooShardState.NONE:
+                shard.clear()
+            else:
+                if shard.state == KangarooShardState.NONE:
+                    # Invent some data for the shard
+                    new_id = sorted(self._available_ids)[0]
+                    self._available_ids -= {new_id}
+                    shard.encounter_id = new_id
+                    shard.shard_pos_x  = KangarooState.ID_TO_DATA[new_id].shard_pos_x
+                    shard.shard_pos_y  = KangarooState.ID_TO_DATA[new_id].shard_pos_y
+                    shard.room_x  = KangarooState.ID_TO_DATA[new_id].room_x
+                    shard.room_y  = KangarooState.ID_TO_DATA[new_id].room_y
+                shard.state.value = state
+
+
 class Slot():
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -917,6 +1061,8 @@ class Slot():
         self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
 
         self.quest_state = NumBitfieldData(self, UInt32, QuestState, 0x1EC)
+
+        self.kangaroo_state = KangarooState(self, 0x1F4)
 
         self.flames = Flames(self, 0x21E)
 

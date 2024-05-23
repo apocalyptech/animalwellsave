@@ -23,7 +23,7 @@ import argparse
 import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, Teleport, \
-        QuestState, FlameState, CandleState, \
+        QuestState, FlameState, CandleState, KangarooShardState, \
         Unlockable, has_image_support
 
 
@@ -329,6 +329,26 @@ def main():
             help="Disable the specified inventory item.  Can be specified more than once, or use 'all' to disable all",
             )
 
+    kshard = parser.add_mutually_exclusive_group()
+
+    kshard.add_argument('--kshard-collect',
+            type=int,
+            choices=[1, 2, 3],
+            help="""
+                Sets the total number of collected K. Shards to the given number.
+                Will remove existing inserted K. Shards if any were present.
+                """,
+            )
+
+    kshard.add_argument('--kshard-insert',
+            type=int,
+            choices=[1, 2, 3],
+            help="""
+                Sets the total number of inserted K. Shards to the given number.
+                Will remove existing collected K. Shards if any were present.
+                """,
+            )
+
     parser.add_argument('--teleport-enable',
             type=Teleport,
             action=EnumSetAction,
@@ -452,6 +472,16 @@ def main():
             type=Unlockable,
             action=EnumSetAction,
             help="Disable the specified global unlockable.  Can be specified more than once, or use 'all' to disable all",
+            )
+
+    parser.add_argument('--kangaroo-room',
+            type=int,
+            choices=[0, 1, 2, 3, 4],
+            help="""
+                Defines the next room that the kangaroo will spawn in.  The kangaroo will end up
+                in an immediately-hostile state in the chosen room.  Coordindates: 0: (6, 6), 1:
+                (9, 11), 2: (12, 11), 3: (9, 13), 4: (16, 16)
+                """,
             )
 
     egg65 = parser.add_mutually_exclusive_group()
@@ -582,6 +612,9 @@ def main():
             args.mural_solved,
             args.flame_collect,
             args.flame_use,
+            args.kangaroo_room is not None,
+            args.kshard_collect is not None,
+            args.kshard_insert is not None,
             args.upgrade_wand,
             args.downgrade_wand,
             args.egg65_enable,
@@ -687,10 +720,14 @@ def main():
                             for equip in sorted(slot.equipment.enabled):
                                 print(f'   - {equip}')
                             print(f' - Selected Equipment: {slot.selected_equipment}')
-                        if slot.inventory.enabled:
+                        k_shards_collected = slot.kangaroo_state.num_collected()
+                        k_shards_inserted = slot.kangaroo_state.num_inserted()
+                        if slot.inventory.enabled or k_shards_collected:
                             print(' - Inventory Unlocked:')
                             for inv in sorted(slot.inventory.enabled):
                                 print(f'   - {inv}')
+                            if k_shards_collected > 0:
+                                print(f'   - K. Shards Collected: {k_shards_collected}/3')
                         print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
                         for egg in sorted(slot.eggs.enabled):
                             print(f'   - {egg}')
@@ -710,6 +747,18 @@ def main():
                         print(f'   - Fruit Picked: {slot.picked_fruit}')
                         print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
+                        # I don't fully grok what the state value implies, other than that
+                        # when it's zero, the kangaroo doesn't tend to be there, and when
+                        # it's 1 or 2, it generally is.
+                        if slot.kangaroo_state.state != 0:
+                            kangaroo_suffix = ''
+                        else:
+                            kangaroo_suffix = ' (possibly -- unsure about the data)'
+                        print('   - Next Kangaroo Room: {} (coords {}{})'.format(
+                            slot.kangaroo_state.next_encounter_id,
+                            slot.kangaroo_state.get_cur_kangaroo_room_str(),
+                            kangaroo_suffix,
+                            ))
                         if QuestState.UNLOCK_STAMPS in slot.quest_state.enabled:
                             print(f'   - Minimap Stamps: {len(slot.stamps)}')
                         print(f' - Permanent Map Data:')
@@ -719,6 +768,8 @@ def main():
                         print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                         print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                         print(f'   - Walls Blasted: {slot.walls_blasted}')
+                        if k_shards_inserted > 0:
+                            print(f'   - K. Shards Inserted: {k_shards_inserted}/3')
                         if slot.teleports.enabled:
                             print(f' - Teleports Active: {len(slot.teleports.enabled)}')
                             for teleport in sorted(slot.teleports.enabled):
@@ -981,6 +1032,21 @@ def main():
                     if args.mural_solved:
                         print(f'{slot_label}: Setting mural to its solved state (NOTE: you will need to activate one pixel to get the door to open)')
                         slot.mural.to_solved()
+                        do_save = True
+
+                    if args.kangaroo_room is not None:
+                        print(f'{slot_label}: Setting next kangaroo room to: {args.kangaroo_room}')
+                        slot.kangaroo_state.force_kangaroo_room(args.kangaroo_room)
+                        do_save = True
+
+                    if args.kshard_collect is not None:
+                        print(f'{slot_label}: Setting total number of collected K. Shards to: {args.kshard_collect}')
+                        slot.kangaroo_state.set_shard_state(args.kshard_collect, KangarooShardState.COLLECTED)
+                        do_save = True
+
+                    if args.kshard_insert is not None:
+                        print(f'{slot_label}: Setting total number of inserted K. Shards to: {args.kshard_collect}')
+                        slot.kangaroo_state.set_shard_state(args.kshard_insert, KangarooShardState.INSERTED)
                         do_save = True
 
                     if args.upgrade_wand:
