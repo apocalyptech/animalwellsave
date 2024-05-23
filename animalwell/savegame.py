@@ -99,6 +99,7 @@ class QuestState(LabelEnum):
     """
 
     HOUSE_OPEN =         (0x00000001, 'House Open')
+    OFFICE_OPEN =        (0x00000002, 'Office Open')
     CLOSET_OPEN =        (0x00000004, 'Closet Open')
     UNLOCK_MAP =         (0x00000200, 'Map Unlocked')
     UNLOCK_STAMPS =      (0x00000400, 'Stamps Unlocked')
@@ -106,11 +107,18 @@ class QuestState(LabelEnum):
     DEFEATED_CHAMELEON = (0x00001000, 'Defeated Chameleon')
     CRING =              (0x00002000, "Cheater's Ring")
     USED_S_MEDAL =       (0x00008000, "Inserted S. Medal")
+    USED_E_MEDAL =       (0x00010000, "Inserted E. Medal")
+    WINGS =              (0x00020000, "Wings / Flying Unlocked")
     # Eh, don't bother with this one
-    #WOKE_UP =            (0x00040000, 'Woke Up (start of game)')
+    #WOKE_UP =           (0x00040000, 'Woke Up (start of game)')
     BB_WAND =            (0x00080000, 'B.B. Wand Upgrade')
     EGG_65 =             (0x00100000, 'Egg 65')
-    USED_E_MEDAL =       (0x00200000, 'Inserted E. Medal')
+    # Don't bother with this one; the necessary door opens with
+    # just the actual lighting.
+    #ALL_CANDLES =       (0x00200000, 'All Candles Lit')
+    TORUS =              (0x00400000, 'Teleport Torus Active')
+    # Eh, not gonna do this one either; easy enough to just do it.
+    #MANTICORE_EGG =     (0x00800000, 'Manticore Egg Placed')
     DEFEATED_BAT =       (0x01000000, 'Defeated Bat')
     FREED_OSTRICH =      (0x02000000, 'Freed Wheel Ostrich')
     DEFEATED_OSTRICH =   (0x04000000, 'Defeated Wheel Ostrich')

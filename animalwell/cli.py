@@ -527,6 +527,30 @@ def main():
             help='Disable Egg 65',
             )
 
+    torus = parser.add_mutually_exclusive_group()
+
+    torus.add_argument('--torus-enable',
+            action='store_true',
+            help='Enable Teleportation Torus',
+            )
+
+    torus.add_argument('--torus-disable',
+            action='store_true',
+            help='Disable Teleportation Torus',
+            )
+
+    wings = parser.add_mutually_exclusive_group()
+
+    wings.add_argument('--wings-enable',
+            action='store_true',
+            help='Enable Wings / Flying Mode',
+            )
+
+    wings.add_argument('--wings-disable',
+            action='store_true',
+            help='Disable Wings / Flying Mode',
+            )
+
     cring = parser.add_mutually_exclusive_group()
 
     cring.add_argument('--cring-enable',
@@ -654,6 +678,10 @@ def main():
             args.downgrade_wand,
             args.egg65_enable,
             args.egg65_disable,
+            args.torus_enable,
+            args.torus_disable,
+            args.wings_enable,
+            args.wings_disable,
             args.cring_enable,
             args.cring_disable,
             args.spawn,
@@ -1126,6 +1154,30 @@ def main():
                         if QuestState.EGG_65 in slot.quest_state.enabled:
                             print(f'{slot_label}: Removing Egg 65')
                             slot.quest_state.disable(QuestState.EGG_65)
+                            do_save = True
+
+                    if args.torus_enable:
+                        if QuestState.TORUS not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Enabling Teleportation Torus')
+                            slot.quest_state.enable(QuestState.TORUS)
+                            do_save = True
+
+                    if args.torus_disable:
+                        if QuestState.TORUS in slot.quest_state.enabled:
+                            print(f'{slot_label}: Disabling Teleportation Torus')
+                            slot.quest_state.disable(QuestState.TORUS)
+                            do_save = True
+
+                    if args.wings_enable:
+                        if QuestState.WINGS not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Enabling Wings / Flight Mode')
+                            slot.quest_state.enable(QuestState.WINGS)
+                            do_save = True
+
+                    if args.wings_disable:
+                        if QuestState.WINGS in slot.quest_state.enabled:
+                            print(f'{slot_label}: Disabling Wings / Flight Mode')
+                            slot.quest_state.disable(QuestState.WINGS)
                             do_save = True
 
                     if args.cring_enable:
