@@ -493,13 +493,13 @@ def main():
             help='Downgrade the B.B. Wand to B. Wand',
             )
 
-    parser.add_argument('--unlocks-enable',
+    parser.add_argument('--globals-enable',
             type=Unlockable,
             action=EnumSetAction,
             help="Enable the specified global unlockable.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--unlocks-disable',
+    parser.add_argument('--globals-disable',
             type=Unlockable,
             action=EnumSetAction,
             help="Disable the specified global unlockable.  Can be specified more than once, or use 'all' to disable all",
@@ -1304,17 +1304,17 @@ def main():
                         print('NOTICE: Slot data NOT exported')
 
         # Process global unlockables
-        if args.unlocks_disable:
-            for unlock in sorted(args.unlocks_disable):
+        if args.globals_disable:
+            for unlock in sorted(args.globals_disable):
                 if unlock in save.unlockables.enabled:
-                    print(f'Globals: Disabling unlockable: {unlock}')
+                    print(f'Globals: Disabling global unlockable: {unlock}')
                     save.unlockables.disable(unlock)
                     do_save = True
 
-        if args.unlocks_enable:
-            for unlock in sorted(args.unlocks_enable):
+        if args.globals_enable:
+            for unlock in sorted(args.globals_enable):
                 if unlock not in save.unlockables.enabled:
-                    print(f'Globals: Enabling unlockable: {unlock}')
+                    print(f'Globals: Enabling global unlockable: {unlock}')
                     save.unlockables.enable(unlock)
                     do_save = True
 
