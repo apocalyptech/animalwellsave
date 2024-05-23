@@ -232,6 +232,18 @@ def main():
             help="Set the number of bubbles popped",
             )
 
+    ticks = parser.add_mutually_exclusive_group()
+
+    ticks.add_argument('--ticks',
+            type=int,
+            help="Set the number of ticks that have elapsed in-game (by both internal measures)",
+            )
+
+    ticks.add_argument('--ticks-copy-ingame',
+            action='store_true',
+            help="Overwrite the with-paused tick counter to just ingame time",
+            )
+
     parser.add_argument('--egg-enable',
             type=Egg,
             action=EnumSetAction,
@@ -591,6 +603,8 @@ def main():
             args.quest_state_disable,
             args.import_slot,
             args.export_slot,
+            args.ticks is not None,
+            args.ticks_copy_ingame,
             ]):
         if slot_indexes:
             loop_into_slots = True
@@ -745,6 +759,17 @@ def main():
                     if args.saves is not None:
                         print(f'{slot_label}: Updating save count to: {args.saves}')
                         slot.num_saves.value = args.saves
+                        do_save = True
+
+                    if args.ticks is not None:
+                        print(f'{slot_label}: Updating tick count to: {args.ticks}')
+                        slot.elapsed_ticks_ingame.value = args.ticks
+                        slot.elapsed_ticks_withpause.value = args.ticks
+                        do_save = True
+
+                    if args.ticks_copy_ingame:
+                        print(f'{slot_label}: Copying ingame tick count to with-paused tick count')
+                        slot.elapsed_ticks_withpause.value = slot.elapsed_ticks_ingame.value
                         do_save = True
 
                     if args.bubbles_popped is not None:
