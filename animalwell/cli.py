@@ -336,10 +336,16 @@ def main():
                 """,
             )
 
-    parser.add_argument('--light-candles',
+    parser.add_argument('--candles-enable',
             type=CandleState,
             action=EnumSetAction,
             help="Light the specified candles.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    parser.add_argument('--candles-disable',
+            type=CandleState,
+            action=EnumSetAction,
+            help="Blows out the specified candles.  Can be specified more than once, or use 'all' to enable all",
             )
 
     parser.add_argument('--equip-enable',
@@ -635,6 +641,7 @@ def main():
     else:
         slot_indexes = [args.slot-1]
     delete_common_set_items(args.egg_enable, args.egg_disable)
+    delete_common_set_items(args.candles_enable, args.candles_disable)
     delete_common_set_items(args.bunny_enable, args.bunny_disable)
     delete_common_set_items(args.equip_enable, args.equip_disable)
     delete_common_set_items(args.inventory_enable, args.inventory_disable)
@@ -660,7 +667,8 @@ def main():
             args.buttons_reset,
             args.doors_open,
             args.doors_close,
-            args.light_candles,
+            args.candles_enable,
+            args.candles_disable,
             args.equip_enable,
             args.equip_disable,
             args.inventory_enable,
@@ -978,11 +986,18 @@ def main():
                         slot.button_doors_opened.clear()
                         do_save = True
 
-                    if args.light_candles:
-                        for candle in sorted(args.light_candles):
+                    if args.candles_enable:
+                        for candle in sorted(args.candles_enable):
                             if candle not in slot.candles.enabled:
                                 print(f'{slot_label}: Lighting candle: {candle}')
                                 slot.candles.enable(candle)
+                                do_save = True
+
+                    if args.candles_disable:
+                        for candle in sorted(args.candles_disable):
+                            if candle in slot.candles.enabled:
+                                print(f'{slot_label}: Blowing out candle: {candle}')
+                                slot.candles.disable(candle)
                                 do_save = True
 
                     if args.firecrackers is not None:
