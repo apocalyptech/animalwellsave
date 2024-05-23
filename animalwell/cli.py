@@ -250,6 +250,12 @@ def main():
             help="Enable the specified egg.  Can be specified more than once, or use 'all' to enable all",
             )
 
+    parser.add_argument('--egg-disable',
+            type=Egg,
+            action=EnumSetAction,
+            help="Disables the specified egg.  Can be specified more than once, or use 'all' to enable all",
+            )
+
     parser.add_argument('--bunny-enable',
             type=Bunny,
             action=EnumSetAction,
@@ -628,6 +634,7 @@ def main():
         slot_indexes = [0, 1, 2]
     else:
         slot_indexes = [args.slot-1]
+    delete_common_set_items(args.egg_enable, args.egg_disable)
     delete_common_set_items(args.bunny_enable, args.bunny_disable)
     delete_common_set_items(args.equip_enable, args.equip_disable)
     delete_common_set_items(args.inventory_enable, args.inventory_disable)
@@ -692,6 +699,7 @@ def main():
             args.respawn_ghosts,
             args.respawn_squirrels,
             args.egg_enable,
+            args.egg_disable,
             args.bunny_enable,
             args.bunny_disable,
             args.bubbles_popped,
@@ -896,6 +904,13 @@ def main():
                             if egg not in slot.eggs.enabled:
                                 print(f'{slot_label}: Enabling egg: {egg}')
                                 slot.eggs.enable(egg)
+                                do_save = True
+
+                    if args.egg_disable:
+                        for egg in sorted(args.egg_disable):
+                            if egg in slot.eggs.enabled:
+                                print(f'{slot_label}: Disabling egg: {egg}')
+                                slot.eggs.disable(egg)
                                 do_save = True
 
                     if args.bunny_disable:
