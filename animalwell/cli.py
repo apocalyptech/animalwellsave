@@ -398,6 +398,12 @@ def main():
             help="Enable the specified teleport.  Can be specified more than once, or use 'all' to enable all",
             )
 
+    parser.add_argument('--teleport-disable',
+            type=Teleport,
+            action=EnumSetAction,
+            help="Disables the specified teleport.  Can be specified more than once, or use 'all' to enable all",
+            )
+
     parser.add_argument('--map-enable',
             type=QuestState,
             action=EnumSetAction,
@@ -642,6 +648,7 @@ def main():
         slot_indexes = [args.slot-1]
     delete_common_set_items(args.egg_enable, args.egg_disable)
     delete_common_set_items(args.candles_enable, args.candles_disable)
+    delete_common_set_items(args.teleport_enable, args.teleport_disable)
     delete_common_set_items(args.bunny_enable, args.bunny_disable)
     delete_common_set_items(args.equip_enable, args.equip_disable)
     delete_common_set_items(args.inventory_enable, args.inventory_disable)
@@ -674,6 +681,7 @@ def main():
             args.inventory_enable,
             args.inventory_disable,
             args.teleport_enable,
+            args.teleport_disable,
             args.map_enable,
             args.reveal_map,
             args.clear_map,
@@ -1083,6 +1091,13 @@ def main():
                             if teleport not in slot.teleports.enabled:
                                 print(f'{slot_label}: Enabling teleport: {teleport}')
                                 slot.teleports.enable(teleport)
+                                do_save = True
+
+                    if args.teleport_disable:
+                        for teleport in sorted(args.teleport_disable):
+                            if teleport in slot.teleports.enabled:
+                                print(f'{slot_label}: Disabling teleport: {teleport}')
+                                slot.teleports.disable(teleport)
                                 do_save = True
 
                     if args.map_enable:
