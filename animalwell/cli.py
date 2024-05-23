@@ -299,6 +299,37 @@ def main():
             help="Set the number of matches in your inventory",
             )
 
+    buttons = parser.add_mutually_exclusive_group()
+
+    buttons.add_argument('--buttons-press',
+            action='store_true',
+            help="Sets all yellow buttons in the game to 'pressed' state",
+            )
+
+    buttons.add_argument('--buttons-reset',
+            action='store_true',
+            help="Sets all yellow buttons in the game to their default non-pressed state",
+            )
+
+    doors = parser.add_mutually_exclusive_group()
+
+    doors.add_argument('--doors-open',
+            action='store_true',
+            help="""
+                Opens all yellow-button doors in the game.  Does NOT open doors which have other
+                specific requirements (egg doors, doors which require keys, etc).
+                """,
+            )
+
+    doors.add_argument('--doors-close',
+            action='store_true',
+            help="""
+                Closes all yellow-button doors in the game.  Does NOT close doors which have other
+                specific requirements (egg doors, doors which require keys, etc).  Note that if
+                the buttons related to the door are still pressed, the doors will re-open.
+                """,
+            )
+
     parser.add_argument('--light-candles',
             type=CandleState,
             action=EnumSetAction,
@@ -594,6 +625,10 @@ def main():
             args.firecrackers is not None,
             args.keys is not None,
             args.matches is not None,
+            args.buttons_press,
+            args.buttons_reset,
+            args.doors_open,
+            args.doors_close,
             args.light_candles,
             args.equip_enable,
             args.equip_disable,
@@ -878,6 +913,26 @@ def main():
                     if args.matches is not None:
                         print(f'{slot_label}: Updating match count to: {args.matches}')
                         slot.matches.value = args.matches
+                        do_save = True
+
+                    if args.buttons_press:
+                        print(f'{slot_label}: Marking all yellow buttons as pressed')
+                        slot.yellow_buttons_pressed.fill()
+                        do_save = True
+
+                    if args.buttons_reset:
+                        print(f'{slot_label}: Marking all yellow buttons as not pressed')
+                        slot.yellow_buttons_pressed.clear()
+                        do_save = True
+
+                    if args.doors_open:
+                        print(f'{slot_label}: Marking all button-controlled doors as opened')
+                        slot.button_doors_opened.fill()
+                        do_save = True
+
+                    if args.doors_close:
+                        print(f'{slot_label}: Marking all button-controlled doors as closed')
+                        slot.button_doors_opened.clear()
                         do_save = True
 
                     if args.light_candles:
