@@ -336,6 +336,21 @@ def main():
                 """,
             )
 
+    chests = parser.add_mutually_exclusive_group()
+
+    chests.add_argument('--chests-open',
+            action='store_true',
+            help="""
+                Opens all chests in the game.  Note that merely opening chests does NOT give you the
+                item contained within the chest.  This option is probably of little use to anyone.
+                """,
+            )
+
+    chests.add_argument('--chests-close',
+            action='store_true',
+            help='Closes all chests in the game, allowing their contents to be re-looted',
+            )
+
     parser.add_argument('--candles-enable',
             type=CandleState,
             action=EnumSetAction,
@@ -674,6 +689,8 @@ def main():
             args.buttons_reset,
             args.doors_open,
             args.doors_close,
+            args.chests_open,
+            args.chests_close,
             args.candles_enable,
             args.candles_disable,
             args.equip_enable,
@@ -992,6 +1009,16 @@ def main():
                     if args.doors_close:
                         print(f'{slot_label}: Marking all button-controlled doors as closed')
                         slot.button_doors_opened.clear()
+                        do_save = True
+
+                    if args.chests_open:
+                        print(f'{slot_label}: Marking all chests as opened')
+                        slot.chests_opened.fill()
+                        do_save = True
+
+                    if args.chests_close:
+                        print(f'{slot_label}: Marking all chests as closed')
+                        slot.chests_opened.clear()
                         do_save = True
 
                     if args.candles_enable:
