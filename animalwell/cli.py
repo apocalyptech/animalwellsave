@@ -819,12 +819,15 @@ def main():
                         print(f'   - Steps: {slot.num_steps:,}')
                         print(f'   - Times Saved: {slot.num_saves}')
                         print(f'   - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
-                        print(f'   - Firecrackers Collected: {slot.firecrackers_collected}')
-                        print(f'   - Bubbles Popped: {slot.bubbles_popped}')
+                        if Equipment.FIRECRACKER in slot.equipment.enabled:
+                            print(f'   - Firecrackers Collected: {slot.firecrackers_collected}')
+                        if slot.bubbles_popped > 0:
+                            print(f'   - Bubbles Popped: {slot.bubbles_popped}')
                         if slot.berries_eaten_while_full > 0:
                             print(f'   - Berries Eaten While Full: {slot.berries_eaten_while_full}')
                         print(f' - Consumables Inventory:')
-                        print(f'   - Firecrackers: {slot.firecrackers}')
+                        if Equipment.FIRECRACKER in slot.equipment.enabled:
+                            print(f'   - Firecrackers: {slot.firecrackers}')
                         print(f'   - Keys: {slot.keys}')
                         print(f'   - Matches: {slot.matches}')
                         if slot.equipment.enabled:
@@ -857,7 +860,8 @@ def main():
                                 print(f'   - {flame.name}: {flame}')
                         print(f' - Transient Map Data:')
                         print(f'   - Fruit Picked: {slot.picked_fruit}')
-                        print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
+                        if Equipment.FIRECRACKER in slot.equipment.enabled:
+                            print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
                         # I don't fully grok what the state value implies, other than that
                         # when it's zero, the kangaroo doesn't tend to be there, and when
@@ -878,8 +882,10 @@ def main():
                         print(f'   - Chests Opened: {slot.chests_opened}')
                         print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
                         print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
-                        print(f'   - Detonators Triggered: {slot.detonators_triggered}')
-                        print(f'   - Walls Blasted: {slot.walls_blasted}')
+                        if slot.detonators_triggered.count > 0:
+                            print(f'   - Detonators Triggered: {slot.detonators_triggered}')
+                        if slot.walls_blasted.count > 0:
+                            print(f'   - Walls Blasted: {slot.walls_blasted}')
                         if k_shards_inserted > 0:
                             print(f'   - K. Shards Inserted: {k_shards_inserted}/3')
                         if slot.teleports.enabled:
