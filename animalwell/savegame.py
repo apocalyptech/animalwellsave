@@ -1083,6 +1083,8 @@ class Slot():
 
         self.mural = Mural(self, 0x26EAF)
 
+        self.berries_eaten_while_full = NumData(self, UInt16, 0x26FFA)
+
     def export_data(self):
         """
         Reads in all current slot data as a single bytestring

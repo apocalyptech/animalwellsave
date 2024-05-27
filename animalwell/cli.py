@@ -232,6 +232,11 @@ def main():
             help="Set the number of bubbles popped",
             )
 
+    parser.add_argument('--berries-eaten-while-full',
+            type=int,
+            help="Set the number of berries eaten while full",
+            )
+
     ticks = parser.add_mutually_exclusive_group()
 
     ticks.add_argument('--ticks',
@@ -735,7 +740,8 @@ def main():
             args.egg_disable,
             args.bunny_enable,
             args.bunny_disable,
-            args.bubbles_popped,
+            args.bubbles_popped is not None,
+            args.berries_eaten_while_full is not None,
             args.quest_state_enable,
             args.quest_state_disable,
             args.import_slot,
@@ -815,6 +821,8 @@ def main():
                         print(f'   - Times Died: {slot.num_deaths} (Times Hit: {slot.num_hits})')
                         print(f'   - Firecrackers Collected: {slot.firecrackers_collected}')
                         print(f'   - Bubbles Popped: {slot.bubbles_popped}')
+                        if slot.berries_eaten_while_full > 0:
+                            print(f'   - Berries Eaten While Full: {slot.berries_eaten_while_full}')
                         print(f' - Consumables Inventory:')
                         print(f'   - Firecrackers: {slot.firecrackers}')
                         print(f'   - Keys: {slot.keys}')
@@ -930,6 +938,11 @@ def main():
                     if args.bubbles_popped is not None:
                         print(f'{slot_label}: Updating bubbles-popped count to: {args.bubbles_popped}')
                         slot.bubbles_popped.value = args.bubbles_popped
+                        do_save = True
+
+                    if args.berries_eaten_while_full is not None:
+                        print(f'{slot_label}: Updating berries eaten while full count to: {args.berries_eaten_while_full}')
+                        slot.berries_eaten_while_full.value = args.berries_eaten_while_full
                         do_save = True
 
                     if args.egg_enable:
