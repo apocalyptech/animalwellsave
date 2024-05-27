@@ -1030,17 +1030,17 @@ class Slot():
 
         self.num_steps = NumData(self, UInt32, 0x108)
 
-        self.chests_opened = BitCountData(self, UInt64, 2, 0x120)
-        self.button_doors_opened = BitCountData(self, UInt64, 2)
-        self.yellow_buttons_pressed = BitCountData(self, UInt64, 3)
+        self.chests_opened = BitCountData(self, UInt64, 2, 101, 0x120)
+        self.button_doors_opened = BitCountData(self, UInt64, 2, 94)
+        self.yellow_buttons_pressed = BitCountData(self, UInt64, 3, 134)
 
-        self.picked_fruit = BitCountData(self, UInt64, 2, 0x170)
-        self.picked_firecrackers = BitCountData(self, UInt64, 1)
+        self.picked_fruit = BitCountData(self, UInt64, 2, 115, 0x170)
+        self.picked_firecrackers = BitCountData(self, UInt64, 1, 64)
         self.eggs = NumBitfieldData(self, UInt64, Egg)
-        self.walls_blasted = BitCountData(self, UInt32, 1)
-        self.detonators_triggered = BitCountData(self, UInt32, 1)
+        self.walls_blasted = BitCountData(self, UInt32, 1, 10)
+        self.detonators_triggered = BitCountData(self, UInt32, 1, 9)
         self.bunnies = NumBitfieldData(self, UInt32, Bunny)
-        self.squirrels_scared = BitCountData(self, UInt16, 1, 0x19C)
+        self.squirrels_scared = BitCountData(self, UInt16, 1, 13, 0x19C)
 
         self.firecrackers_collected = NumData(self, UInt16, 0x1A2)
         self.bubbles_popped = NumData(self, UInt16)
@@ -1064,7 +1064,7 @@ class Slot():
         self.candles = NumBitfieldData(self, UInt16, CandleState, 0x1E0)
         self.num_hits = NumData(self, UInt16)
         self.num_deaths = NumData(self, UInt16)
-        self.ghosts_scared = BitCountData(self, UInt16, 1)
+        self.ghosts_scared = BitCountData(self, UInt16, 1, 11)
 
         self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
 

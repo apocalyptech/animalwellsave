@@ -455,7 +455,7 @@ class BitCountData(Data):
     want to be able to modify bitfields for some of this...
     """
 
-    def __init__(self, parent, num_type, count, offset=None):
+    def __init__(self, parent, num_type, count, max_bits, offset=None):
         """
         The `parent` object should have `df` (filehandle) and `offset`
         attributes.  `offset`, if passed in, will be computed relative to
@@ -463,7 +463,9 @@ class BitCountData(Data):
         current filehandle position.
 
         `num_type` should be a `NumType` structure, and `count` should be
-        the number of those structures which make up the bitfield.
+        the number of those structures which make up the bitfield.  `max_bits`
+        is the maximum number of known bits which we should set when filling
+        up the bitfield.
         """
 
         super().__init__(parent, offset=offset)
@@ -472,6 +474,7 @@ class BitCountData(Data):
             raise RuntimeError('BitCountData objects can only be populated with unsigned numeric data')
         self._data_count = count
         self.count = 0
+        self.max_bits = max_bits
 
         # Read in data
         self._data = []
@@ -506,13 +509,22 @@ class BitCountData(Data):
     def fill(self):
         """
         Fill the entire bit structure with 1s (ie: make it maximally-enabled).
+        This will honor the `max_bits` parameter, so we don't fill in bits
+        that aren't known.
         """
-        self._set_all(2**(self.num_type.num_bytes*8)-1)
-        self.count = self.num_type.num_bytes * self._data_count
+        bits_to_fill = self.max_bits
+        individual_bits = self.num_type.num_bytes*8
+        for data in self._data:
+            this_bits = min(bits_to_fill, individual_bits)
+            data.value = (2**this_bits)-1
+            bits_to_fill -= this_bits
+        self.count = self.max_bits
 
     def clear(self):
         """
         Fill the entire bit structure with 0s (ie: make it minimally-enabled).
+        Note that this will completely clear all bits in the structure, even
+        "unknown" bits after our `max_bits` parameter.
         """
         self._set_all(0)
         self.count = 0
