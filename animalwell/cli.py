@@ -368,6 +368,26 @@ def main():
             help="Blows out the specified candles.  Can be specified more than once, or use 'all' to enable all",
             )
 
+    detonators = parser.add_mutually_exclusive_group()
+
+    detonators.add_argument('--detonators-activate',
+            action='store_true',
+            help='Activates all detonators on the map, opening shortcut passages',
+            )
+
+    detonators.add_argument('--detonators-rearm',
+            action='store_true',
+            help="""
+                Re-arms all detonators on the map.  Note that you will likely need to also use
+                --respawn-destroyed-tiles in order to seal up the actual passages.
+                """,
+            )
+
+    parser.add_argument('--respawn-destroyed-tiles',
+            action='store_true',
+            help='Respawn any destroyed tiles on the map (such as through detonators, top blocks, Manticore glass)',
+            )
+
     parser.add_argument('--equip-enable',
             type=Equipment,
             action=EnumSetAction,
@@ -698,6 +718,9 @@ def main():
             args.chests_close,
             args.candles_enable,
             args.candles_disable,
+            args.detonators_activate,
+            args.detonators_rearm,
+            args.respawn_destroyed_tiles,
             args.equip_enable,
             args.equip_disable,
             args.inventory_enable,
@@ -1053,6 +1076,25 @@ def main():
                                 print(f'{slot_label}: Blowing out candle: {candle}')
                                 slot.candles.disable(candle)
                                 do_save = True
+
+                    if args.detonators_activate:
+                        print(f'{slot_label}: Activating all shortcut detonators')
+                        slot.walls_blasted.fill()
+                        slot.detonators_triggered.fill()
+                        do_save = True
+
+                    if args.detonators_rearm:
+                        print(f'{slot_label}: Re-arming all shortcut detonators')
+                        if not args.respawn_destroyed_tiles:
+                            print('NOTICE: In order to fill in destroyed passageways, also specify --respawn-destroyed-tiles')
+                        slot.walls_blasted.clear()
+                        slot.detonators_triggered.clear()
+                        do_save = True
+
+                    if args.respawn_destroyed_tiles:
+                        print(f'{slot_label}: Respawning all destroyed tiles')
+                        slot.destructionmap.clear_map()
+                        do_save = True
 
                     if args.firecrackers is not None:
                         print(f'{slot_label}: Updating firecracker count to: {args.firecrackers}')

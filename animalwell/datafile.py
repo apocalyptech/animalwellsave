@@ -452,7 +452,11 @@ class BitCountData(Data):
 
     There's sort of no real reason why this functionality couldn't just be
     rolled into NumBitfieldData, especially given that we might eventually
-    want to be able to modify bitfields for some of this...
+    want to be able to modify bitfields for some of this...  Note too that
+    most of these fields include at least one "unknown" bit within our
+    `max_bits` count, so the `fill()` method will technically be filling
+    in more data than would be likely to have been filled on a vanilla
+    save.
     """
 
     def __init__(self, parent, num_type, count, max_bits, offset=None):
@@ -511,6 +515,10 @@ class BitCountData(Data):
         Fill the entire bit structure with 1s (ie: make it maximally-enabled).
         This will honor the `max_bits` parameter, so we don't fill in bits
         that aren't known.
+
+        Note, however, that most of these bitfields include at least one
+        "unknown" bit in the middle, so this method will often fill in
+        more data than would be seen on a purely vanilla save.
         """
         bits_to_fill = self.max_bits
         individual_bits = self.num_type.num_bytes*8
