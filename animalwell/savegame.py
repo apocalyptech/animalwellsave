@@ -999,6 +999,65 @@ class KangarooState(Data):
                 shard.state.value = state
 
 
+class FillLevels(Data):
+    """
+    Holds information about the game's various reservoir fill levels (used in three
+    room puzzles.  In terms of the data, each value goes from zero (completely empty)
+    to 80 (completely full).  There are five of these in the game.  The structure
+    apparently technically has room for sixteen, but we'll restrict our activities
+    to the first five.
+
+    Room Coordinates by reservoir index:
+        0: 7,11
+        1: 4,15
+        2: 2,17 (middle)
+        3: 2,17 (right)
+        4: 2,17 (left)
+    """
+
+    NUM_RESERVOIRS = 5
+    MAX_VALUE = 80
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+        self.levels = []
+        for _ in range(FillLevels.NUM_RESERVOIRS):
+            self.levels.append(NumData(self, UInt8))
+
+        # Fudge our location so that a data value that comes after is at
+        # the correct spot without needing to specify an absolute pos
+        self.df.seek(16-FillLevels.NUM_RESERVOIRS, os.SEEK_CUR)
+
+    def __iter__(self):
+        return iter(self.levels)
+
+    def _set_all(self, value):
+        """
+        Sets the fill level for all reservoirs to the specified value.
+        """
+        value = min(value, FillLevels.MAX_VALUE)
+        for level in self:
+            level.value = value
+
+    def fill(self):
+        """
+        Completely fills all reservoirs in the game.
+        """
+        self._set_all(FillLevels.MAX_VALUE)
+
+    def empty(self):
+        """
+        Completely empties all reservoirs in the game.
+        """
+        self._set_all(0)
+
+    def num_filled(self):
+        """
+        Returns the number of reservoirs which are totally filled in
+        """
+        return sum([1 for l in self if l >= FillLevels.MAX_VALUE])
+
+
 class Slot():
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -1029,6 +1088,7 @@ class Slot():
         self.has_data = self.timestamp.has_data
 
         self.num_steps = NumData(self, UInt32, 0x108)
+        self.fill_levels = FillLevels(self)
 
         self.chests_opened = BitCountData(self, UInt64, 2, 101, 0x120)
         self.button_doors_opened = BitCountData(self, UInt64, 2, 94)

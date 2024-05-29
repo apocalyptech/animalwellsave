@@ -368,6 +368,18 @@ def main():
             help="Blows out the specified candles.  Can be specified more than once, or use 'all' to enable all",
             )
 
+    reservoirs = parser.add_mutually_exclusive_group()
+
+    reservoirs.add_argument('--reservoirs-fill',
+            action='store_true',
+            help='Fills up all water reservoirs in the game',
+            )
+
+    reservoirs.add_argument('--reservoirs-empty',
+            action='store_true',
+            help='Empties all water reservoirs in the game',
+            )
+
     detonators = parser.add_mutually_exclusive_group()
 
     detonators.add_argument('--detonators-activate',
@@ -718,6 +730,8 @@ def main():
             args.chests_close,
             args.candles_enable,
             args.candles_disable,
+            args.reservoirs_fill,
+            args.reservoirs_empty,
             args.detonators_activate,
             args.detonators_rearm,
             args.respawn_destroyed_tiles,
@@ -886,6 +900,9 @@ def main():
                         if Equipment.FIRECRACKER in slot.equipment.enabled:
                             print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
+                        num_filled = slot.fill_levels.num_filled()
+                        if num_filled > 0:
+                            print(f'   - Reservoirs Filled: {num_filled}')
                         # I don't fully grok what the state value implies, other than that
                         # when it's zero, the kangaroo doesn't tend to be there, and when
                         # it's 1 or 2, it generally is.
@@ -1076,6 +1093,16 @@ def main():
                                 print(f'{slot_label}: Blowing out candle: {candle}')
                                 slot.candles.disable(candle)
                                 do_save = True
+
+                    if args.reservoirs_fill:
+                        print(f'{slot_label}: Filling all reservoirs')
+                        slot.fill_levels.fill()
+                        do_save = True
+
+                    if args.reservoirs_empty:
+                        print(f'{slot_label}: Emptying all reservoirs')
+                        slot.fill_levels.empty()
+                        do_save = True
 
                     if args.detonators_activate:
                         print(f'{slot_label}: Activating all shortcut detonators')

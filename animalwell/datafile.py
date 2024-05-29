@@ -224,6 +224,26 @@ class NumData(Data):
         else:
             return self.value > other
 
+    def __le__(self, other):
+        """
+        Compare using our `value` attribute.  This should allow us to test
+        versus other `NumData` objects, or by raw numeric values.
+        """
+        if issubclass(type(other), NumData):
+            return self.value <= other.value
+        else:
+            return self.value <= other
+
+    def __ge__(self, other):
+        """
+        Compare using our `value` attribute.  This should allow us to test
+        versus other `NumData` objects, or by raw numeric values.
+        """
+        if issubclass(type(other), NumData):
+            return self.value >= other.value
+        else:
+            return self.value >= other
+
     def __add__(self, other):
         """
         Support addition
