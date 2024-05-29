@@ -409,6 +409,12 @@ class NumBitfieldData(NumData):
                 if self._value & choice.value == choice.value:
                     self.enabled.add(choice)
 
+    def __len__(self):
+        """
+        Returns how many of our known bitfields are selected.
+        """
+        return len(self.enabled)
+
     def enable(self, choice):
         """
         Enables the specified bit within the bitfield.  `choice` can either be

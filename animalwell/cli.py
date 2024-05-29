@@ -22,7 +22,7 @@ import enum
 import argparse
 import textwrap
 import collections
-from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, Bunny, Teleport, \
+from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, \
         Unlockable, has_image_support
 
@@ -258,7 +258,7 @@ def main():
     parser.add_argument('--egg-disable',
             type=Egg,
             action=EnumSetAction,
-            help="Disables the specified egg.  Can be specified more than once, or use 'all' to enable all",
+            help="Disables the specified egg.  Can be specified more than once, or use 'all' to disable all",
             )
 
     parser.add_argument('--bunny-enable',
@@ -270,7 +270,7 @@ def main():
     parser.add_argument('--bunny-disable',
             type=Bunny,
             action=EnumSetAction,
-            help="Disable the specified bunny.  Can be specified more than once, or use 'all' to enable all",
+            help="Disable the specified bunny.  Can be specified more than once, or use 'all' to disable all",
             )
 
     parser.add_argument('--respawn-consumables',
@@ -351,6 +351,18 @@ def main():
     locked.add_argument('--lockable-lock',
             action='store_true',
             help='Lock all lockable doors in the game (of the sort which are unlocked with a generic key)',
+            )
+
+    parser.add_argument('--eggdoor-open',
+            type=EggDoor,
+            action=EnumSetAction,
+            help="Opens the specified egg doors in the egg chamber.  Can be specified more than once, or use 'all' to open all",
+            )
+
+    parser.add_argument('--eggdoor-close',
+            type=EggDoor,
+            action=EnumSetAction,
+            help="Closes the specified egg doors in the egg chamber.  Can be specified more than once, or use 'all' to close all",
             )
 
     walls = parser.add_mutually_exclusive_group()
@@ -723,6 +735,7 @@ def main():
     else:
         slot_indexes = [args.slot-1]
     delete_common_set_items(args.egg_enable, args.egg_disable)
+    delete_common_set_items(args.eggdoor_open, args.eggdoor_close)
     delete_common_set_items(args.candles_enable, args.candles_disable)
     delete_common_set_items(args.teleport_enable, args.teleport_disable)
     delete_common_set_items(args.bunny_enable, args.bunny_disable)
@@ -752,6 +765,8 @@ def main():
             args.doors_close,
             args.lockable_unlock,
             args.lockable_lock,
+            args.eggdoor_open,
+            args.eggdoor_close,
             args.walls_open,
             args.walls_close,
             args.chests_open,
@@ -958,6 +973,8 @@ def main():
                             print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                         if slot.walls_blasted.count > 0:
                             print(f'   - Walls Blasted: {slot.walls_blasted}')
+                        if len(slot.egg_doors) > 0:
+                            print(f'   - Egg Doors Opened: {len(slot.egg_doors)}')
                         if k_shards_inserted > 0:
                             print(f'   - K. Shards Inserted: {k_shards_inserted}/3')
                         if slot.teleports.enabled:
@@ -1111,6 +1128,20 @@ def main():
                         print(f'{slot_label}: Locking all lockable doors')
                         slot.locked_doors.clear()
                         do_save = True
+
+                    if args.eggdoor_open:
+                        for eggdoor in sorted(args.eggdoor_open):
+                            if eggdoor not in slot.egg_doors.enabled:
+                                print(f'{slot_label}: Opening egg door: {eggdoor}')
+                                slot.egg_doors.enable(eggdoor)
+                                do_save = True
+
+                    if args.eggdoor_close:
+                        for eggdoor in sorted(args.eggdoor_close):
+                            if eggdoor in slot.egg_doors.enabled:
+                                print(f'{slot_label}: Closing egg door: {eggdoor}')
+                                slot.egg_doors.disable(eggdoor)
+                                do_save = True
 
                     if args.walls_open:
                         print(f'{slot_label}: Opening all movable walls')

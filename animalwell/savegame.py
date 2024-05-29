@@ -231,6 +231,17 @@ class Bunny(LabelEnum):
     SPIKE_ROOM =    (0x80000000, 'Spike Room') #20
 
 
+class EggDoor(LabelEnum):
+    """
+    Unlocked doors in the Egg Chamber
+    """
+
+    FIRST =  (0x1, 'First (Flute, Portal)')
+    SECOND = (0x2, 'Second (Pencil)')
+    THIRD =  (0x4, 'Third (Top)')
+    FOURTH = (0x8, 'Fourth (65th Egg)')
+
+
 class Teleport(LabelEnum):
     """
     Active teleporters
@@ -1274,6 +1285,7 @@ class Slot():
         self.gold_hearts = NumData(self, UInt8)
         self.last_groundhog_year = NumData(self, UInt16)
         self.moved_walls.populate_index(self)
+        self.egg_doors = NumBitfieldData(self, UInt8, EggDoor)
 
         self.elapsed_ticks_ingame = Ticks(self, 0x1BC)
         self.elapsed_ticks_withpause = Ticks(self)
