@@ -649,12 +649,12 @@ def main():
 
     cring.add_argument('--cring-enable',
             action='store_true',
-            help='Enable C. Ring',
+            help="Enable Cheater's Ring",
             )
 
     cring.add_argument('--cring-disable',
             action='store_true',
-            help='Disable C. Ring',
+            help="Disable Cheater's Ring",
             )
 
     parser.add_argument('--quest-state-enable',
@@ -1394,13 +1394,13 @@ def main():
 
                     if args.cring_enable:
                         if QuestState.CRING not in slot.quest_state.enabled:
-                            print(f'{slot_label}: Unlocking C. Ring')
+                            print(f"{slot_label}: Unlocking Cheater's Ring")
                             slot.quest_state.enable(QuestState.CRING)
                             do_save = True
 
                     if args.cring_disable:
                         if QuestState.CRING in slot.quest_state.enabled:
-                            print(f'{slot_label}: Removing C. Ring')
+                            print(f"{slot_label}: Removing Cheater's Ring")
                             slot.quest_state.disable(QuestState.CRING)
                             do_save = True
 
