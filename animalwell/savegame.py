@@ -1058,6 +1058,140 @@ class FillLevels(Data):
         return sum([1 for l in self if l >= FillLevels.MAX_VALUE])
 
 
+class TileID(Data):
+    """
+    Class to hold information about a specific Tile ID.  This consists of
+    both the room coordinates (x+y) an then the in-room tile coordinates (x+y).
+
+    In addition to the room and tile coordinates, the file format technically
+    uses the top two bits of the Tile X coordinate to specify map layer.  The
+    game code specifically checks for layer 1 within those two bits.  All
+    known instances of the data in the game remain in layer 0, so the class
+    is currently just ignoring the fact that it's there.  If anything changes
+    in the future (or map mods start getting introduced) we may have to start
+    doing things properly.
+    """
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+
+        self.room_y = NumData(self, UInt8)
+        self.room_x = NumData(self, UInt8)
+        self.tile_y = NumData(self, UInt8)
+        # Again, the top two bits of tile_x are actually `layer`, which we're
+        # ignoring for now.
+        self.tile_x = NumData(self, UInt8)
+
+    def __str__(self):
+        return f'({self.room_x}, {self.room_y}): {self.tile_x}, {self.tile_y}'
+
+    def clear(self):
+        """
+        Clears out all our data
+        """
+        self.room_y.value = 0
+        self.room_x.value = 0
+        self.tile_y.value = 0
+        self.tile_x.value = 0
+
+    def to_tuple(self):
+        """
+        Returns ourself as a tuple which can be compared to the entries in
+        TileID's `known_values` set.
+        """
+        return (self.room_x.value, self.room_y.value, self.tile_x.value, self.tile_y.value)
+
+    def from_tuple(self, data):
+        """
+        Sets our own data from the given tuple (used by TileIDs to know
+        which ones might need to be added to a save).
+        """
+        self.room_x.value = data[0]
+        self.room_y.value = data[1]
+        self.tile_x.value = data[2]
+        self.tile_y.value = data[3]
+
+
+class TileIDs(Data):
+    """
+    Defines a Tile ID in terms of its room coordinates and then in-room tile
+    coordinates.  This is used to keep track of which locked doors have been
+    unlocked, and which movable walls have been moved.
+
+    Note that this structure has a separate "index" field stored *much* later
+    in the slot data, which the game uses to know where the next-opened
+    TileID should go.  Specifying the location to this index right during the
+    constructor here would be a little annoying given how we're handling
+    the objects, so we're leaving that to be populated later on once we
+    get to that point in the file.
+
+    Note too that there's a bug in the game where the bounds are *not* checked
+    properly.  For walls, there are fourteen "legitimate" entries in this list,
+    but there are a further three which can be triggered via cheating.  The
+    bounds check for the 16 available slots is not checked properly, and the
+    game ends up with a runaway loop of writing to a 17th slot, then 18th, etc.
+    This implementation will clamp all operations to the specified number of
+    entries a bit more properly.
+    """
+
+    def __init__(self, parent, num_entries, known_values, offset=None):
+        super().__init__(parent, offset=offset)
+        self._num_entries = num_entries
+        self.known_values = known_values
+        self._next_index = None
+        self._tiles = []
+        for _ in range(num_entries):
+            self._tiles.append(TileID(self))
+
+    def __len__(self):
+        """
+        Cap our length at num_entries, even if we've overflown.
+        """
+        if self._next_index > self._num_entries:
+            return self._num_entries
+        else:
+            return self._next_index.value
+
+    def __iter__(self):
+        """
+        Allow iteration over our stored tiles
+        """
+        return iter(self._tiles[:len(self)])
+
+    def populate_index(self, parent, offset=None):
+        """
+        Populate our index field, which keeps track of where the next entry
+        should be written.  Note that we're passing in a new parent and
+        offset here, since this data is *very* divorced from the main array
+        in the savegame data.  In the savegame currently there's little
+        reason why we couldn't just use our saved parent here, since it'll
+        always be the same, but this way we can be pretty explicit about
+        offsets in the main slot defintion, so I prefer it this way.
+        """
+        self._next_index = NumData(parent, UInt8, offset)
+
+    def clear(self):
+        """
+        Clears out all tiles from ourselves
+        """
+        self._next_index.value = 0
+        for tile in self._tiles:
+            tile.clear()
+
+    def fill(self):
+        """
+        Fills in all known tiles to our structure
+        """
+        values_to_add = set(self.known_values)
+        current_values = set([tile.to_tuple() for tile in self])
+        values_to_add -= current_values
+        if self._next_index + len(values_to_add) > self._num_entries:
+            raise RuntimeError(f'Attempting to add {len(values_to_add)} entries to the existing {self._next_index} would overflow this structure (max size: {self._num_entries})')
+        for tile_values in sorted(values_to_add):
+            self._tiles[self._next_index.value].from_tuple(tile_values)
+            self._next_index.value += 1
+
+
 class Slot():
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -1087,6 +1221,31 @@ class Slot():
         # (though we'll continue to load the rest of the data anyway)
         self.has_data = self.timestamp.has_data
 
+        self.locked_doors = TileIDs(self, 16, {
+                (7, 4, 9, 5),
+                (15, 8, 38, 6),
+                (16, 10, 4, 5),
+                (14, 13, 6, 16),
+                (14, 15, 27, 6),
+                (14, 15, 32, 6),
+            }, 0x88)
+        self.moved_walls = TileIDs(self, 16, {
+                (2, 5, 2, 1),
+                (15, 5, 6, 3),
+                (6, 6, 16, 14),
+                (7, 6, 16, 1),
+                (7, 6, 5, 14),
+                (10, 8, 16, 17),
+                (13, 7, 29, 1),
+                (2, 9, 1, 6),
+                (9, 10, 39, 6),
+                (8, 11, 33, 19),
+                (13, 11, 39, 17),
+                (6, 13, 36, 7),
+                (2, 19, 9, 7),
+                (2, 19, 31, 7),
+            })
+
         self.num_steps = NumData(self, UInt32, 0x108)
         self.fill_levels = FillLevels(self)
 
@@ -1106,12 +1265,15 @@ class Slot():
         self.bubbles_popped = NumData(self, UInt16)
 
         self.num_saves = NumData(self, UInt16, 0x1A8)
+        self.locked_doors.populate_index(self)
 
         self.keys = NumData(self, UInt8, 0x1B1)
         self.matches = NumData(self, UInt8)
         self.firecrackers = NumData(self, UInt8)
         self.health = NumData(self, UInt8)
         self.gold_hearts = NumData(self, UInt8)
+        self.last_groundhog_year = NumData(self, UInt16)
+        self.moved_walls.populate_index(self)
 
         self.elapsed_ticks_ingame = Ticks(self, 0x1BC)
         self.elapsed_ticks_withpause = Ticks(self)

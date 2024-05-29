@@ -341,6 +341,30 @@ def main():
                 """,
             )
 
+    locked = parser.add_mutually_exclusive_group()
+
+    locked.add_argument('--lockable-unlock',
+            action='store_true',
+            help='Unlock all lockable doors in the game (of the sort which are unlocked with a generic key)',
+            )
+
+    locked.add_argument('--lockable-lock',
+            action='store_true',
+            help='Lock all lockable doors in the game (of the sort which are unlocked with a generic key)',
+            )
+
+    walls = parser.add_mutually_exclusive_group()
+
+    walls.add_argument('--walls-open',
+            action='store_true',
+            help='Opens all moveable walls in the game',
+            )
+
+    walls.add_argument('--walls-close',
+            action='store_true',
+            help='Close all moveable walls in the game',
+            )
+
     chests = parser.add_mutually_exclusive_group()
 
     chests.add_argument('--chests-open',
@@ -726,6 +750,10 @@ def main():
             args.buttons_reset,
             args.doors_open,
             args.doors_close,
+            args.lockable_unlock,
+            args.lockable_lock,
+            args.walls_open,
+            args.walls_close,
             args.chests_open,
             args.chests_close,
             args.candles_enable,
@@ -922,6 +950,10 @@ def main():
                         print(f'   - Chests Opened: {slot.chests_opened}')
                         print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
                         print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
+                        if len(slot.locked_doors) > 0:
+                            print(f'   - Doors Unlocked: {len(slot.locked_doors)}')
+                        if len(slot.moved_walls) > 0:
+                            print(f'   - Walls Moved: {len(slot.moved_walls)}')
                         if slot.detonators_triggered.count > 0:
                             print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                         if slot.walls_blasted.count > 0:
@@ -1068,6 +1100,26 @@ def main():
                     if args.doors_close:
                         print(f'{slot_label}: Marking all button-controlled doors as closed')
                         slot.button_doors_opened.clear()
+                        do_save = True
+
+                    if args.lockable_unlock:
+                        print(f'{slot_label}: Unlocking all lockable doors')
+                        slot.locked_doors.fill()
+                        do_save = True
+
+                    if args.lockable_lock:
+                        print(f'{slot_label}: Locking all lockable doors')
+                        slot.locked_doors.clear()
+                        do_save = True
+
+                    if args.walls_open:
+                        print(f'{slot_label}: Opening all movable walls')
+                        slot.moved_walls.fill()
+                        do_save = True
+
+                    if args.walls_close:
+                        print(f'{slot_label}: Closing all movable walls')
+                        slot.moved_walls.clear()
                         do_save = True
 
                     if args.chests_open:
