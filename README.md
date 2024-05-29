@@ -9,7 +9,7 @@ to get it to a real release.  Make backups of your saves before using this!
 Work on decoding the savegame structure has mostly been done by
 [Kein](https://github.com/Kein/), [just-ero](https://github.com/just-ero),
 lipsum, and myself.  My own contributions were mostly at the beginning of
-the process; Kein, just-ero, and lipsom have been responsible for the
+the process; Kein, just-ero, and lipsum have been responsible for the
 majority of the save format at this point.  Many thanks to them for filling
 things out!
 
