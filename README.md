@@ -1,32 +1,35 @@
 Python-Based CLI Animal Well Savegame Editor
 ============================================
 
-`pyanimalwell` is a very WIP save editor (and data backend) for editing
+`pyanimalwell` is a WIP save editor (and data backend) for editing
 [Animal Well](https://store.steampowered.com/app/813230/ANIMAL_WELL/) savegames.
-At the moment it's extremely incomplete.  Make backups of your saves before
-using this!
+At the moment it's reasonably complete, though there's still work to be done
+to get it to a real release.  Make backups of your saves before using this!
 
-Work on decoding the savegame structure has mostly been done by myself,
-[Kein](https://github.com/Kein/), and [just-ero](https://github.com/just-ero),
-with Kein and just-ero picking up the majority of that workload after the
-initial basic discoveries.  Many thanks to them for filling things out!
+Work on decoding the savegame structure has mostly been done by
+[Kein](https://github.com/Kein/), [just-ero](https://github.com/just-ero),
+lipsum, and myself.  My own contributions were mostly at the beginning of
+the process; Kein, just-ero, and lipsom have been responsible for the
+majority of the save format at this point.  Many thanks to them for filling
+things out!
 
 A far-more-complete mapping of the savegame data can be found at
 [Kein's awsgtools repo](https://github.com/Kein/awsgtools).  At time of
 writing the primary format there is an
-[010 Editor](https://www.sweetscape.com/010editor/) binary template,
-but other translations should become available over time.  A
-human-readable document describing the save format can be found [at the wiki
-of that repo](https://github.com/Kein/awsgtools/wiki/Format-Description)
+[010 Editor](https://www.sweetscape.com/010editor/) binary template
+plus an [ImHex](https://imhex.werwolv.net/) pattern.  Other translations
+may become available over time.  A human-readable document describing the
+save format can be found [at the wiki of that repo](https://github.com/Kein/awsgtools/wiki/Format-Description)
 as well, though at time of writing it's lagging behind the binary
 template by quite a bit.
 
 Usage
 -----
 
-I'm not planning on documenting this much yet, since much might end up
-changing.  There is a temporary script right in the main project dir
-which can be launched as so:
+Documentation for this script is forthcoming.  In the meantime, the
+`--help` output is probably your best bet.  At the moment there is
+a temporary script right in the main project dir which can be launched
+as so:
 
     ./aw.py --help
 
