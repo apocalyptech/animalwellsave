@@ -1264,6 +1264,9 @@ class Slot():
         self.button_doors_opened = BitCountData(self, UInt64, 2, 94)
         self.yellow_buttons_pressed = BitCountData(self, UInt64, 3, 134)
 
+        self.purple_buttons_pressed = BitCountData(self, UInt64, 1, 27, 0x160)
+        self.green_buttons_pressed = BitCountData(self, UInt64, 1, 7)
+
         self.picked_fruit = BitCountData(self, UInt64, 2, 115, 0x170)
         self.picked_firecrackers = BitCountData(self, UInt64, 1, 64)
         self.eggs = NumBitfieldData(self, UInt64, Egg)

@@ -518,6 +518,22 @@ class BitCountData(Data):
         """
         return str(self.count)
 
+    def __len__(self):
+        """
+        The number of bits set in our structure
+        """
+        return self.count
+
+    def __gt__(self, other):
+        """
+        Compare against other BitCountData objects (probably not much use there)
+        or other values, based on our count.
+        """
+        if issubclass(type(other), BitCountData):
+            return self.count > other.count
+        else:
+            return self.count > other
+
     def _fix_count(self):
         """
         Resets our internal `count` structure for how many bits are set across

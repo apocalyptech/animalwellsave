@@ -314,12 +314,12 @@ def main():
 
     buttons.add_argument('--buttons-press',
             action='store_true',
-            help="Sets all yellow buttons in the game to 'pressed' state",
+            help="Sets all yellow/purple/green buttons in the game to 'pressed' state",
             )
 
     buttons.add_argument('--buttons-reset',
             action='store_true',
-            help="Sets all yellow buttons in the game to their default non-pressed state",
+            help="Sets all yellow/purple/green buttons in the game to their default non-pressed state",
             )
 
     doors = parser.add_mutually_exclusive_group()
@@ -327,7 +327,7 @@ def main():
     doors.add_argument('--doors-open',
             action='store_true',
             help="""
-                Opens all yellow-button doors in the game.  Does NOT open doors which have other
+                Opens all button/reservoir doors in the game.  Does NOT open doors which have other
                 specific requirements (egg doors, doors which require keys, etc).
                 """,
             )
@@ -335,9 +335,9 @@ def main():
     doors.add_argument('--doors-close',
             action='store_true',
             help="""
-                Closes all yellow-button doors in the game.  Does NOT close doors which have other
+                Closes all button/reservoir doors in the game.  Does NOT close doors which have other
                 specific requirements (egg doors, doors which require keys, etc).  Note that if
-                the buttons related to the door are still pressed, the doors will re-open.
+                the door's opening conditions are still met (buttons pressed, etc), the doors will re-open.
                 """,
             )
 
@@ -961,10 +961,17 @@ def main():
                         if QuestState.UNLOCK_STAMPS in slot.quest_state.enabled:
                             print(f'   - Minimap Stamps: {len(slot.stamps)}')
                         print(f' - Permanent Map Data:')
-                        print(f'   - Squirrels Scared: {slot.squirrels_scared}')
                         print(f'   - Chests Opened: {slot.chests_opened}')
-                        print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
-                        print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
+                        if slot.squirrels_scared > 0:
+                            print(f'   - Squirrels Scared: {slot.squirrels_scared}')
+                        if slot.yellow_buttons_pressed > 0:
+                            print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
+                        if slot.purple_buttons_pressed > 0:
+                            print(f'   - Purple Buttons Pressed: {slot.purple_buttons_pressed}')
+                        if slot.green_buttons_pressed > 0:
+                            print(f'   - Green Buttons Pressed: {slot.green_buttons_pressed}')
+                        if slot.button_doors_opened > 0:
+                            print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                         if len(slot.locked_doors) > 0:
                             print(f'   - Doors Unlocked: {len(slot.locked_doors)}')
                         if len(slot.moved_walls) > 0:
@@ -1100,13 +1107,17 @@ def main():
                         do_save = True
 
                     if args.buttons_press:
-                        print(f'{slot_label}: Marking all yellow buttons as pressed')
+                        print(f'{slot_label}: Marking all yellow/purple/green buttons as pressed')
                         slot.yellow_buttons_pressed.fill()
+                        slot.purple_buttons_pressed.fill()
+                        slot.green_buttons_pressed.fill()
                         do_save = True
 
                     if args.buttons_reset:
-                        print(f'{slot_label}: Marking all yellow buttons as not pressed')
+                        print(f'{slot_label}: Marking all yellow/purple/green buttons as not pressed')
                         slot.yellow_buttons_pressed.clear()
+                        slot.purple_buttons_pressed.clear()
+                        slot.green_buttons_pressed.clear()
                         do_save = True
 
                     if args.doors_open:
