@@ -314,12 +314,12 @@ def main():
 
     buttons.add_argument('--buttons-press',
             action='store_true',
-            help="Sets all yellow/purple/green buttons in the game to 'pressed' state",
+            help="Sets all buttons in the game to 'pressed' state",
             )
 
     buttons.add_argument('--buttons-reset',
             action='store_true',
-            help="Sets all yellow/purple/green buttons in the game to their default non-pressed state",
+            help="Sets all buttons in the game to their default non-pressed state",
             )
 
     doors = parser.add_mutually_exclusive_group()
@@ -977,12 +977,12 @@ def main():
                             print(f'   - Squirrels Scared: {slot.squirrels_scared}')
                         if slot.yellow_buttons_pressed > 0:
                             print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
-                        if slot.pink_buttons_pressed > 0:
-                            print(f'   - Valid Pink Buttons Pressed: {len(slot.pink_buttons_pressed)}')
                         if slot.purple_buttons_pressed > 0:
                             print(f'   - Purple Buttons Pressed: {slot.purple_buttons_pressed}')
                         if slot.green_buttons_pressed > 0:
                             print(f'   - Green Buttons Pressed: {slot.green_buttons_pressed}')
+                        if slot.pink_buttons_pressed > 0:
+                            print(f'   - Valid Pink Buttons Pressed: {len(slot.pink_buttons_pressed)}')
                         if slot.button_doors_opened > 0:
                             print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                         if len(slot.locked_doors) > 0:
@@ -1133,17 +1133,19 @@ def main():
                         do_save = True
 
                     if args.buttons_press:
-                        print(f'{slot_label}: Marking all yellow/purple/green buttons as pressed')
+                        print(f'{slot_label}: Marking all buttons as pressed')
                         slot.yellow_buttons_pressed.fill()
                         slot.purple_buttons_pressed.fill()
                         slot.green_buttons_pressed.fill()
+                        slot.pink_buttons_pressed.enable_all()
                         do_save = True
 
                     if args.buttons_reset:
-                        print(f'{slot_label}: Marking all yellow/purple/green buttons as not pressed')
+                        print(f'{slot_label}: Marking all buttons as not pressed')
                         slot.yellow_buttons_pressed.clear()
                         slot.purple_buttons_pressed.clear()
                         slot.green_buttons_pressed.clear()
+                        slot.pink_buttons_pressed.disable_all()
                         do_save = True
 
                     if args.doors_open:
