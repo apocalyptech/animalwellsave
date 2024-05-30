@@ -1613,6 +1613,12 @@ def main():
                                 slot.egg_doors.disable(eggdoor)
                                 do_save = True
 
+                    if args.clear_invalid_walls:
+                        print(f'{slot_label}: Clearing invalid wall-opening records')
+                        slot.moved_walls.remove_invalid()
+                        slot.invalid_pink_buttons.disable_all()
+                        do_save = True
+
                     if args.walls_open:
                         print(f'{slot_label}: Opening all movable walls')
                         slot.moved_walls.fill()
@@ -1621,12 +1627,6 @@ def main():
                     if args.walls_close:
                         print(f'{slot_label}: Closing all movable walls')
                         slot.moved_walls.clear()
-                        do_save = True
-
-                    if args.clear_invalid_walls:
-                        print(f'{slot_label}: Clearing invalid wall-opening records')
-                        slot.moved_walls.remove_invalid()
-                        slot.invalid_pink_buttons.disable_all()
                         do_save = True
 
                     if args.chests_open:
