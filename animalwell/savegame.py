@@ -101,11 +101,15 @@ class QuestState(LabelEnum):
     HOUSE_OPEN =         (0x00000001, 'House Open')
     OFFICE_OPEN =        (0x00000002, 'Office Open')
     CLOSET_OPEN =        (0x00000004, 'Closet Open')
+    # Not sure what this is, honestly
+    #SWITCH_STATE =       (0x00000100, 'Switch State')
     UNLOCK_MAP =         (0x00000200, 'Map Unlocked')
     UNLOCK_STAMPS =      (0x00000400, 'Stamps Unlocked')
     UNLOCK_PENCIL =      (0x00000800, 'Pencil Unlocked')
     DEFEATED_CHAMELEON = (0x00001000, 'Defeated Chameleon')
     CRING =              (0x00002000, "Cheater's Ring")
+    # Not doing this one either
+    #EATEN_BY_CHAMELEON = (0x00004000, "Eaten by Chameleon")
     USED_S_MEDAL =       (0x00008000, "Inserted S. Medal")
     USED_E_MEDAL =       (0x00010000, "Inserted E. Medal")
     WINGS =              (0x00020000, "Wings / Flying Unlocked")
