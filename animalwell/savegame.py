@@ -1472,12 +1472,17 @@ class Slot():
         self.teleports_seen = NumBitfieldData(self, UInt8, Teleport, 0x223)
         self.teleports = NumBitfieldData(self, UInt8, Teleport)
         self.stamps = Stamps(self)
+        # Elevator data would be here, but I'm not bothering to model
+        # it at the moment.  Also then an x/y location of the currenly-
+        # selected mural pixel.
 
         self.minimap = Minimap(self, 0x3EC)
         self.pencilmap = Minimap(self, 0xD22D)
         self.destructionmap = Minimap(self, 0x1A06E)
 
         self.mural = Mural(self, 0x26EAF)
+        # Stalactite/Icicle data follows here, but I'm not going to
+        # model it at the moment.
 
         self.berries_eaten_while_full = NumData(self, UInt16, 0x26FFA)
 
