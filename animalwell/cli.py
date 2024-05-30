@@ -326,6 +326,18 @@ def main():
             help="Overwrite the with-paused tick counter to just ingame time",
             )
 
+    wings = player.add_mutually_exclusive_group()
+
+    wings.add_argument('--wings-enable',
+            action='store_true',
+            help='Enable Wings / Flying Mode',
+            )
+
+    wings.add_argument('--wings-disable',
+            action='store_true',
+            help='Disable Wings / Flying Mode',
+            )
+
     ###
     ### Inventory
     ###
@@ -428,18 +440,6 @@ def main():
     egg65.add_argument('--egg65-disable',
             action='store_true',
             help='Disable Egg 65',
-            )
-
-    wings = inventory.add_mutually_exclusive_group()
-
-    wings.add_argument('--wings-enable',
-            action='store_true',
-            help='Enable Wings / Flying Mode',
-            )
-
-    wings.add_argument('--wings-disable',
-            action='store_true',
-            help='Disable Wings / Flying Mode',
             )
 
     cring = inventory.add_mutually_exclusive_group()
@@ -890,14 +890,71 @@ def main():
         if slot_indexes:
             loop_into_slots = True
     if any([
-            args.progress_enable,
-            args.progress_disable,
+            # Control
+            args.import_slot,
+            args.export_slot,
+
+            # Player
+            args.health is not None,
+            args.gold_hearts is not None,
+            args.spawn,
             args.steps is not None,
             args.deaths is not None,
             args.saves is not None,
+            args.bubbles_popped is not None,
+            args.berries_eaten_while_full is not None,
+            args.ticks is not None,
+            args.ticks_copy_ingame,
+            args.wings_enable,
+            args.wings_disable,
+
+            # Inventory
+            args.equip_enable,
+            args.equip_disable,
+            args.inventory_enable,
+            args.inventory_disable,
             args.firecrackers is not None,
             args.keys is not None,
             args.matches is not None,
+            args.map_enable,
+            args.upgrade_wand,
+            args.downgrade_wand,
+            args.egg65_enable,
+            args.egg65_disable,
+            args.cring_enable,
+            args.cring_disable,
+
+            # Progress/Quests
+            args.progress_enable,
+            args.progress_disable,
+            args.quest_state_enable,
+            args.quest_state_disable,
+            args.cats_free,
+            args.cats_cage,
+            args.kshard_collect is not None,
+            args.kshard_insert is not None,
+            args.teleport_enable,
+            args.teleport_disable,
+            args.mural_clear,
+            args.mural_default,
+            args.mural_solved,
+            args.flame_collect,
+            args.flame_use,
+            args.kangaroo_room is not None,
+            args.blue_manticore,
+            args.red_manticore,
+            args.torus_enable,
+            args.torus_disable,
+
+            # Map Edits
+            args.egg_enable,
+            args.egg_disable,
+            args.bunny_enable,
+            args.bunny_disable,
+            args.respawn_consumables,
+            args.clear_ghosts,
+            args.respawn_ghosts,
+            args.respawn_squirrels,
             args.buttons_press,
             args.buttons_reset,
             args.doors_open,
@@ -918,60 +975,14 @@ def main():
             args.detonators_activate,
             args.detonators_rearm,
             args.respawn_destroyed_tiles,
-            args.cats_free,
-            args.cats_cage,
-            args.equip_enable,
-            args.equip_disable,
-            args.inventory_enable,
-            args.inventory_disable,
-            args.teleport_enable,
-            args.teleport_disable,
-            args.map_enable,
+
+            # Minimap
             args.reveal_map,
             args.clear_map,
             args.clear_pencil,
             args.clear_stamps,
             has_image_support and args.pencil_image_export,
             has_image_support and args.pencil_image_import,
-            args.mural_clear,
-            args.mural_default,
-            args.mural_solved,
-            args.flame_collect,
-            args.flame_use,
-            args.kangaroo_room is not None,
-            args.kshard_collect is not None,
-            args.kshard_insert is not None,
-            args.upgrade_wand,
-            args.downgrade_wand,
-            args.blue_manticore,
-            args.red_manticore,
-            args.egg65_enable,
-            args.egg65_disable,
-            args.torus_enable,
-            args.torus_disable,
-            args.wings_enable,
-            args.wings_disable,
-            args.cring_enable,
-            args.cring_disable,
-            args.spawn,
-            args.health is not None,
-            args.gold_hearts is not None,
-            args.respawn_consumables,
-            args.clear_ghosts,
-            args.respawn_ghosts,
-            args.respawn_squirrels,
-            args.egg_enable,
-            args.egg_disable,
-            args.bunny_enable,
-            args.bunny_disable,
-            args.bubbles_popped is not None,
-            args.berries_eaten_while_full is not None,
-            args.quest_state_enable,
-            args.quest_state_disable,
-            args.import_slot,
-            args.export_slot,
-            args.ticks is not None,
-            args.ticks_copy_ingame,
             ]):
         if slot_indexes:
             loop_into_slots = True
