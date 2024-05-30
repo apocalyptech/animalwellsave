@@ -23,7 +23,7 @@ import argparse
 import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
-        QuestState, FlameState, CandleState, KangarooShardState, \
+        QuestState, FlameState, CandleState, KangarooShardState, CatStatus, \
         Unlockable, has_image_support
 
 
@@ -446,6 +446,18 @@ def main():
             help='Respawn any destroyed tiles on the map (such as through detonators, top blocks, Manticore glass)',
             )
 
+    parser.add_argument('--cats-free',
+            type=CatStatus,
+            action=EnumSetAction,
+            help="Frees the specified cats, and/or the wheel reward cage.  Can be specified more than once, or use 'all' to free all",
+            )
+
+    parser.add_argument('--cats-cage',
+            type=CatStatus,
+            action=EnumSetAction,
+            help="Re-cages the specified cats, and/or the wheel reward cage.  Can be specified more than once, or use 'all' to cage all",
+            )
+
     parser.add_argument('--equip-enable',
             type=Equipment,
             action=EnumSetAction,
@@ -749,6 +761,7 @@ def main():
     delete_common_set_items(args.candles_enable, args.candles_disable)
     delete_common_set_items(args.teleport_enable, args.teleport_disable)
     delete_common_set_items(args.bunny_enable, args.bunny_disable)
+    delete_common_set_items(args.cats_free, args.cats_cage)
     delete_common_set_items(args.equip_enable, args.equip_disable)
     delete_common_set_items(args.inventory_enable, args.inventory_disable)
     delete_common_set_items(args.quest_state_enable, args.quest_state_disable)
@@ -789,6 +802,8 @@ def main():
             args.detonators_activate,
             args.detonators_rearm,
             args.respawn_destroyed_tiles,
+            args.cats_free,
+            args.cats_cage,
             args.equip_enable,
             args.equip_disable,
             args.inventory_enable,
@@ -1004,6 +1019,16 @@ def main():
                             print(f'   - Egg Doors Opened: {len(slot.egg_doors)}')
                         if k_shards_inserted > 0:
                             print(f'   - K. Shards Inserted: {k_shards_inserted}/3')
+                        if len(slot.cat_status) > 0:
+                            cat_count = len(slot.cat_status)
+                            has_wheel = False
+                            if CatStatus.WHEEL in slot.cat_status.enabled:
+                                cat_count -= 1
+                                has_wheel = True
+                            if cat_count > 0:
+                                print(f'   - Cats Rescued: {cat_count}')
+                            if has_wheel:
+                                print(f'   - Unlocked wheel cage')
                         if slot.teleports.enabled:
                             print(f' - Teleports Active: {len(slot.teleports.enabled)}')
                             for teleport in sorted(slot.teleports.enabled):
@@ -1257,6 +1282,20 @@ def main():
                         print(f'{slot_label}: Respawning all destroyed tiles')
                         slot.destructionmap.clear_map()
                         do_save = True
+
+                    if args.cats_free:
+                        for cat in sorted(args.cats_free):
+                            if cat not in slot.cat_status.enabled:
+                                print(f'{slot_label}: Freeing cat: {cat}')
+                                slot.cat_status.enable(cat)
+                                do_save = True
+
+                    if args.cats_cage:
+                        for cat in sorted(args.cats_cage):
+                            if cat in slot.cat_status.enabled:
+                                print(f'{slot_label}: Re-caging cat: {cat}')
+                                slot.cat_status.disable(cat)
+                                do_save = True
 
                     if args.firecrackers is not None:
                         print(f'{slot_label}: Updating firecracker count to: {args.firecrackers}')

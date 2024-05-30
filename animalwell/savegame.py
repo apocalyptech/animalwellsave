@@ -378,6 +378,19 @@ class PinkButtonInvalid(LabelEnum):
     ILL_03 = (0x100, 'Illegal Bunny 3')
 
 
+class CatStatus(LabelEnum):
+    """
+    Status of caged cats (and the caged wheel you can get as a reward)
+    """
+
+    CAT_16_18_1 = (0x01, 'Caged Cat 1 at 16,18')
+    CAT_16_18_2 = (0x02, 'Caged Cat 2 at 16,18')
+    CAT_16_18_3 = (0x04, 'Caged Cat 3 at 16,18')
+    CAT_14_19_1 = (0x08, 'Caged Cat 1 at 14,19')
+    CAT_14_19_2 = (0x10, 'Caged Cat 2 at 14,19')
+    WHEEL =       (0x20, 'Caged Wheel')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -1360,6 +1373,7 @@ class Slot():
         self.detonators_triggered = BitCountData(self, UInt32, 1, 9)
         self.bunnies = NumBitfieldData(self, UInt32, Bunny)
         self.squirrels_scared = BitCountData(self, UInt16, 1, 13, 0x19C)
+        self.cat_status = NumBitfieldData(self, UInt16, CatStatus)
 
         self.firecrackers_collected = NumData(self, UInt16, 0x1A2)
         self.bubbles_popped = NumData(self, UInt16)
