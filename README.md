@@ -135,8 +135,6 @@ few other things which would be nice eventually:
 Usage
 -----
 
-*(this is still being filled in)*
-
 Here is a detailed list of all the arguments available on the CLI editor.
 Note that these arguments can be chained together pretty much as long as
 you want.  For instance:
@@ -149,6 +147,7 @@ To show information about the save, including for any chosen slots, use
 `-i`/`--info`:
 
     aw.py AnimalWell.sav -i
+    aw.py AnimalWell.sav --info
 
 ### Fix Checksum
 
@@ -168,6 +167,7 @@ a specific slot (`1`, `2`, or `3`), or to operate on *all* slots by
 choosing `0`.
 
     aw.py AnimalWell.sav -i -s 1
+    aw.py AnimalWell.sav --info --slot 2
 
 Note that a few arguments (namely `--import-slot` and `--export-slot`)
 do not allow using `0` to specify "all slots."
