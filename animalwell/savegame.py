@@ -214,19 +214,35 @@ class Bunny(LabelEnum):
     """
 
     TUTORIAL =      (0x00000001, 'Tutorial') #4
+    #ILL_01 =        (0x00000002, 'Illegal 1')
     ORIGAMI =       (0x00000004, 'Origami') #17
     CROW =          (0x00000008, 'Crow') #10
     GHOST =         (0x00000010, 'Ghost') #9
+    #ILL_02 =        (0x00000020, 'Illegal 2')
     FISH_MURAL =    (0x00000040, 'Fish Mural') #8
     MAP =           (0x00000080, 'Map Numbers') #5
     TV =            (0x00000100, 'TV') #16
     UV =            (0x00000200, 'UV') #7
     BULB =          (0x00000400, 'Bulb') #13
     CHINCHILLA =    (0x00000800, 'Chinchilla') #2
+    #ILL_03 =        (0x00001000, 'Illegal 3')
+    #ILL_04 =        (0x00002000, 'Illegal 4')
+    #ILL_05 =        (0x00004000, 'Illegal 5')
     BUNNY_MURAL =   (0x00008000, 'Bunny Mural') #1
+    #ILL_06 =        (0x00010000, 'Illegal 6')
+    #ILL_07 =        (0x00020000, 'Illegal 7')
+    #ILL_08 =        (0x00040000, 'Illegal 8')
+    #ILL_09 =        (0x00080000, 'Illegal 9')
+    #ILL_10 =        (0x00100000, 'Illegal 10')
+    #ILL_11 =        (0x00200000, 'Illegal 11')
     DUCK =          (0x00400000, 'Duck') #11
+    #ILL_12 =        (0x00800000, 'Illegal 12')
+    #ILL_13 =        (0x01000000, 'Illegal 13')
     GHOST_DOG =     (0x02000000, 'Ghost Dog') #18
+    #ILL_14 =        (0x04000000, 'Illegal 14')
+    #ILL_15 =        (0x08000000, 'Illegal 15')
     DREAM =         (0x10000000, 'Dream') #12
+    #ILL_16 =        (0x20000000, 'Illegal 16')
     FLOOR_IS_LAVA = (0x40000000, 'Floor Is Lava') #14
     SPIKE_ROOM =    (0x80000000, 'Spike Room') #20
 
@@ -333,6 +349,36 @@ class KangarooShardState(LabelEnum):
     DROPPED = (1, 'Dropped')
     COLLECTED = (2, 'Collected')
     INSERTED = (3, 'Inserted')
+
+
+class PinkButton(LabelEnum):
+    """
+    Pink buttons that we're willing to set.  This omits the ones associated with
+    "illegal" bunnies, since opening up those walls can end up destroying
+    savefiles.
+    """
+
+    #ILL_01 =        (0x001, 'Illegal Bunny 1')
+    SPIKE =         (0x002, 'Spike Bunny')
+    FLOOR_IS_LAVA = (0x004, 'Floor Is Lava Bunny')
+    #ILL_02 =        (0x008, 'Illegal Bunny 2')
+    MAP_NUMBER =    (0x010, 'Map Number Bunny')
+    DOG_WHEEL =     (0x020, 'Elevator Dog Wheel')
+    CHINCHILLA =    (0x040, 'Chinchilla Bunny')
+    BULB =          (0x080, 'Bulb Bunny')
+    #ILL_03 =        (0x100, 'Illegal Bunny 3')
+    PORTAL =        (0x200, 'Lower Portal Nexus')
+
+
+class PinkButtonInvalid(LabelEnum):
+    """
+    Pink buttons that we are *unwilling* to set ourselves, but which we'll
+    provide a way to clear out, in case the user had hit them at some point.
+    """
+
+    ILL_01 = (0x001, 'Illegal Bunny 1')
+    ILL_02 = (0x008, 'Illegal Bunny 2')
+    ILL_03 = (0x100, 'Illegal Bunny 3')
 
 
 class Timestamp(Data):
@@ -1122,6 +1168,16 @@ class TileID(Data):
         self.tile_x.value = data[2]
         self.tile_y.value = data[3]
 
+    def copy_from(self, other):
+        """
+        Copies data from another TileID onto ourselves.  Used mostly just while
+        clearing out "invalid" wall moves at the moment.
+        """
+        self.room_x.value = other.room_x.value
+        self.room_y.value = other.room_y.value
+        self.tile_x.value = other.tile_x.value
+        self.tile_y.value = other.tile_y.value
+
 
 class TileIDs(Data):
     """
@@ -1143,12 +1199,21 @@ class TileIDs(Data):
     game ends up with a runaway loop of writing to a 17th slot, then 18th, etc.
     This implementation will clamp all operations to the specified number of
     entries a bit more properly.
+
+    The optional argument `invalid` can be specified to define a set of
+    coordinates which are considered "invalid" (as in acquired via cheating),
+    so that we can support clearing those out of the list (hopefully avoiding
+    that runaway overwrite bug described above).
     """
 
-    def __init__(self, parent, num_entries, known_values, offset=None):
+    def __init__(self, parent, num_entries, known_values, offset=None, invalid=None):
         super().__init__(parent, offset=offset)
         self._num_entries = num_entries
         self.known_values = known_values
+        if invalid is None:
+            self.invalid = set()
+        else:
+            self.invalid = invalid
         self._next_index = None
         self._tiles = []
         for _ in range(num_entries):
@@ -1178,6 +1243,11 @@ class TileIDs(Data):
         reason why we couldn't just use our saved parent here, since it'll
         always be the same, but this way we can be pretty explicit about
         offsets in the main slot defintion, so I prefer it this way.
+
+        One other note about this weird index is that technically the Doors
+        index is a u16, whereas the Walls one is u8.  We're just using
+        u8 for both, because that makes me itchy, and those fields can't
+        hold more than 16 items anyway.
         """
         self._next_index = NumData(parent, UInt8, offset)
 
@@ -1201,6 +1271,21 @@ class TileIDs(Data):
         for tile_values in sorted(values_to_add):
             self._tiles[self._next_index.value].from_tuple(tile_values)
             self._next_index.value += 1
+
+    def remove_invalid(self):
+        """
+        Removes any "invalid" entries found in our set, as optionally
+        defined by the constructor.
+        """
+        to_remove = []
+        for idx, tile in enumerate(self):
+            if tile.to_tuple() in self.invalid:
+                to_remove.append(idx)
+        for index in reversed(to_remove):
+            self._next_index.value -= 1
+            if index < self._next_index.value:
+                self._tiles[index].copy_from(self._tiles[self._next_index.value])
+            self._tiles[self._next_index.value].clear()
 
 
 class Slot():
@@ -1246,8 +1331,8 @@ class Slot():
                 (6, 6, 16, 14),
                 (7, 6, 16, 1),
                 (7, 6, 5, 14),
-                (10, 8, 16, 17),
                 (13, 7, 29, 1),
+                (10, 8, 16, 17),
                 (2, 9, 1, 6),
                 (9, 10, 39, 6),
                 (8, 11, 33, 19),
@@ -1255,7 +1340,11 @@ class Slot():
                 (6, 13, 36, 7),
                 (2, 19, 9, 7),
                 (2, 19, 31, 7),
-            })
+            }, invalid={
+                (12, 4, 29, 4),
+                (3, 7, 5, 3),
+                (13, 13, 11, 8),
+                })
 
         self.num_steps = NumData(self, UInt32, 0x108)
         self.fill_levels = FillLevels(self)
@@ -1280,6 +1369,8 @@ class Slot():
 
         self.num_saves = NumData(self, UInt16, 0x1A8)
         self.locked_doors.populate_index(self)
+
+        self.pink_buttons_pressed = NumBitfieldData(self, UInt16, PinkButton, 0x1AC)
 
         self.keys = NumData(self, UInt8, 0x1B1)
         self.matches = NumData(self, UInt8)

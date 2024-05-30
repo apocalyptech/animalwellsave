@@ -24,7 +24,7 @@ import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, \
-        Unlockable, has_image_support
+        Unlockable, PinkButtonInvalid, has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -375,6 +375,16 @@ def main():
     walls.add_argument('--walls-close',
             action='store_true',
             help='Close all moveable walls in the game',
+            )
+
+    parser.add_argument('--clear-invalid-walls',
+            action='store_true',
+            help="""
+                Use of the Cheater's Ring in the game can allow the player to open walls which
+                are not ordinarily openable, which can end up leading to broken savefiles.  This
+                option will clear out those opened-wall records.  This will also un-press the
+                associated pink buttons so that the walls don't re-open.
+                """,
             )
 
     chests = parser.add_mutually_exclusive_group()
@@ -769,6 +779,7 @@ def main():
             args.eggdoor_close,
             args.walls_open,
             args.walls_close,
+            args.clear_invalid_walls,
             args.chests_open,
             args.chests_close,
             args.candles_enable,
@@ -966,6 +977,8 @@ def main():
                             print(f'   - Squirrels Scared: {slot.squirrels_scared}')
                         if slot.yellow_buttons_pressed > 0:
                             print(f'   - Yellow Buttons Pressed: {slot.yellow_buttons_pressed}')
+                        if slot.pink_buttons_pressed > 0:
+                            print(f'   - Valid Pink Buttons Pressed: {len(slot.pink_buttons_pressed)}')
                         if slot.purple_buttons_pressed > 0:
                             print(f'   - Purple Buttons Pressed: {slot.purple_buttons_pressed}')
                         if slot.green_buttons_pressed > 0:
@@ -1009,6 +1022,19 @@ def main():
                         print(f'{slot_label}: Setting spawnpoint to ({args.spawn.x}, {args.spawn.y})')
                         slot.spawn_room.x.value = args.spawn.x
                         slot.spawn_room.y.value = args.spawn.y
+                        if args.spawn.x == 3 and args.spawn.y == 7:
+                            print(textwrap.dedent("""
+                                *** WARNING ***
+
+                                Spawning into room (3,7) will cause you to trigger a pink button which
+                                can lead to savefile corruption if other "illegal" pink buttons are
+                                also pressed.  Those buttons are only available via the Cheater's
+                                Ring, and only triggering this one button will not cause corruption by
+                                itself.  But if you want to avoid the situation altogether, spawn
+                                into a different room!
+
+                                *** WARNING ***
+                                """))
                         do_save = True
 
                     if args.steps is not None:
@@ -1162,6 +1188,12 @@ def main():
                     if args.walls_close:
                         print(f'{slot_label}: Closing all movable walls')
                         slot.moved_walls.clear()
+                        do_save = True
+
+                    if args.clear_invalid_walls:
+                        print(f'{slot_label}: Clearing invalid wall-opening records')
+                        slot.moved_walls.remove_invalid()
+                        slot.pink_buttons_pressed.disable_foreign(PinkButtonInvalid)
                         do_save = True
 
                     if args.chests_open:
