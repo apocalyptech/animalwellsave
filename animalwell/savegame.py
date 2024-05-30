@@ -1308,6 +1308,26 @@ class TileIDs(Data):
             self._tiles[self._next_index.value].clear()
 
 
+class Cranks(Data):
+    """
+    Holds data about the various cranks in the save.  We're not actually
+    editing these (or even showing data) so this class could use some
+    more implementation to make it useful.
+    """
+
+    def __init__(self, parent, offset=None):
+        super().__init__(parent, offset=offset)
+        self._cranks = []
+        for _ in range(23):
+            self._cranks.append(NumData(self, UInt16))
+
+    def __iter__(self):
+        return iter(self._cranks)
+
+    def __len__(self):
+        return len(self._cranks)
+
+
 class Slot():
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -1336,6 +1356,8 @@ class Slot():
         # If the timestamp is all zeroes, assume that the slot is empty
         # (though we'll continue to load the rest of the data anyway)
         self.has_data = self.timestamp.has_data
+
+        self.cranks = Cranks(self, 0x8)
 
         self.locked_doors = TileIDs(self, 16, {
                 (7, 4, 9, 5),
