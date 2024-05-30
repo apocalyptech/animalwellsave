@@ -508,6 +508,16 @@ def main():
             help="Re-cages the specified cats, and/or the wheel reward cage.  Can be specified more than once, or use 'all' to cage all",
             )
 
+    progress.add_argument('--kangaroo-room',
+            type=int,
+            choices=[0, 1, 2, 3, 4],
+            help="""
+                Defines the next room that the kangaroo will spawn in.  The kangaroo will end up
+                in an immediately-hostile state in the chosen room.  Coordindates: 0: (6, 6), 1:
+                (9, 11), 2: (12, 11), 3: (9, 13), 4: (16, 16)
+                """,
+            )
+
     kshard = progress.add_mutually_exclusive_group()
 
     kshard.add_argument('--kshard-collect',
@@ -569,16 +579,6 @@ def main():
             choices=['b', 'p', 'v', 'g', 'all'],
             action='append',
             help="Mark the specified flames as used (but not placed in the pedestals).  Can be specified more than once, or use 'all' to do all at once",
-            )
-
-    progress.add_argument('--kangaroo-room',
-            type=int,
-            choices=[0, 1, 2, 3, 4],
-            help="""
-                Defines the next room that the kangaroo will spawn in.  The kangaroo will end up
-                in an immediately-hostile state in the chosen room.  Coordindates: 0: (6, 6), 1:
-                (9, 11), 2: (12, 11), 3: (9, 13), 4: (16, 16)
-                """,
             )
 
     progress.add_argument('--blue-manticore',
@@ -931,6 +931,7 @@ def main():
             args.quest_state_disable,
             args.cats_free,
             args.cats_cage,
+            args.kangaroo_room is not None,
             args.kshard_collect is not None,
             args.kshard_insert is not None,
             args.teleport_enable,
@@ -940,7 +941,6 @@ def main():
             args.mural_solved,
             args.flame_collect,
             args.flame_use,
-            args.kangaroo_room is not None,
             args.blue_manticore,
             args.red_manticore,
             args.torus_enable,
@@ -1426,6 +1426,11 @@ def main():
                                 slot.cat_status.disable(cat)
                                 do_save = True
 
+                    if args.kangaroo_room is not None:
+                        print(f'{slot_label}: Setting next kangaroo room to: {args.kangaroo_room}')
+                        slot.kangaroo_state.force_kangaroo_room(args.kangaroo_room)
+                        do_save = True
+
                     if args.kshard_collect is not None:
                         print(f'{slot_label}: Setting total number of collected K. Shards to: {args.kshard_collect}')
                         slot.kangaroo_state.set_shard_state(args.kshard_collect, KangarooShardState.COLLECTED)
@@ -1480,11 +1485,6 @@ def main():
                                 print(f'{slot_label}: Updating {flame.name} status to: {status}')
                                 flame.value = status
                             do_save = True
-
-                    if args.kangaroo_room is not None:
-                        print(f'{slot_label}: Setting next kangaroo room to: {args.kangaroo_room}')
-                        slot.kangaroo_state.force_kangaroo_room(args.kangaroo_room)
-                        do_save = True
 
                     if args.blue_manticore:
                         if slot.blue_manticore.choice != args.blue_manticore:
