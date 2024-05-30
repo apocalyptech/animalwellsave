@@ -27,8 +27,16 @@ Table of Contents
    - [Fix Checksum](#fix-checksum)
    - [Choose Slot](#choose-slot)
    - [Import/Export Slots](#importexport-slots)
-   - [Boo](#boo)
-   - [Boo](#boo)
+   - [Frame Seed](#frame-seed)
+   - [Global Unlocks (Figurines, etc)](#global-unlocks-figurines-etc)
+   - [Health](#health)
+   - [Spawnpoint](#spawnpoint)
+   - [Steps](#steps)
+   - [Deaths](#deaths)
+   - [Bubbles Popped](#bubbles-popped)
+   - [Berries Eaten While Full](#berries-eaten-while-full)
+   - [Game Ticks (Elapsed Time)](#game-ticks-elapsed-time)
+   - [Wings (Flight)](#wings-flight)
    - [Boo](#boo)
  - [Library](#library)
  - [License](#license)
@@ -98,6 +106,12 @@ Usage
 
 *(this is still being filled in)*
 
+Here is a detailed list of all the arguments available on the CLI editor.
+Note that these arguments can be chained together pretty much as long as
+you want.  For instance:
+
+    aw.py AnimalWell.sav -i -s 0 --equip-enable all --inventory-enable pack --firecrackers 6 --upgrade-wand
+
 ### Showing Save Info
 
 To show information about the save, including for any chosen slots, use
@@ -117,8 +131,8 @@ used to fix it in case any manual hex editing has been going on.
 
 ### Choose Slot
 
-Most options in the editor operate on slot data, so this will be a
-commonly-used item.  `-s` or `--slot` can be used for this, to choose
+Most options in the editor operate on slot data, so this argument is generally
+necessary.  `-s` or `--slot` can be used for this, to choose
 a specific slot (`1`, `2`, or `3`), or to operate on *all* slots by
 choosing `0`.
 
@@ -149,6 +163,117 @@ prompt you if you want to overwrite.  To force overwriting without any
 interactive prompt, use the `-f`/`--force` option:
 
     aw.py AnimalWell.sav -s 2 --export slot2.dat -f
+
+### Frame Seed
+
+The "frame seed" is presumably used for various randomizations in the
+game, but the most noticeable effect is to determine which Bunny Mural
+segment is presented to the user.  The mural segment shown is the frame
+seed modulo 50, so you could theoretically get all of the segments
+yourself by editing this value 50 times.  `--frame-seed` can be used
+to alter the value:
+
+    aw.py AnimalWell.sav --frame-seed 42
+
+### Global Unlocks (Figurines, etc)
+
+Some items unlocked in the game apply to all slots, such as the stopwatch,
+pedometer, pink phones, and the various figurines which show up in the House.
+The `--globals-enable` and `--globals-disable` arguments can be used to
+toggle the various states.  The special value `all` can be used to toggle
+all of them at once, and the argument can be specified multiple times.  See
+the `--help` output for exactly which values can be used here.
+
+    aw.py AnimalWell.sav --globals-disable stopwatch --globals-disable pedometer
+    aw.py AnimalWell.sav --globals-enable all
+
+### Health
+
+Player health can be set with the `--health` option.  Note that this is the
+total number of hearts, which includes your base health, any gold hearts,
+and any "extra" blue hearts.  The game's maximum is probably 12, though I
+haven't actually tested beyond that.
+
+    aw.py AnimalWell.sav -s 1 --health 8
+
+Relatedly, gold hearts can be added with the `--gold-hearts` option:
+
+    aw.py AnimalWell.sav -s 1 --health 12 --gold-hearts 4
+
+### Spawnpoint
+
+The player's spawnpoint is stored in the game by room coordinates, and can
+be set with the `--spawn` argument.  The upper-left room is at coordinate
+2,4.  If there is a phone in the room that has been specified, the player
+will spawn near the phone.  Otherwise, the player spawns in the upper-left-most
+available spot in the room.
+
+    aw.py AnimalWell.sav -s 1 --spawn 11,11
+
+### Steps
+
+You can set the number of steps the player has walked with the `--steps`
+argument:
+
+    aw.py AnimalWell.sav -s 1 --steps 42
+
+The ingame pedometer rolls over to 0 after hitting 99,999.
+
+### Deaths
+
+You can set the number of recorded deaths using the `--deaths` option:
+
+    aw.py AnimalWell.sav -s 1 --deaths 0
+
+### Saves
+
+You can set the number of saves that the player has performed using the
+`--saves` option.  Note that the minimum legal value here is 1, since
+the slot data will not be populated on-disk until the first savegame.
+
+    aw.py AnimalWell.sav -s 1 --saves 1
+
+### Bubbles Popped
+
+The number of your B.Wand bubbles which have been popped by hummingbirds
+can be altered with the `--bubbles-popped` argument:
+
+    aw.py AnimalWell.sav -s 1 --bubbles-popped 42
+
+### Berries Eaten While Full
+
+The number of berries you've eaten while at full health can be altered
+with the `--berries-eaten-while-full` argument:
+
+    aw.py AnimalWell.sav -s 1 --berries-eaten-while-full 10
+
+### Game Ticks (Elapsed Time)
+
+The game keeps track of how many "ticks" have elapsed since the beginning
+of the game.  The game runs at 60fps, so this value is *not* actually in
+milliseconds.  There are technically two fields for this: one value which
+is *just* ingame time (which does not seem to be used anywhere), and
+another which includes all the time spent in "pause" menus.  There are
+two arguments related to ticks.  First, `--ticks-copy-ingame` can be
+used to copy your "ingame" counter over to the "including paused" counter,
+in case you feel that your speed effort is being unfairly held back by
+pausing:
+
+    aw.py AnimalWell.sav -s 1 --ticks-copy-ingame
+
+Alternatively, you can just set the numeric value for both at the same
+time using `--ticks`:
+
+    aw.py AnimalWell.sav -s 1 --ticks 0
+
+### Wings (Flight)
+
+A very late-game unlock gives you the ability to sprout wings and fly
+around very quickly, by double-jumping.  This can be enabled or disabled
+using `--wings-enable` and `--wings-disable`:
+
+    aw.py AnimalWell.sav -s 1 --wings-enable
+    aw.py AnimalWell.sav -s 1 --wings-disable
 
 Library
 -------
