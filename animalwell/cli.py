@@ -24,7 +24,7 @@ import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, CatStatus, \
-        Unlockable, has_image_support
+        Unlockable, ManticoreState, has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -47,9 +47,9 @@ class EnumSetAction(argparse.Action):
         # Grab the specified argument type and ensure it's an Enum
         enum_type = kwargs.pop('type', None)
         if enum_type is None:
-            raise ValueError('type must be assigned an Enum when using EnumAction')
+            raise ValueError('type must be assigned an Enum when using EnumSetAction')
         if not issubclass(enum_type, enum.Enum):
-            raise TypeError('type must be an Enum when using EnumAction')
+            raise TypeError('type must be an Enum when using EnumSetAction')
 
         # Set the available choices, including the "all" option
         if 'choices' in kwargs:
@@ -79,6 +79,48 @@ class EnumSetAction(argparse.Action):
                 this_value = self._enum[uppercase]
                 arg_value.add(this_value)
             setattr(namespace, self.dest, arg_value)
+        elif value is None:
+            raise parser.error(f'You need to pass a value after {option_string}!')
+        else:
+            raise parser.error(f'Invalid data passed to {option_string}')
+
+
+class EnumChoiceAction(argparse.Action):
+    """
+    Argparse Action to set an Enum choice as the arg `choices`, setting
+    just a single value as chosen by the user.
+
+    When using this action, `choices` can be populated as a sequence of
+    enum members, if you want to only allow a *subset* of the enum.
+
+    Derived partially from https://stackoverflow.com/a/70124136/2013126
+    """
+
+    def __init__(self, **kwargs):
+
+        # Grab the specified argument type and ensure it's an Enum
+        enum_type = kwargs.pop('type', None)
+        if enum_type is None:
+            raise ValueError('type must be assigned an Enum when using EnumChoiceAction')
+        if not issubclass(enum_type, enum.Enum):
+            raise TypeError('type must be an Enum when using EnumChoiceAction')
+
+        # Set the available choices, including the "all" option
+        if 'choices' in kwargs:
+            self._enum_all_values = kwargs['choices']
+        else:
+            self._enum_all_values = enum_type
+        kwargs['choices'] = tuple(e.name.lower() for e in self._enum_all_values)
+
+        # Finish up
+        super().__init__(**kwargs)
+        self._enum = enum_type
+
+    def __call__(self, parser, namespace, this_value, option_string):
+
+        # Convert our new arg to the proper enum member and store it
+        if isinstance(this_value, str):
+            setattr(namespace, self.dest, self._enum[this_value.upper()])
         elif value is None:
             raise parser.error(f'You need to pass a value after {option_string}!')
         else:
@@ -643,6 +685,18 @@ def main():
                 """,
             )
 
+    parser.add_argument('--blue-manticore',
+            type=ManticoreState,
+            action=EnumChoiceAction,
+            help="Set the Blue Manticore state",
+            )
+
+    parser.add_argument('--red-manticore',
+            type=ManticoreState,
+            action=EnumChoiceAction,
+            help="Set the Red Manticore state",
+            )
+
     egg65 = parser.add_mutually_exclusive_group()
 
     egg65.add_argument('--egg65-enable',
@@ -827,6 +881,8 @@ def main():
             args.kshard_insert is not None,
             args.upgrade_wand,
             args.downgrade_wand,
+            args.blue_manticore,
+            args.red_manticore,
             args.egg65_enable,
             args.egg65_disable,
             args.torus_enable,
@@ -1029,6 +1085,10 @@ def main():
                                 print(f'   - Cats Rescued: {cat_count}')
                             if has_wheel:
                                 print(f'   - Unlocked wheel cage')
+                        if slot.blue_manticore.choice != ManticoreState.DEFAULT:
+                            print(f'   - Blue Manticore: {slot.blue_manticore}')
+                        if slot.red_manticore.choice != ManticoreState.DEFAULT:
+                            print(f'   - Red Manticore: {slot.red_manticore}')
                         if slot.teleports.enabled:
                             print(f' - Teleports Active: {len(slot.teleports.enabled)}')
                             for teleport in sorted(slot.teleports.enabled):
@@ -1476,6 +1536,18 @@ def main():
                         if QuestState.BB_WAND in slot.quest_state.enabled:
                             print(f'{slot_label}: Downgrading B.B. Wand')
                             slot.quest_state.disable(QuestState.BB_WAND)
+                            do_save = True
+
+                    if args.blue_manticore:
+                        if slot.blue_manticore.choice != args.blue_manticore:
+                            print(f'{slot_label}: Setting Blue Manticore state to: {args.blue_manticore}')
+                            slot.blue_manticore.value = args.blue_manticore
+                            do_save = True
+
+                    if args.red_manticore:
+                        if slot.red_manticore.choice != args.red_manticore:
+                            print(f'{slot_label}: Setting Red Manticore state to: {args.red_manticore}')
+                            slot.red_manticore.value = args.red_manticore
                             do_save = True
 
                     if args.egg65_enable:

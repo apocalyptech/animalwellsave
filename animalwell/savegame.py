@@ -391,6 +391,16 @@ class CatStatus(LabelEnum):
     WHEEL =       (0x20, 'Caged Wheel')
 
 
+class ManticoreState(LabelEnum):
+    """
+    Just a little state enum for what each Manticore is up to.
+    """
+
+    DEFAULT =   (0x0, 'Default')
+    OVERWORLD = (0x1, 'Overworld')
+    SPACE =     (0x2, 'In Space')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -1414,6 +1424,8 @@ class Slot():
         self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
 
         self.quest_state = NumBitfieldData(self, UInt32, QuestState, 0x1EC)
+        self.blue_manticore = NumChoiceData(self, UInt8, ManticoreState)
+        self.red_manticore = NumChoiceData(self, UInt8, ManticoreState)
 
         self.kangaroo_state = KangarooState(self, 0x1F4)
 
