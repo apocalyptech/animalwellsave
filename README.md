@@ -52,7 +52,7 @@ Table of Contents
    - [Bunny Mural](#bunny-mural)
    - [Flames](#flames)
    - [Manticores](#manticores)
-   - [Teleporation Torus](#teleporation-torus)
+   - [Teleportation Torus](#teleportation-torus)
    - [Boo](#boo)
  - [Library](#library)
  - [License](#license)
