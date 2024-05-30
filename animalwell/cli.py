@@ -969,9 +969,6 @@ def main():
                         if Equipment.FIRECRACKER in slot.equipment.enabled:
                             print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
-                        num_filled = slot.fill_levels.num_filled()
-                        if num_filled > 0:
-                            print(f'   - Reservoirs Filled: {num_filled}')
                         # I don't fully grok what the state value implies, other than that
                         # when it's zero, the kangaroo doesn't tend to be there, and when
                         # it's 1 or 2, it generally is.
@@ -1011,6 +1008,9 @@ def main():
                             print(f'   - Doors Unlocked: {len(slot.locked_doors)}')
                         if len(slot.moved_walls) > 0:
                             print(f'   - Walls Moved: {len(slot.moved_walls)}')
+                        num_filled = slot.fill_levels.num_filled()
+                        if num_filled > 0:
+                            print(f'   - Reservoirs Filled: {num_filled}')
                         if slot.detonators_triggered.count > 0:
                             print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                         if slot.walls_blasted.count > 0:
