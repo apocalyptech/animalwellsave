@@ -41,9 +41,18 @@ Table of Contents
    - [Keys / Matches](#keys--matches)
    - [Equipment](#equipment)
    - [Map Unlocks](#map-unlocks)
-   - [B.B. Wand](#b-b--wand)
+   - [B.B. Wand](#bb-wand)
    - [Egg 65](#egg-65)
    - [Cheater's Ring](#cheaters-ring)
+   - [Progress/Quests](#progressquests)
+   - [Caged Cats](#caged-cats)
+   - [Kangaroo Room](#kangaroo-room)
+   - [K. Shards](#k-shards)
+   - [Animal Head Teleporters](#animal-head-teleporters)
+   - [Bunny Mural](#bunny-mural)
+   - [Flames](#flames)
+   - [Manticores](#manticores)
+   - [Teleporation Torus](#teleporation-torus)
    - [Boo](#boo)
  - [Library](#library)
  - [License](#license)
@@ -364,6 +373,148 @@ The Cheater's Ring can be enabled or disabled in your inventory using
 
     aw.py AnimalWell.sav -s 1 --cring-enable
     aw.py AnimalWell.sav -s 1 --cring-disable
+
+### Progress/Quests
+
+There are two fields in the savegame which relate to progress / quests.
+I honestly wasn't sure what to call the first one -- it includes some very
+early-game flags like "game started" and "ready to hatch," but then also
+includes a very late-game flag when the House Key drops after defeating the
+first Manticore.  The field is totally separate from the main "quest" area.
+So, I settled on "progress." Apart from the House Key drop, the only other flag
+the editor supports is the one that enables your HP Bar to be shown on the
+screen.  The arguments to edit this field are `--progress-enable` and
+`--progress-disable`.  The special value `all` can be used to process all
+(well, both) at once:
+
+    aw.py AnimalWell.sav -s 1 --progress-enable all
+    aw.py AnimalWell.sav -s 1 --progress-disable hp_bar
+
+Valid values are: `hp_bar`, `house_key`, `all`.
+
+The *main* field which defines progress/quest information is rather more
+complete.  This can be altered with `--quest-state-enable` and
+`--quest-state-disable`.  As with other options of this sort, it can be specified
+more than once, and the special value `all` can be used to operate on them all at
+once.
+
+    aw.py AnimalWell.sav -s 1 --quest-enable house_open --quest-enable office-open
+    aw.py AnimalWell.sav -s 1 --quest-disable all
+
+Valid values are: `house_open`, `office_open`, `closet_open`, `unlock_map`,
+`unlock_stamps`, `unlock_pencil`, `defeated_chameleon`, `cring`,
+`used_s_medal`, `used_e_medal`, `wings`, `bb_wand`, `egg_65`, `torus`,
+`defeated_bat`, `freed_ostrich`, `defeated_ostrich`, `fighting_eel`,
+`defeated_eel`, `shrine_no_disc`, `statue_no_disc`, `all`.
+
+Note that all the flags in this area aren't *really* intended to be altered
+by hand; it's best to stick to the more formalized options elsewhere.  For
+instance, there are specific arguments to manage the B.B. Wand, Egg 65,
+Cheater's Ring, Teleportation Torus, Wings, and Map Data.  Still, if you
+wanted to tweak any of these by hand here, they're available.
+
+### Caged Cats
+
+The caged-cat/mother-lynx puzzle state can be set with the `--cats-free` and
+`--cats-cage` arguments.  This can be specified more than once, or you can use
+the special `all` value to operate on all at the same time:
+
+    aw.py AnimalWell.sav -s 1 --cats-free all
+    aw.py AnimalWell.sav -s 1 --cats-cage cat_14_19_1 --cats-cage cat_14_19_2
+
+Valid values are: `cat_16_18_1`, `cat_16_18_2`, `cat_16_18_3`, `cat_14_19_1`,
+`cat_14_19_2`, `wheel`, `all`.  Note that the `wheel` entry controls whether
+or not the wheel-chest cage is open, in the Mother Lynx's lair.  The names of
+the cat cage values correspond with the room coordinates in which they're found.
+
+### Kangaroo Room
+
+The room in which the kangaroo next spawns can be set with the `--kangaroo-room`
+argumnent.  The rooms are numbered from 0 to 4, and correspond to the following
+coordinates:
+
+0. 6, 6
+1. 9, 11
+2. 12, 11
+3. 9, 13
+4. 16, 16
+
+The coordinates are set by the numeric index:
+
+    aw.py AnimalWell.sav -s 1 --kangaroo-room 0
+
+Note that the kangaroo will likely be immediately hostile once you enter the
+room.
+
+### K. Shards
+
+The state of K. Shard collection can be set with the `--kshard-collect` and
+`--kshard-insert` arguments.  Only one can be specified at a time, and they
+set up the data to force a specific count of shards collected (ie: in your
+inventory) or inserted (placed in the circular recess).  This will overwrite
+any existing state; if you've collected two shards already and specify that
+you want 1 inserted, you will be left with a single inserted shard and none
+in your inventory.
+
+    aw.py AnimalWell.sav -s 1 --kshard-collect 2
+    aw.py AnimalWell.sav -s 1 --kshard-insert 3
+
+### Animal Head Teleporters
+
+You can enable/disable the animal head teleporters using the `--teleport-enable`
+and `--teleport-disable` arguments.  The arguments can be specified more than
+once, and you can use the special `all` value to operate on all at once.
+
+    aw.py AnimalWell.sav -s 1 --teleport-enable bird --teleport-enable bear
+    aw.py AnimalWell.sav -s 1 --teleport-disable all
+
+Valid values are: `frog`, `fish`, `bear`, `dog`, `bird`, `squirrel`, `hippo`,
+`all`.
+
+### Bunny Mural
+
+The Bunny Mural state can be set via a few options, though they are all just
+hardcoded images.  You can set the mural to its default state, to be entirely
+"blank" (ie: just the "background" color), or to its solved state.  Note that
+the reward wall will *not* open in the solved state unless you head to the
+control panel and set one pixel.  (Though the wall can be opened with other
+options in the editor.)
+
+    aw.py AnimalWell.sav -s 1 --mural-default
+    aw.py AnimalWell.sav -s 1 --mural-clear
+    aw.py AnimalWell.sav -s 1 --mural-solved
+
+### Flames
+
+The four flame states can be set using the `--flame-collect` and `--flame-use`
+arguments.  Each of those can be specified more than once, or use the special
+`all` value to operate on all at once.  `--flame-collect` will merely put the
+flame in your inventory, whereas `--flame-use` will put the flame in its
+respective pedestal.
+
+    aw.py AnimalWell.sav -s 1 --flame-collect p --flame-collect g
+    aw.py AnimalWell.sav -s 1 --flame-use all
+
+Valid values are: `b`, `p`, `v`, `g`, `all`.
+
+### Manticores
+
+The two manticore states can be set using the `--blue-manticore` and
+`--red-manticore` arguments.  They just have one of three states: `default`,
+`overworld`, or `space`.  Their default state is basically not being
+present until you get to the Manticore Arena area (or set up the 65th
+Egg).  In "Overworld" state they will chase you around, and in "Space"
+state they'll be friendly up on Bunny Island.
+
+    aw.py AnimalWell.sav -s 1 --blue-manticore overworld --red-manticore space
+
+### Teleportation Torus
+
+The teleportation torus (two rooms right of the house/office) can be
+toggled on/off with `--torus-enable` and `--torus-disable`:
+
+    aw.py AnimalWell.sav -s 1 --torus-enable
+    aw.py AnimalWell.sav -s 1 --torus-disable
 
 Library
 -------
