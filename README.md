@@ -37,6 +37,13 @@ Table of Contents
    - [Berries Eaten While Full](#berries-eaten-while-full)
    - [Game Ticks (Elapsed Time)](#game-ticks-elapsed-time)
    - [Wings (Flight)](#wings-flight)
+   - [Firecrackers](#firecrackers)
+   - [Keys / Matches](#keys--matches)
+   - [Equipment](#equipment)
+   - [Map Unlocks](#map-unlocks)
+   - [B.B. Wand](#b-b--wand)
+   - [Egg 65](#egg-65)
+   - [Cheater's Ring](#cheaters-ring)
    - [Boo](#boo)
  - [Library](#library)
  - [License](#license)
@@ -181,11 +188,14 @@ Some items unlocked in the game apply to all slots, such as the stopwatch,
 pedometer, pink phones, and the various figurines which show up in the House.
 The `--globals-enable` and `--globals-disable` arguments can be used to
 toggle the various states.  The special value `all` can be used to toggle
-all of them at once, and the argument can be specified multiple times.  See
-the `--help` output for exactly which values can be used here.
+all of them at once, and the argument can be specified multiple times.
 
     aw.py AnimalWell.sav --globals-disable stopwatch --globals-disable pedometer
     aw.py AnimalWell.sav --globals-enable all
+
+Valid values are: `stopwatch`, `pedometer`, `pink_phone`, `souvenir_cup`,
+`origami`, `two_rabbits`, `owl`, `cat`, `fish`, `donkey`, `deco_rabbit`,
+`mama_cha`, `giraffe`, `incense`, `peacock`, `otter`, `duck`, `all`.
 
 ### Health
 
@@ -274,6 +284,86 @@ using `--wings-enable` and `--wings-disable`:
 
     aw.py AnimalWell.sav -s 1 --wings-enable
     aw.py AnimalWell.sav -s 1 --wings-disable
+
+### Firecrackers
+
+Your player firecracker count can be set with the `--firecrackers` argument.
+Setting this to a value greater than zero will also unlock the Firecracker
+equipment, if it's not already unlocked.
+
+    aw.py AnimalWell.sav -s 1 --firecrackers 3
+
+### Keys / Matches
+
+Keys and Matches can be set using the `--keys` and `--matches` arguments.
+Note that the keys here are the "generic" ones which show up on the left in your
+inventory.  The maximum numbers available ingame are 6 keys, and 9 matches.
+
+    aw.py AnimalWell.sav -s 1 --keys 6 --matches 9
+
+### Equipment
+
+Equipment is the various items you directly use throughout the game, like
+Firecrackers, B. Wand, Disc, etc.  These can be individually toggled on or off
+using the `--equip-enable` and `--equip-disable` arguments.  Those can be specified
+more than once, and you can also use `all` as a special option to process all at
+once.
+
+    aw.py AnimalWell.sav -s 1 --equip-enable all
+    aw.py AnimalWell.sav -s 1 --equip-disable disc --equip-disable yoyo
+
+Valid values are: `firecracker`, `flute`, `lantern`, `top`, `disc`, `wand`,
+`yoyo`, `slink`, `remote`, `ball`, `wheel`, `uvlight`, `all`.
+
+Note that whenever you toggle the Disc state using this option, the game will
+by default attempt to set the game's quest states appropriately, to avoid having
+you get chased by a ghost dog.  This can end up changing where the Mock Disc is
+in the gameworld.  When giving yourself the Disc, there are two valid game states:
+one with the Mock Disc in the initial dog head statue, and the other with the
+Mock Disc in the M. Disc Shrine.  By default, the quest-correction will set the
+game to the dog-head-statue state, but you can have it put the Mock Disc in the
+shrine instead with `--prefer-disc-shrine-state`:
+
+    aw.py AnimalWell.sav -s 1 --equip-enable disc --prefer-disc-shrine-state
+
+Alternatively, you can disable the auto-fix attempt entirely using the
+`--dont-fix-disc-state` argument, in case you want to have a doggo friend to
+keep you company (or if you're editing the quest states yourself later):
+
+    aw.py AnimalWell.sav -s 1 --equip-enable disc --dont-fix-disc-state
+
+### Map Unlocks
+
+The various map-feature unlocks can be enabled using the `--map-enable` argument.
+The special value `all` can be used to unlock all three at once:
+
+    aw.py AnimalWell.sav -s 1 --map-enable all
+
+Valid values are: `unlock_map`, `unlock_stamps`, `unlock_pencil`, `all`.
+
+### B.B. Wand
+
+The B. Wand can be upgraded to the B.B. Wand (or downgraded back) using
+`--upgrade-wand` and `--downgrade-wand`:
+
+    aw.py AnimalWell.sav -s 1 --upgrade-wand
+    aw.py AnimalWell.sav -s 1 --downgrade-wand
+
+### Egg 65
+
+Egg 65 can be enabled or disabled in your inventory using `--egg65-enable` and
+`--eg65-disable`:
+
+    aw.py AnimalWell.sav -s 1 --egg65-enable
+    aw.py AnimalWell.sav -s 1 --egg65-disable
+
+### Cheater's Ring
+
+The Cheater's Ring can be enabled or disabled in your inventory using
+`--cring-enable` and `--cring-disable`:
+
+    aw.py AnimalWell.sav -s 1 --cring-enable
+    aw.py AnimalWell.sav -s 1 --cring-disable
 
 Library
 -------
