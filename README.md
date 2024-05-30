@@ -53,6 +53,18 @@ Table of Contents
    - [Flames](#flames)
    - [Manticores](#manticores)
    - [Teleportation Torus](#teleportation-torus)
+   - [Eggs](#eggs)
+   - [Bunnies](#bunnies)
+   - [Respawn Consumables](#respawn-consumables)
+   - [Ghosts](#ghosts)
+   - [Squirrels](#squirrels)
+   - [Buttons](#buttons)
+   - [Doors / Walls](#doors--walls)
+   - [Chests](#chests)
+   - [Candles](#candles)
+   - [Water Reservoirs](#water-reservoirs)
+   - [Detonators](#detonators)
+   - [Destroyed Tiles](#destroyed-tiles)
    - [Boo](#boo)
  - [Library](#library)
  - [License](#license)
@@ -101,6 +113,7 @@ savegames.  Some notable bits of data which can't be edited directly:
  - Crank status
  - Elevator status
  - Stalactite/Stalagmite/Icicle destruction
+ - "Illegal" Bunnies
  - Some seemingly-unimportant flags have been omitted from a few areas
  - Achievements *(unsure if setting these in the save would actually make
    them activate on Steam)*
@@ -515,6 +528,185 @@ toggled on/off with `--torus-enable` and `--torus-disable`:
 
     aw.py AnimalWell.sav -s 1 --torus-enable
     aw.py AnimalWell.sav -s 1 --torus-disable
+
+### Eggs
+
+Collected eggs can be enabled or disabled with the `--egg-enable` and
+`--egg-disable` arguments.  The arguments can be specified more than once,
+and the special value `all` can be used to operate on all eggs at once.
+
+    aw.py AnimalWell.sav -s 1 --egg-enable all
+    aw.py AnimalWell.sav -s 1 --egg-disable zen --egg-disable ice
+
+Note that this does *not* include the 65th Egg.
+
+### Bunnies
+
+Collected bunnies can be enabled or disabled with the `--bunny-enable`
+and `--bunny-disable` arguments.  The arguments can be specified more
+than once, and the special value `all` can be used to operate on all
+bunnies at once.
+
+    aw.py AnimalWell.sav -s 1 --bunny-enable floor_is_lava --bunny-enable dream
+    aw.py AnimalWell.sav -s 1 --bunny-disable all
+
+This argument can't be used to collect the various "illegal" bunnies
+hidden around the map (or just in game data).
+
+### Respawn Consumables
+
+Ordinarily, fruit and firecrackers only respawn in the game world when you
+die.  The `--respawn-consumables` option will make them all reappear without
+having to do so:
+
+    aw.py AnimalWell.sav -s 1 --respawn-consumables
+
+### Ghosts
+
+Like with consumables, scared ghosts will stay scared until you die, at
+which point they will respawn (unless a lit candle is keeping them away).
+The `--clear-ghosts` and `--respawn-ghosts` arguments can be used to
+frighten them all off, and cause them to respawn early, respectively:
+
+    aw.py AnimalWell.sav -s 1 --clear-ghosts
+    aw.py AnimalWell.sav -s 1 --respawn-ghosts
+
+### Squirrels
+
+Frightened squirrels can be respawned onto the map with the
+`--respawn-squirrels` argument:
+
+    aw.py AnimalWell.sav -s 1 --respawn-squirrels
+
+### Buttons
+
+All of the pressable buttons in the game can be pressed or released as
+a group using the `--buttons-press` and `--buttons-reset` arguments.  This
+will process yellow (regular), purple (transient), green (machine control),
+and pink (hidden) buttons.  For Pink buttons, the utility will *only*
+toggle "legitimate" buttons which the user is expected to be able to find.
+The "illegal" buttons associated with hidden bunnies will *not* be
+pressed.
+
+    aw.py AnimalWell.sav -s 1 --buttons-press
+    aw.py AnimalWell.sav -s 1 --buttons-reset
+
+Note that resetting buttons will *not* automatically cause their related
+doors/walls to revert to the closed state.  Pressing buttons *will* cause
+doors/walls to open once you enter the room, though, if they weren't
+already open.
+
+# Doors / Walls
+
+There are five categories of openable doors/walls in the game:
+
+1. "Regular" doors which are opened via button presses, water reservoirs,
+   or other environmental puzzles.  These can be toggled with the
+   `--doors-open` and `--doors-close` arguments.
+2. "Lockable" doors which require a key in your inventory to unlock.
+   There are six of these throughout the game map.  They can be toggled
+   with the `--lockable-unlock` and `--lockable-lock` arguments.
+3. The four doors in the Egg Chamber which ordinarily only open once you
+   have collected a minimum number of eggs.  These can be toggled with
+   the `--eggdoor-open` and `--eggdoor-close` arguments.
+4. Walls which function like doors, most typically encountered via pink
+   buttons or other late-game bunny puzzles, etc.  These can be toggled
+   with the `--walls-open` and `--walls-close` arguments.
+5. Other "special" doors like the House/Office/Closet doors, whose states
+   are mostly controlled via the [progress/quest options](#progressquests)
+   and aren't enumerated here.
+
+For "regular" doors in the game, note that if the buttons/puzzles which
+opened them originally are still pressed/solved, entering the room after
+closing them will just cause them to re-open again.  Regardless, they can
+be opened/closed like so:
+
+    aw.py AnimalWell.sav -s 1 --doors-open
+    aw.py AnimalWell.sav -s 1 --doors-close
+
+Likewise, lockable doors can be opened/closed with:
+
+    aw.py AnimalWell.sav -s 1 --lockable-unlock
+    aw.py AnimalWell.sav -s 1 --lockable-lock
+
+Egg Chamber doors work a little differently.  Instead of being all-or-nothing,
+they can be toggled individually, and the special value `all` can be used
+to operate on all at once:
+
+    aw.py AnimalWell.sav -s 1 --eggdoor-open all
+    aw.py AnimalWell.sav -s 1 --eggdoor-close first --eggdoor-close third
+
+Valid values are: `first`, `second`, `third`, `fourth`, `all`.
+
+Moveable walls can be opened/closde like so:
+
+    aw.py AnimalWell.sav -s 1 --walls-open
+    aw.py AnimalWell.sav -s 1 --walls-close
+
+Finally, using the Cheater's Ring (or any other noclip cheating activity) can
+allow the player to access "illegal" pink buttons which can cause extra walls
+to open up in the game.  At time of writing, there's a bug in the game where
+opening too many of these can end up causing savefile corruption while in-game,
+so they are best avoided.  If you had triggered one or more of these in the
+past, they can be cleaned up with the `--clear-invalid-walls` argument.  This
+will clean up both the moveable-wall entries and the pink button presses as
+well.  Note that this *cannot* fix an already-corrupted save, but it could at
+least prevent a save from being corrupted after some of those pink buttons were
+already hit:
+
+    aw.py AnimalWell.sav -s 1 --clear-invalid-walls
+
+### Chests
+
+All chests in the game can be opened/closed using the `--chests-open` and
+`--chests-close` arguments.  Note that merely opening a chest does *not* provide
+you with the item that the chest provided!
+
+    aw.py AnimalWell.sav -s 1 --chests-open
+    aw.py AnimalWell.sav -s 1 --chests-close
+
+### Candles
+
+Candles throughout the game can be individually lit or blown out using the
+`--candles-enable` and `--candles-disable` arguments.  These arguments can be
+specified more than once, and the special value `all` can be used to operate on
+all candles at once:
+
+    aw.py AnimalWell.sav -s 1 --candles-enable all
+    aw.py AnimalWell.sav -s 1 --candles-disable room_06_07 --candles-disable room_10_13
+
+Valid values are: `room_04_06`, `room_08_06`, `room_04_07`, `room_06_07`,
+`room_06_09`, `room_15_09`, `room_05_13`, `room_10_13`, `room_16_13`, `all`.
+The numbers in the value names refer to the room coordinates containing the
+candle.
+
+### Water Reservoirs
+
+The five water reservoirs in the game can be all filled up or emptied using the
+`--reservoirs-fill` and `--reservoirs-empty` arguments:
+
+    aw.py AnimalWell.sav -s 1 --reservoirs-fill
+    aw.py AnimalWell.sav -s 1 --reservoirs-empty
+
+### Detonators
+
+The various detonators around the map can be triggered or re-armed using the
+`--detonators-activate` and `--detonators-rearm` arguments:
+
+    aw.py AnimalWell.sav -s 1 --detonators-activate
+    aw.py AnimalWell.sav -s 1 --detonators-rearm
+
+Note that merely re-arming a detonator will not automatically rebuild the
+destroyed tiles from the original explosion.  To spawn those back in, you can
+use the `--respawn-destroyed-tiles` argument (see below).
+
+### Destroyed Tiles
+
+Tiles in the game can get destroyed in a variety of ways, such as the
+Top/Yoyo, detonators, Manticore laser beams, etc.  To respawn all destroyed
+tiles in the map, you can use the `--respawn-destroyed-tiles` argument:
+
+    aw.py AnimalWell.sav -s 1 --respawn-destroyed-tiles
 
 Library
 -------
