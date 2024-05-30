@@ -256,6 +256,12 @@ class NumData(Data):
         """
         return self.value - other
 
+    def __mod__(self, other):
+        """
+        Support modulo
+        """
+        return self.value % other
+
 
 class LabelEnum(enum.Enum):
     """

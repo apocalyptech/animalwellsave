@@ -237,6 +237,11 @@ def main():
             help='When exporting slot data, do not prompt to confirm overwriting a file',
             )
 
+    parser.add_argument('--frame-seed',
+            type=int,
+            help='Set the frame seed in the save header (most obvious effect is the bunny mural fragment shown)',
+            )
+
     parser.add_argument('--progress-enable',
             type=Progress,
             action=EnumSetAction,
@@ -947,6 +952,7 @@ def main():
             print('')
             print(f' - Last-Used Slot: {save.last_used_slot+1}')
             print(f' - Checksum: 0x{save.checksum:02X}')
+            print(f' - Frame Seed: {save.frame_seed} (bunny mural: {(save.frame_seed % 50)+1}/50)')
             if save.unlockables.enabled:
                 print(' - Unlockables:')
                 for unlocked in sorted(save.unlockables.enabled):
@@ -1741,6 +1747,12 @@ def main():
                         print('Slot data exported!')
                     else:
                         print('NOTICE: Slot data NOT exported')
+
+        # Set frame seed
+        if args.frame_seed is not None:
+            print(f'Globals: Setting frame seed to: {args.frame_seed}')
+            save.frame_seed.value = args.frame_seed
+            do_save = True
 
         # Process global unlockables
         if args.globals_disable:

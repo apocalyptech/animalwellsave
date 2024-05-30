@@ -1565,7 +1565,8 @@ class Savegame():
         if self.version.value != 9:
             raise RuntimeError(f'Unknown savefile version: {self.version}')
 
-        self.last_used_slot = NumData(self, UInt8, 0xC)
+        self.frame_seed = NumData(self, UInt32, 0x8)
+        self.last_used_slot = NumData(self, UInt8)
         self.checksum = NumData(self, UInt8)
 
         self.unlockables = NumBitfieldData(self, UInt32, Unlockable, 0x10)
