@@ -409,8 +409,9 @@ class Progress(LabelEnum):
     a more generic name here.
     """
 
-    STARTED =   (0x01, 'Game Started')
-    HATCH =     (0x04, 'Ready to Hatch')
+    # Actually, don't bother reporting on these first two
+    #STARTED =   (0x01, 'Game Started')
+    #HATCH =     (0x04, 'Ready to Hatch')
     HP_BAR =    (0x08, 'Show HP Bar')
     HOUSE_KEY = (0x10, 'Drop House Key')
 
