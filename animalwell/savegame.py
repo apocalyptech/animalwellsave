@@ -1469,7 +1469,8 @@ class Slot():
         self.progress = NumBitfieldData(self, UInt16, Progress, 0x21C)
         self.flames = Flames(self)
 
-        self.teleports = NumBitfieldData(self, UInt8, Teleport, 0x224)
+        self.teleports_seen = NumBitfieldData(self, UInt8, Teleport, 0x223)
+        self.teleports = NumBitfieldData(self, UInt8, Teleport)
         self.stamps = Stamps(self)
 
         self.minimap = Minimap(self, 0x3EC)
