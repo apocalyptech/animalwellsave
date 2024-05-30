@@ -15,6 +15,19 @@ expect, including:
    avoid future savefile corruption
  - Image import/export to/from the "pencil" map layer
 
+Table of Contents
+-----------------
+
+ - [Overview](#overview)
+ - [Running / Installation](#running--installation)
+ - [TODO](#todo)
+ - [Usage](#usage)
+ - [Library](#library)
+ - [License](#license)
+
+Overview
+--------
+
 The utility seems quite safe to use -- I've not ever experienced any problems
 with it.  But make sure to bakup your saves before using this!
 
@@ -35,8 +48,8 @@ save format can be found [at the wiki of that repo](https://github.com/Kein/awsg
 as well, though at time of writing it's lagging behind the binary
 template by quite a bit.
 
-Running
--------
+Running / Installation
+----------------------
 
 At the moment there is a temporary script right in the main project dir which
 can be launched as so:
