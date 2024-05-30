@@ -24,7 +24,7 @@ import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, \
-        Unlockable, PinkButtonInvalid, has_image_support
+        Unlockable, has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -981,8 +981,15 @@ def main():
                             print(f'   - Purple Buttons Pressed: {slot.purple_buttons_pressed}')
                         if slot.green_buttons_pressed > 0:
                             print(f'   - Green Buttons Pressed: {slot.green_buttons_pressed}')
-                        if slot.pink_buttons_pressed > 0:
+                        if len(slot.pink_buttons_pressed) > 0:
                             print(f'   - Valid Pink Buttons Pressed: {len(slot.pink_buttons_pressed)}')
+                        if len(slot.invalid_pink_buttons) > 0:
+                            print(f'   - Invalid Pink Buttons Pressed: {len(slot.invalid_pink_buttons)}')
+                            print('     ***WARNING:***')
+                            print('       Having invalid pink buttons pressed can end up leading to savefile')
+                            print('       corruption!  We recommend using the --clear-invalid-walls option on')
+                            print('       this save to clean it up.')
+                            print('     ***WARNING:***')
                         if slot.button_doors_opened > 0:
                             print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                         if len(slot.locked_doors) > 0:
@@ -1195,7 +1202,7 @@ def main():
                     if args.clear_invalid_walls:
                         print(f'{slot_label}: Clearing invalid wall-opening records')
                         slot.moved_walls.remove_invalid()
-                        slot.pink_buttons_pressed.disable_foreign(PinkButtonInvalid)
+                        slot.invalid_pink_buttons.disable_all()
                         do_save = True
 
                     if args.chests_open:

@@ -465,20 +465,6 @@ class NumBitfieldData(NumData):
             new_value &= ~item.value
         self.value = new_value
 
-    def disable_foreign(self, other_enum):
-        """
-        Disables a set of "foreign" flags specified by the passed-in enum.
-        This is intended to only be used to clear out Pink Button presses
-        which can cause savefile corruption (specifically the ones that
-        can be hit using the Cheater's Ring around "illegal" bunnies).
-        This is the only API method which can alter values outside our
-        native enum.
-        """
-        mask = 0
-        for item in other_enum:
-            mask |= item.value
-        self.value &= ~mask
-
 
 class BitCountData(Data):
     """

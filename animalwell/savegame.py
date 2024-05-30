@@ -358,15 +358,12 @@ class PinkButton(LabelEnum):
     savefiles.
     """
 
-    #ILL_01 =        (0x001, 'Illegal Bunny 1')
     SPIKE =         (0x002, 'Spike Bunny')
     FLOOR_IS_LAVA = (0x004, 'Floor Is Lava Bunny')
-    #ILL_02 =        (0x008, 'Illegal Bunny 2')
     MAP_NUMBER =    (0x010, 'Map Number Bunny')
     DOG_WHEEL =     (0x020, 'Elevator Dog Wheel')
     CHINCHILLA =    (0x040, 'Chinchilla Bunny')
     BULB =          (0x080, 'Bulb Bunny')
-    #ILL_03 =        (0x100, 'Illegal Bunny 3')
     PORTAL =        (0x200, 'Lower Portal Nexus')
 
 
@@ -1370,7 +1367,13 @@ class Slot():
         self.num_saves = NumData(self, UInt16, 0x1A8)
         self.locked_doors.populate_index(self)
 
+        # Kind of playing silly buggers here and defining the same u16 with
+        # two separate vars -- one for "valid" pink buttons, and one for
+        # invalid ones.  That way we can mess with them separately.  (This
+        # is the cleanest way to do it given the restrictions I'd designed
+        # into NumBitfieldData and the CLI processing.)
         self.pink_buttons_pressed = NumBitfieldData(self, UInt16, PinkButton, 0x1AC)
+        self.invalid_pink_buttons = NumBitfieldData(self, UInt16, PinkButtonInvalid, 0x1AC)
 
         self.keys = NumData(self, UInt8, 0x1B1)
         self.matches = NumData(self, UInt8)
