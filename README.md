@@ -65,7 +65,9 @@ Table of Contents
    - [Water Reservoirs](#water-reservoirs)
    - [Detonators](#detonators)
    - [Destroyed Tiles](#destroyed-tiles)
-   - [Boo](#boo)
+   - [Minimap](#minimap)
+   - [Map Marks](#map-marks)
+   - [Pencil Images](#pencil-images)
  - [Library](#library)
  - [License](#license)
 
@@ -596,7 +598,7 @@ doors/walls to revert to the closed state.  Pressing buttons *will* cause
 doors/walls to open once you enter the room, though, if they weren't
 already open.
 
-# Doors / Walls
+### Doors / Walls
 
 There are five categories of openable doors/walls in the game:
 
@@ -707,6 +709,69 @@ Top/Yoyo, detonators, Manticore laser beams, etc.  To respawn all destroyed
 tiles in the map, you can use the `--respawn-destroyed-tiles` argument:
 
     aw.py AnimalWell.sav -s 1 --respawn-destroyed-tiles
+
+### Minimap
+
+The minimap can be revealed or cleared using the `--reveal-map` and `--clear-map`
+arguments:
+
+    aw.py AnimalWell.sav -s 1 --reveal-map
+    aw.py AnimalWell.sav -s 1 --clear-map
+
+Note that the fully-revealed map will look different than a "naturally"
+fully-revealed minimap, because all of the "inner" wall space will be filled
+in.  When the game itself reveals the minimap, it stops right at the wall
+boundaries.
+
+### Map Marks
+
+The user-made marks to the map using the pencil and stamps can be cleared using
+the `--clear-pencil` and `--clear-stamps` options, respectively:
+
+    aw.py AnimalWell.sav -s 1 --clear-pencil
+    aw.py AnimalWell.sav -s 1 --clear-stamps
+
+### Pencil Images
+
+**Note:** These functions require that the [Python Imaging Library
+(Pillow)](https://python-pillow.org/) is installed.  If that library isn't
+available, these options won't be present.
+
+This utility can import images onto the minimap pencil layer using the
+`--pencil-image-import` argument, and export the current pencil layer
+into a graphics file using the `--pencil-image-export` argument.  When
+importing, the image will be scaled down to the minimap native resolution with
+no regard to aspect ratio (if needed), and dithered into a monochrome image
+(also if needed).  Passing a 1-bit image with the exact correct dimensions
+should result in importing without any resizing or conversion.
+
+The minimap technically includes an "empty" border around the confines of the
+playable map area, and by default this pencil-image import will consume that
+entire space, which is 800x528.  You can specify the `--pencil-image-playable`
+argument to restrict the import size to the borders of the playable area
+instead, which is 640x352.
+
+    aw.py AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg
+    aw.py AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg --pencil-image-playable
+
+![Pencil Image Import Results](aw_minimap_bunnies.jpg)
+
+The imported image can be inverted by specifying `--pencil-image-invert`, in
+case your image would look better that way:
+
+    aw.py AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg --pencil-image-invert
+
+For exporting to a graphics file, the utility should understand most common
+image format by its extension, and write the appropriate format:
+
+    aw.py AnimalWell.sav -s 1 --pencil-image-export output1.jpg
+    aw.py AnimalWell.sav -s 1 --pencil-image-export output2.png
+
+If the export file already exists, the utility will prompt you to overwrite.  To
+automatically overwrite without any interactive prompt, use the `-f`/`--force`
+option:
+
+    aw.py AnimalWell.sav -s 1 --pencil-image-export output.jpg -f
 
 Library
 -------
