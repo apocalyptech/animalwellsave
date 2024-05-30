@@ -24,7 +24,7 @@ import textwrap
 import collections
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, CatStatus, \
-        Unlockable, ManticoreState, has_image_support
+        Unlockable, ManticoreState, Progress, has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -235,6 +235,18 @@ def main():
     parser.add_argument('-f', '--force',
             action='store_true',
             help='When exporting slot data, do not prompt to confirm overwriting a file',
+            )
+
+    parser.add_argument('--progress-enable',
+            type=Progress,
+            action=EnumSetAction,
+            help="Enable the specified progress flag.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    parser.add_argument('--progress-disable',
+            type=Progress,
+            action=EnumSetAction,
+            help="Disables the specified progress flag.  Can be specified more than once, or use 'all' to disable all",
             )
 
     parser.add_argument('--health',
@@ -810,6 +822,7 @@ def main():
         slot_indexes = [0, 1, 2]
     else:
         slot_indexes = [args.slot-1]
+    delete_common_set_items(args.progress_enable, args.progress_disable)
     delete_common_set_items(args.egg_enable, args.egg_disable)
     delete_common_set_items(args.eggdoor_open, args.eggdoor_close)
     delete_common_set_items(args.candles_enable, args.candles_disable)
@@ -830,6 +843,8 @@ def main():
         if slot_indexes:
             loop_into_slots = True
     if any([
+            args.progress_enable,
+            args.progress_disable,
             args.steps is not None,
             args.deaths is not None,
             args.saves is not None,
@@ -968,6 +983,10 @@ def main():
                             print(f' - Elapsed Time: {slot.elapsed_ticks_withpause}')
                         else:
                             print(f' - Elapsed Time: {slot.elapsed_ticks_withpause} (ingame: {slot.elapsed_ticks_ingame})')
+                        if len(slot.progress) > 0:
+                            print(' - Progress flags: {}'.format(
+                                ', '.join(sorted([str(p) for p in slot.progress.enabled])),
+                                ))
                         print(f' - Saved in Room: {slot.spawn_room}')
                         if slot.gold_hearts > 0:
                             if slot.gold_hearts == 1:
@@ -1099,6 +1118,20 @@ def main():
 
                     # Keep track of if we're modifying any disc equipment
                     doing_disc_actions = False
+
+                    if args.progress_enable:
+                        for progress in sorted(args.progress_enable):
+                            if progress not in slot.progress.enabled:
+                                print(f'{slot_label}: Enabling progress flag: {progress}')
+                                slot.progress.enable(progress)
+                                do_save = True
+
+                    if args.progress_disable:
+                        for progress in sorted(args.progress_disable):
+                            if progress in slot.progress.enabled:
+                                print(f'{slot_label}: Disabling progress flag: {progress}')
+                                slot.progress.disable(progress)
+                                do_save = True
 
                     if args.health:
                         print(f'{slot_label}: Updating health to: {args.health}')

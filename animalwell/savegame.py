@@ -401,6 +401,20 @@ class ManticoreState(LabelEnum):
     SPACE =     (0x2, 'In Space')
 
 
+class Progress(LabelEnum):
+    """
+    Various progress flags; these are *mostly* very early-game (and in the
+    010 Editor / ImHex patterns they're labelled as StartupState), but
+    there's also one in here for the house key being dropped, so I'm using
+    a more generic name here.
+    """
+
+    STARTED =   (0x01, 'Game Started')
+    HATCH =     (0x04, 'Ready to Hatch')
+    HP_BAR =    (0x08, 'Show HP Bar')
+    HOUSE_KEY = (0x10, 'Drop House Key')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -1451,7 +1465,8 @@ class Slot():
 
         self.kangaroo_state = KangarooState(self, 0x1F4)
 
-        self.flames = Flames(self, 0x21E)
+        self.progress = NumBitfieldData(self, UInt16, Progress, 0x21C)
+        self.flames = Flames(self)
 
         self.teleports = NumBitfieldData(self, UInt8, Teleport, 0x224)
         self.stamps = Stamps(self)
