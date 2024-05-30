@@ -193,24 +193,30 @@ def main():
             description='CLI Animal Well Savegame Editor',
             )
 
-    parser.add_argument('-i', '--info',
+    ###
+    ### Control options
+    ###
+
+    control = parser.add_argument_group('Control Arguments', 'General control of the editing process')
+
+    control.add_argument('-i', '--info',
             action='store_true',
             help='Show known information about the save',
             )
 
-    parser.add_argument('--fix', '--fix-checksum',
+    control.add_argument('--fix', '--fix-checksum',
             action='store_true',
             dest='fix_checksum',
             help='Update the savegame checksum, even if no other edit actions have been specified.',
             )
 
-    parser.add_argument('-s', '--slot',
+    control.add_argument('-s', '--slot',
             choices=[0, 1, 2, 3],
             type=int,
             help='Operate on the specified slot (specify 0 for "all slots")',
             )
 
-    parser.add_argument('--import', '--import-slot',
+    control.add_argument('--import', '--import-slot',
             type=str,
             dest='import_slot',
             metavar='FILENAME',
@@ -221,7 +227,7 @@ def main():
                 """,
             )
 
-    parser.add_argument('--export', '--export-slot',
+    control.add_argument('--export', '--export-slot',
             type=str,
             dest='export_slot',
             metavar='FILENAME',
@@ -232,71 +238,83 @@ def main():
                 """,
             )
 
-    parser.add_argument('-f', '--force',
+    control.add_argument('-f', '--force',
             action='store_true',
             help='When exporting slot data, do not prompt to confirm overwriting a file',
             )
 
-    parser.add_argument('--frame-seed',
+    ###
+    ### Global Options
+    ###
+
+    global_options = parser.add_argument_group('Globals', 'Options which apply to the entire savegame')
+
+    global_options.add_argument('--frame-seed',
             type=int,
             help='Set the frame seed in the save header (most obvious effect is the bunny mural fragment shown)',
             )
 
-    parser.add_argument('--progress-enable',
-            type=Progress,
+    global_options.add_argument('--globals-enable',
+            type=Unlockable,
             action=EnumSetAction,
-            help="Enable the specified progress flag.  Can be specified more than once, or use 'all' to enable all",
+            help="Enable the specified global unlockable.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--progress-disable',
-            type=Progress,
+    global_options.add_argument('--globals-disable',
+            type=Unlockable,
             action=EnumSetAction,
-            help="Disables the specified progress flag.  Can be specified more than once, or use 'all' to disable all",
+            help="Disable the specified global unlockable.  Can be specified more than once, or use 'all' to disable all",
             )
 
-    parser.add_argument('--health',
+    ###
+    ### Player Status
+    ###
+
+    player = parser.add_argument_group('Player', 'Options to modify the direct player state')
+
+    player.add_argument('--health',
             type=int,
             help='Sets health (number of hearts)',
             )
 
-    parser.add_argument('--gold-hearts',
+    player.add_argument('--gold-hearts',
             type=int,
             help='Sets the number of gold hearts',
             )
 
-    parser.add_argument('--spawn',
+    player.add_argument('--spawn',
             type=str,
             metavar='X,Y',
             action=CoordAction,
             help='Room coordinates to spawn in.  Specify two numbers with a comma inbetwen them, such as "11,11" for the main hallway.',
             )
 
-    parser.add_argument('--steps',
+    player.add_argument('--steps',
             type=int,
             help="Set the number of steps taken",
             )
 
-    parser.add_argument('--deaths',
+    player.add_argument('--deaths',
             type=int,
             help="Set the number of deaths",
             )
 
-    parser.add_argument('--saves',
+    player.add_argument('--saves',
             type=int,
             help="Set the number of times-saved",
             )
 
-    parser.add_argument('--bubbles-popped',
+    player.add_argument('--bubbles-popped',
             type=int,
             help="Set the number of bubbles popped",
             )
 
-    parser.add_argument('--berries-eaten-while-full',
+    player.add_argument('--berries-eaten-while-full',
             type=int,
             help="Set the number of berries eaten while full",
             )
 
-    ticks = parser.add_mutually_exclusive_group()
+    ticks = player.add_mutually_exclusive_group()
 
     ticks.add_argument('--ticks',
             type=int,
@@ -308,240 +326,189 @@ def main():
             help="Overwrite the with-paused tick counter to just ingame time",
             )
 
-    parser.add_argument('--egg-enable',
-            type=Egg,
-            action=EnumSetAction,
-            help="Enable the specified egg.  Can be specified more than once, or use 'all' to enable all",
-            )
+    ###
+    ### Inventory
+    ###
 
-    parser.add_argument('--egg-disable',
-            type=Egg,
-            action=EnumSetAction,
-            help="Disables the specified egg.  Can be specified more than once, or use 'all' to disable all",
-            )
+    inventory = parser.add_argument_group('Inventory', 'Options to alter the player\'s inventory')
 
-    parser.add_argument('--bunny-enable',
-            type=Bunny,
-            action=EnumSetAction,
-            help="Enable the specified bunny.  Can be specified more than once, or use 'all' to enable all",
-            )
-
-    parser.add_argument('--bunny-disable',
-            type=Bunny,
-            action=EnumSetAction,
-            help="Disable the specified bunny.  Can be specified more than once, or use 'all' to disable all",
-            )
-
-    parser.add_argument('--respawn-consumables',
-            action='store_true',
-            help="Respawn map consumables (fruit and firecrackers)",
-            )
-
-    ghost = parser.add_mutually_exclusive_group()
-
-    ghost.add_argument('--clear-ghosts',
-            action='store_true',
-            help="Clear all ghosts from the map",
-            )
-
-    ghost.add_argument('--respawn-ghosts',
-            action='store_true',
-            help="Respawn ghosts to the map",
-            )
-
-    parser.add_argument('--respawn-squirrels',
-            action='store_true',
-            help="Respawn squirrels to the map",
-            )
-
-    parser.add_argument('--firecrackers',
-            type=int,
-            help="Set the number of firecrackers in your inventory.  Will unlock the Firecracker equipment as well, if not already active",
-            )
-
-    parser.add_argument('--keys',
-            type=int,
-            help="Set the number of keys in your inventory",
-            )
-
-    parser.add_argument('--matches',
-            type=int,
-            help="Set the number of matches in your inventory",
-            )
-
-    buttons = parser.add_mutually_exclusive_group()
-
-    buttons.add_argument('--buttons-press',
-            action='store_true',
-            help="Sets all buttons in the game to 'pressed' state",
-            )
-
-    buttons.add_argument('--buttons-reset',
-            action='store_true',
-            help="Sets all buttons in the game to their default non-pressed state",
-            )
-
-    doors = parser.add_mutually_exclusive_group()
-
-    doors.add_argument('--doors-open',
-            action='store_true',
-            help="""
-                Opens all button/reservoir doors in the game.  Does NOT open doors which have other
-                specific requirements (egg doors, doors which require keys, etc).
-                """,
-            )
-
-    doors.add_argument('--doors-close',
-            action='store_true',
-            help="""
-                Closes all button/reservoir doors in the game.  Does NOT close doors which have other
-                specific requirements (egg doors, doors which require keys, etc).  Note that if
-                the door's opening conditions are still met (buttons pressed, etc), the doors will re-open.
-                """,
-            )
-
-    locked = parser.add_mutually_exclusive_group()
-
-    locked.add_argument('--lockable-unlock',
-            action='store_true',
-            help='Unlock all lockable doors in the game (of the sort which are unlocked with a generic key)',
-            )
-
-    locked.add_argument('--lockable-lock',
-            action='store_true',
-            help='Lock all lockable doors in the game (of the sort which are unlocked with a generic key)',
-            )
-
-    parser.add_argument('--eggdoor-open',
-            type=EggDoor,
-            action=EnumSetAction,
-            help="Opens the specified egg doors in the egg chamber.  Can be specified more than once, or use 'all' to open all",
-            )
-
-    parser.add_argument('--eggdoor-close',
-            type=EggDoor,
-            action=EnumSetAction,
-            help="Closes the specified egg doors in the egg chamber.  Can be specified more than once, or use 'all' to close all",
-            )
-
-    walls = parser.add_mutually_exclusive_group()
-
-    walls.add_argument('--walls-open',
-            action='store_true',
-            help='Opens all moveable walls in the game',
-            )
-
-    walls.add_argument('--walls-close',
-            action='store_true',
-            help='Close all moveable walls in the game',
-            )
-
-    parser.add_argument('--clear-invalid-walls',
-            action='store_true',
-            help="""
-                Use of the Cheater's Ring in the game can allow the player to open walls which
-                are not ordinarily openable, which can end up leading to broken savefiles.  This
-                option will clear out those opened-wall records.  This will also un-press the
-                associated pink buttons so that the walls don't re-open.
-                """,
-            )
-
-    chests = parser.add_mutually_exclusive_group()
-
-    chests.add_argument('--chests-open',
-            action='store_true',
-            help="""
-                Opens all chests in the game.  Note that merely opening chests does NOT give you the
-                item contained within the chest.  This option is probably of little use to anyone.
-                """,
-            )
-
-    chests.add_argument('--chests-close',
-            action='store_true',
-            help='Closes all chests in the game, allowing their contents to be re-looted',
-            )
-
-    parser.add_argument('--candles-enable',
-            type=CandleState,
-            action=EnumSetAction,
-            help="Light the specified candles.  Can be specified more than once, or use 'all' to enable all",
-            )
-
-    parser.add_argument('--candles-disable',
-            type=CandleState,
-            action=EnumSetAction,
-            help="Blows out the specified candles.  Can be specified more than once, or use 'all' to enable all",
-            )
-
-    reservoirs = parser.add_mutually_exclusive_group()
-
-    reservoirs.add_argument('--reservoirs-fill',
-            action='store_true',
-            help='Fills up all water reservoirs in the game',
-            )
-
-    reservoirs.add_argument('--reservoirs-empty',
-            action='store_true',
-            help='Empties all water reservoirs in the game',
-            )
-
-    detonators = parser.add_mutually_exclusive_group()
-
-    detonators.add_argument('--detonators-activate',
-            action='store_true',
-            help='Activates all detonators on the map, opening shortcut passages',
-            )
-
-    detonators.add_argument('--detonators-rearm',
-            action='store_true',
-            help="""
-                Re-arms all detonators on the map.  Note that you will likely need to also use
-                --respawn-destroyed-tiles in order to seal up the actual passages.
-                """,
-            )
-
-    parser.add_argument('--respawn-destroyed-tiles',
-            action='store_true',
-            help='Respawn any destroyed tiles on the map (such as through detonators, top blocks, Manticore glass)',
-            )
-
-    parser.add_argument('--cats-free',
-            type=CatStatus,
-            action=EnumSetAction,
-            help="Frees the specified cats, and/or the wheel reward cage.  Can be specified more than once, or use 'all' to free all",
-            )
-
-    parser.add_argument('--cats-cage',
-            type=CatStatus,
-            action=EnumSetAction,
-            help="Re-cages the specified cats, and/or the wheel reward cage.  Can be specified more than once, or use 'all' to cage all",
-            )
-
-    parser.add_argument('--equip-enable',
+    inventory.add_argument('--equip-enable',
             type=Equipment,
             action=EnumSetAction,
             help="Enable the specified equipment.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--equip-disable',
+    inventory.add_argument('--equip-disable',
             type=Equipment,
             action=EnumSetAction,
             help="Disable the specified equipment.  Can be specified more than once, or use 'all' to disable all",
             )
 
-    parser.add_argument('--inventory-enable',
+    inventory.add_argument('--inventory-enable',
             type=Inventory,
             action=EnumSetAction,
             help="Enable the specified inventory item.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--inventory-disable',
+    inventory.add_argument('--inventory-disable',
             type=Inventory,
             action=EnumSetAction,
             help="Disable the specified inventory item.  Can be specified more than once, or use 'all' to disable all",
             )
 
-    kshard = parser.add_mutually_exclusive_group()
+    inventory.add_argument('--dont-fix-disc-state',
+            dest='fix_disc_state',
+            action='store_false',
+            help="""
+                When enabling the Disc (in equipment) or Mock Disc (in inventory), this
+                utility will attempt to normalize the game's quest variables to prevent
+                ghost dog spawning and other progression weirdness.  To avoid making these
+                corrections, specify this argument.  Without this option, the utility will
+                *not* allow you to enable both the Disc and Mock Disc at the same time,
+                since there is no valid game state with that combination.  Note that the
+                quest state alterations happen *after* this fix, so you can also manually
+                set those flags with that option.
+                """,
+            )
+
+    inventory.add_argument('--prefer-disc-shrine-state',
+            action='store_true',
+            help="""
+                When enabling the Disc equipment, with fixing disc state enabled (see
+                `--dont-fix-disc-state` option above), by default this utility will set
+                the game state to having swapped the Mock Disc at the first statue.  To
+                instead fix the state to having moved the Mock Disc to the M. Disc
+                Shrine, specify this option.
+                """,
+            )
+
+    inventory.add_argument('--firecrackers',
+            type=int,
+            help="Set the number of firecrackers in your inventory.  Will unlock the Firecracker equipment as well, if not already active",
+            )
+
+    inventory.add_argument('--keys',
+            type=int,
+            help="Set the number of keys in your inventory",
+            )
+
+    inventory.add_argument('--matches',
+            type=int,
+            help="Set the number of matches in your inventory",
+            )
+
+    inventory.add_argument('--map-enable',
+            type=QuestState,
+            action=EnumSetAction,
+            choices=[
+                QuestState.UNLOCK_MAP,
+                QuestState.UNLOCK_STAMPS,
+                QuestState.UNLOCK_PENCIL,
+                ],
+            help="Enable the specified map feature.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    inventory.add_argument('--upgrade-wand',
+            action='store_true',
+            help='Upgrade the B. Wand to B.B. Wand',
+            )
+
+    inventory.add_argument('--downgrade-wand',
+            action='store_true',
+            help='Downgrade the B.B. Wand to B. Wand',
+            )
+
+    egg65 = inventory.add_mutually_exclusive_group()
+
+    egg65.add_argument('--egg65-enable',
+            action='store_true',
+            help='Enable Egg 65',
+            )
+
+    egg65.add_argument('--egg65-disable',
+            action='store_true',
+            help='Disable Egg 65',
+            )
+
+    wings = inventory.add_mutually_exclusive_group()
+
+    wings.add_argument('--wings-enable',
+            action='store_true',
+            help='Enable Wings / Flying Mode',
+            )
+
+    wings.add_argument('--wings-disable',
+            action='store_true',
+            help='Disable Wings / Flying Mode',
+            )
+
+    cring = inventory.add_mutually_exclusive_group()
+
+    cring.add_argument('--cring-enable',
+            action='store_true',
+            help="Enable Cheater's Ring",
+            )
+
+    cring.add_argument('--cring-disable',
+            action='store_true',
+            help="Disable Cheater's Ring",
+            )
+
+    ###
+    ### Progress/Quests
+    ###
+
+    progress = parser.add_argument_group('Progress/Quests', 'Options to alter the state of "quests" and general progress')
+
+    progress.add_argument('--progress-enable',
+            type=Progress,
+            action=EnumSetAction,
+            help="Enable the specified progress flag.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    progress.add_argument('--progress-disable',
+            type=Progress,
+            action=EnumSetAction,
+            help="Disables the specified progress flag.  Can be specified more than once, or use 'all' to disable all",
+            )
+
+    progress.add_argument('--quest-state-enable',
+            type=QuestState,
+            action=EnumSetAction,
+            help="""
+                Enable the specified quest state flag.  These are generally not
+                recommended to mess with by hand -- various flags in here are
+                already wrapped up in dedicated arguments.  Messing with them
+                could cause strange behavior ingame.  Caveat emptor!  Can be
+                specified more than once, or use 'all' to enable all.
+                """,
+            )
+
+    progress.add_argument('--quest-state-disable',
+            type=QuestState,
+            action=EnumSetAction,
+            help="""
+                Disable the specified quest state flag.  These are generally not
+                recommended to mess with by hand -- various flags in here are
+                already wrapped up in dedicated arguments.  Messing with them
+                could cause strange behavior ingame.  Caveat emptor!  Can be
+                specified more than once, or use 'all' to disable all.
+                """,
+            )
+
+    progress.add_argument('--cats-free',
+            type=CatStatus,
+            action=EnumSetAction,
+            help="Frees the specified cats, and/or the wheel reward cage.  Can be specified more than once, or use 'all' to free all",
+            )
+
+    progress.add_argument('--cats-cage',
+            type=CatStatus,
+            action=EnumSetAction,
+            help="Re-cages the specified cats, and/or the wheel reward cage.  Can be specified more than once, or use 'all' to cage all",
+            )
+
+    kshard = progress.add_mutually_exclusive_group()
 
     kshard.add_argument('--kshard-collect',
             type=int,
@@ -561,85 +528,19 @@ def main():
                 """,
             )
 
-    parser.add_argument('--teleport-enable',
+    progress.add_argument('--teleport-enable',
             type=Teleport,
             action=EnumSetAction,
             help="Enable the specified teleport.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--teleport-disable',
+    progress.add_argument('--teleport-disable',
             type=Teleport,
             action=EnumSetAction,
             help="Disables the specified teleport.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--map-enable',
-            type=QuestState,
-            action=EnumSetAction,
-            choices=[
-                QuestState.UNLOCK_MAP,
-                QuestState.UNLOCK_STAMPS,
-                QuestState.UNLOCK_PENCIL,
-                ],
-            help="Enable the specified map feature.  Can be specified more than once, or use 'all' to enable all",
-            )
-
-    parser.add_argument('--reveal-map',
-            action='store_true',
-            help='Reveals the entire map on the minimap',
-            )
-
-    parser.add_argument('--clear-map',
-            action='store_true',
-            help='Clears the entire map on the minimap',
-            )
-
-    parser.add_argument('--clear-pencil',
-            action='store_true',
-            help='Clears any pencil drawings on the minimap',
-            )
-
-    parser.add_argument('--clear-stamps',
-            action='store_true',
-            help='Clears any stamps on the minimap',
-            )
-
-    if has_image_support:
-
-        parser.add_argument('--pencil-image-export',
-                type=str,
-                metavar='FILENAME',
-                help="""
-                    Exports the current pencil minimap layer as an image with the specified filename.
-                    The image export will always be the "full" image size, not just the playable area.
-                    """,
-                )
-
-        parser.add_argument('--pencil-image-import',
-                type=str,
-                metavar='FILENAME',
-                help="""
-                    Import the specified image filename to the minimap "pencil" layer.  The image
-                    will be blindly resized to the minimap size without respect to aspect ratio.
-                    The usual import area is 800x528, or 640x352 when using `--pencil-image-playable`.
-                    The image will be converted to monochrome and dithered.  To prevent major
-                    artifacts when passing in pre-dithered monochrome images, be sure to use the
-                    exact image dimensions.
-                    """,
-                )
-
-        parser.add_argument('--pencil-image-playable',
-                action='store_false',
-                dest='pencil_image_full',
-                help='When importing an image to the pencil layer, only import into the playable area, rather than the entire map space.',
-                )
-
-        parser.add_argument('--pencil-image-invert',
-                action='store_true',
-                help='When importing an image to the pencil layer, invert the black/white pixels.',
-                )
-
-    mural = parser.add_mutually_exclusive_group()
+    mural = progress.add_mutually_exclusive_group()
 
     mural.add_argument('--mural-clear',
             action='store_true',
@@ -656,43 +557,21 @@ def main():
             help='Set the mural to its solved state',
             )
 
-    parser.add_argument('--flame-collect',
+    progress.add_argument('--flame-collect',
             type=str,
             choices=['b', 'p', 'v', 'g', 'all'],
             action='append',
             help="Mark the specified flames as collected (but not placed in the pedestals).  Can be specified more than once, or use 'all' to do all at once",
             )
 
-    parser.add_argument('--flame-use',
+    progress.add_argument('--flame-use',
             type=str,
             choices=['b', 'p', 'v', 'g', 'all'],
             action='append',
             help="Mark the specified flames as used (but not placed in the pedestals).  Can be specified more than once, or use 'all' to do all at once",
             )
 
-    parser.add_argument('--upgrade-wand',
-            action='store_true',
-            help='Upgrade the B. Wand to B.B. Wand',
-            )
-
-    parser.add_argument('--downgrade-wand',
-            action='store_true',
-            help='Downgrade the B.B. Wand to B. Wand',
-            )
-
-    parser.add_argument('--globals-enable',
-            type=Unlockable,
-            action=EnumSetAction,
-            help="Enable the specified global unlockable.  Can be specified more than once, or use 'all' to enable all",
-            )
-
-    parser.add_argument('--globals-disable',
-            type=Unlockable,
-            action=EnumSetAction,
-            help="Disable the specified global unlockable.  Can be specified more than once, or use 'all' to disable all",
-            )
-
-    parser.add_argument('--kangaroo-room',
+    progress.add_argument('--kangaroo-room',
             type=int,
             choices=[0, 1, 2, 3, 4],
             help="""
@@ -702,31 +581,19 @@ def main():
                 """,
             )
 
-    parser.add_argument('--blue-manticore',
+    progress.add_argument('--blue-manticore',
             type=ManticoreState,
             action=EnumChoiceAction,
             help="Set the Blue Manticore state",
             )
 
-    parser.add_argument('--red-manticore',
+    progress.add_argument('--red-manticore',
             type=ManticoreState,
             action=EnumChoiceAction,
             help="Set the Red Manticore state",
             )
 
-    egg65 = parser.add_mutually_exclusive_group()
-
-    egg65.add_argument('--egg65-enable',
-            action='store_true',
-            help='Enable Egg 65',
-            )
-
-    egg65.add_argument('--egg65-disable',
-            action='store_true',
-            help='Disable Egg 65',
-            )
-
-    torus = parser.add_mutually_exclusive_group()
+    torus = progress.add_mutually_exclusive_group()
 
     torus.add_argument('--torus-enable',
             action='store_true',
@@ -738,79 +605,254 @@ def main():
             help='Disable Teleportation Torus',
             )
 
-    wings = parser.add_mutually_exclusive_group()
+    ###
+    ### Map Options
+    ###
 
-    wings.add_argument('--wings-enable',
-            action='store_true',
-            help='Enable Wings / Flying Mode',
-            )
+    map_options = parser.add_argument_group('Map Edits', 'Options to edit the state of the map')
 
-    wings.add_argument('--wings-disable',
-            action='store_true',
-            help='Disable Wings / Flying Mode',
-            )
-
-    cring = parser.add_mutually_exclusive_group()
-
-    cring.add_argument('--cring-enable',
-            action='store_true',
-            help="Enable Cheater's Ring",
-            )
-
-    cring.add_argument('--cring-disable',
-            action='store_true',
-            help="Disable Cheater's Ring",
-            )
-
-    parser.add_argument('--quest-state-enable',
-            type=QuestState,
+    map_options.add_argument('--egg-enable',
+            type=Egg,
             action=EnumSetAction,
-            help="""
-                Enable the specified quest state flag.  These are generally not
-                recommended to mess with by hand -- various flags in here are
-                already wrapped up in dedicated arguments.  Messing with them
-                could cause strange behavior ingame.  Caveat emptor!  Can be
-                specified more than once, or use 'all' to enable all.
-                """,
+            help="Enable the specified egg.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--quest-state-disable',
-            type=QuestState,
+    map_options.add_argument('--egg-disable',
+            type=Egg,
             action=EnumSetAction,
-            help="""
-                Disable the specified quest state flag.  These are generally not
-                recommended to mess with by hand -- various flags in here are
-                already wrapped up in dedicated arguments.  Messing with them
-                could cause strange behavior ingame.  Caveat emptor!  Can be
-                specified more than once, or use 'all' to disable all.
-                """,
+            help="Disables the specified egg.  Can be specified more than once, or use 'all' to disable all",
             )
 
-    parser.add_argument('--dont-fix-disc-state',
-            dest='fix_disc_state',
-            action='store_false',
-            help="""
-                When enabling the Disc (in equipment) or Mock Disc (in inventory), this
-                utility will attempt to normalize the game's quest variables to prevent
-                ghost dog spawning and other progression weirdness.  To avoid making these
-                corrections, specify this argument.  Without this option, the utility will
-                *not* allow you to enable both the Disc and Mock Disc at the same time,
-                since there is no valid game state with that combination.  Note that the
-                quest state alterations happen *after* this fix, so you can also manually
-                set those flags with that option.
-                """,
+    map_options.add_argument('--bunny-enable',
+            type=Bunny,
+            action=EnumSetAction,
+            help="Enable the specified bunny.  Can be specified more than once, or use 'all' to enable all",
             )
 
-    parser.add_argument('--prefer-disc-shrine-state',
+    map_options.add_argument('--bunny-disable',
+            type=Bunny,
+            action=EnumSetAction,
+            help="Disable the specified bunny.  Can be specified more than once, or use 'all' to disable all",
+            )
+
+    map_options.add_argument('--respawn-consumables',
+            action='store_true',
+            help="Respawn map consumables (fruit and firecrackers)",
+            )
+
+    ghost = map_options.add_mutually_exclusive_group()
+
+    ghost.add_argument('--clear-ghosts',
+            action='store_true',
+            help="Clear all ghosts from the map",
+            )
+
+    ghost.add_argument('--respawn-ghosts',
+            action='store_true',
+            help="Respawn ghosts to the map",
+            )
+
+    map_options.add_argument('--respawn-squirrels',
+            action='store_true',
+            help="Respawn squirrels to the map",
+            )
+
+    buttons = map_options.add_mutually_exclusive_group()
+
+    buttons.add_argument('--buttons-press',
+            action='store_true',
+            help="Sets all buttons in the game to 'pressed' state",
+            )
+
+    buttons.add_argument('--buttons-reset',
+            action='store_true',
+            help="Sets all buttons in the game to their default non-pressed state",
+            )
+
+    doors = map_options.add_mutually_exclusive_group()
+
+    doors.add_argument('--doors-open',
             action='store_true',
             help="""
-                When enabling the Disc equipment, with fixing disc state enabled (see
-                `--dont-fix-disc-state` option above), by default this utility will set
-                the game state to having swapped the Mock Disc at the first statue.  To
-                instead fix the state to having moved the Mock Disc to the M. Disc
-                Shrine, specify this option.
+                Opens all button/reservoir doors in the game.  Does NOT open doors which have other
+                specific requirements (egg doors, doors which require keys, etc).
                 """,
             )
+
+    doors.add_argument('--doors-close',
+            action='store_true',
+            help="""
+                Closes all button/reservoir doors in the game.  Does NOT close doors which have other
+                specific requirements (egg doors, doors which require keys, etc).  Note that if
+                the door's opening conditions are still met (buttons pressed, etc), the doors will re-open.
+                """,
+            )
+
+    locked = map_options.add_mutually_exclusive_group()
+
+    locked.add_argument('--lockable-unlock',
+            action='store_true',
+            help='Unlock all lockable doors in the game (of the sort which are unlocked with a generic key)',
+            )
+
+    locked.add_argument('--lockable-lock',
+            action='store_true',
+            help='Lock all lockable doors in the game (of the sort which are unlocked with a generic key)',
+            )
+
+    map_options.add_argument('--eggdoor-open',
+            type=EggDoor,
+            action=EnumSetAction,
+            help="Opens the specified egg doors in the egg chamber.  Can be specified more than once, or use 'all' to open all",
+            )
+
+    map_options.add_argument('--eggdoor-close',
+            type=EggDoor,
+            action=EnumSetAction,
+            help="Closes the specified egg doors in the egg chamber.  Can be specified more than once, or use 'all' to close all",
+            )
+
+    walls = map_options.add_mutually_exclusive_group()
+
+    walls.add_argument('--walls-open',
+            action='store_true',
+            help='Opens all moveable walls in the game',
+            )
+
+    walls.add_argument('--walls-close',
+            action='store_true',
+            help='Close all moveable walls in the game',
+            )
+
+    map_options.add_argument('--clear-invalid-walls',
+            action='store_true',
+            help="""
+                Use of the Cheater's Ring in the game can allow the player to open walls which
+                are not ordinarily openable, which can end up leading to broken savefiles.  This
+                option will clear out those opened-wall records.  This will also un-press the
+                associated pink buttons so that the walls don't re-open.
+                """,
+            )
+
+    chests = map_options.add_mutually_exclusive_group()
+
+    chests.add_argument('--chests-open',
+            action='store_true',
+            help="""
+                Opens all chests in the game.  Note that merely opening chests does NOT give you the
+                item contained within the chest.  This option is probably of little use to anyone.
+                """,
+            )
+
+    chests.add_argument('--chests-close',
+            action='store_true',
+            help='Closes all chests in the game, allowing their contents to be re-looted',
+            )
+
+    map_options.add_argument('--candles-enable',
+            type=CandleState,
+            action=EnumSetAction,
+            help="Light the specified candles.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    map_options.add_argument('--candles-disable',
+            type=CandleState,
+            action=EnumSetAction,
+            help="Blows out the specified candles.  Can be specified more than once, or use 'all' to enable all",
+            )
+
+    reservoirs = map_options.add_mutually_exclusive_group()
+
+    reservoirs.add_argument('--reservoirs-fill',
+            action='store_true',
+            help='Fills up all water reservoirs in the game',
+            )
+
+    reservoirs.add_argument('--reservoirs-empty',
+            action='store_true',
+            help='Empties all water reservoirs in the game',
+            )
+
+    detonators = map_options.add_mutually_exclusive_group()
+
+    detonators.add_argument('--detonators-activate',
+            action='store_true',
+            help='Activates all detonators on the map, opening shortcut passages',
+            )
+
+    detonators.add_argument('--detonators-rearm',
+            action='store_true',
+            help="""
+                Re-arms all detonators on the map.  Note that you will likely need to also use
+                --respawn-destroyed-tiles in order to seal up the actual passages.
+                """,
+            )
+
+    map_options.add_argument('--respawn-destroyed-tiles',
+            action='store_true',
+            help='Respawn any destroyed tiles on the map (such as through detonators, top blocks, Manticore glass)',
+            )
+
+    ###
+    ### Minimap Options
+    ###
+
+    minimap = parser.add_argument_group('Minimap', 'Options to alter the state of the minimap')
+
+    minimap.add_argument('--reveal-map',
+            action='store_true',
+            help='Reveals the entire map on the minimap',
+            )
+
+    minimap.add_argument('--clear-map',
+            action='store_true',
+            help='Clears the entire map on the minimap',
+            )
+
+    minimap.add_argument('--clear-pencil',
+            action='store_true',
+            help='Clears any pencil drawings on the minimap',
+            )
+
+    minimap.add_argument('--clear-stamps',
+            action='store_true',
+            help='Clears any stamps on the minimap',
+            )
+
+    if has_image_support:
+
+        minimap.add_argument('--pencil-image-export',
+                type=str,
+                metavar='FILENAME',
+                help="""
+                    Exports the current pencil minimap layer as an image with the specified filename.
+                    The image export will always be the "full" image size, not just the playable area.
+                    """,
+                )
+
+        minimap.add_argument('--pencil-image-import',
+                type=str,
+                metavar='FILENAME',
+                help="""
+                    Import the specified image filename to the minimap "pencil" layer.  The image
+                    will be blindly resized to the minimap size without respect to aspect ratio.
+                    The usual import area is 800x528, or 640x352 when using `--pencil-image-playable`.
+                    The image will be converted to monochrome and dithered.  To prevent major
+                    artifacts when passing in pre-dithered monochrome images, be sure to use the
+                    exact image dimensions.
+                    """,
+                )
+
+        minimap.add_argument('--pencil-image-playable',
+                action='store_false',
+                dest='pencil_image_full',
+                help='When importing an image to the pencil layer, only import into the playable area, rather than the entire map space.',
+                )
+
+        minimap.add_argument('--pencil-image-invert',
+                action='store_true',
+                help='When importing an image to the pencil layer, invert the black/white pixels.',
+                )
 
     parser.add_argument('filename',
             nargs=1,
