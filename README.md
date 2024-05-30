@@ -7,6 +7,7 @@ It supports editing nearly everything stored in the savegames.  In addition
 to the editing features you'd expect, it's got some features you might not
 expect, including:
 
+ - Importing/Exporting specific slots
  - Setting the Bunny Mural to its default, solved, or cleared state
  - Forcing Kangaroo spawns to a specific room
  - Respawning consumables (fruit, firecrackers) on the map
@@ -22,6 +23,13 @@ Table of Contents
  - [Running / Installation](#running--installation)
  - [TODO](#todo)
  - [Usage](#usage)
+   - [Showing Save Info](#showing-save-info)
+   - [Fix Checksum](#fix-checksum)
+   - [Choose Slot](#choose-slot)
+   - [Import/Export Slots](#importexport-slots)
+   - [Boo](#boo)
+   - [Boo](#boo)
+   - [Boo](#boo)
  - [Library](#library)
  - [License](#license)
 
@@ -72,6 +80,7 @@ savegames.  Some notable bits of data which can't be edited directly:
  - Some seemingly-unimportant flags have been omitted from a few areas
  - Achievements *(unsure if setting these in the save would actually make
    them activate on Steam)*
+ - Game Options
 
 While I don't have any current plans to support the above, there are a
 few other things which would be nice eventually:
@@ -87,7 +96,59 @@ few other things which would be nice eventually:
 Usage
 -----
 
-Documentation is forthcoming...
+*(this is still being filled in)*
+
+### Showing Save Info
+
+To show information about the save, including for any chosen slots, use
+`-i`/`--info`:
+
+    aw.py AnimalWell.sav -i
+
+### Fix Checksum
+
+The `--fix-checksum` option can be used to fix the savegame's checksum without
+changing anything else.  (The utility will automatically update the checksum if
+any other changes are made to the file.)  If the save has an invalid checksum,
+Animal Well will spawn a Manticore friend to follow you around, so this can be
+used to fix it in case any manual hex editing has been going on.
+
+    aw.py AnimalWell.sav --fix-checksum
+
+### Choose Slot
+
+Most options in the editor operate on slot data, so this will be a
+commonly-used item.  `-s` or `--slot` can be used for this, to choose
+a specific slot (`1`, `2`, or `3`), or to operate on *all* slots by
+choosing `0`.
+
+    aw.py AnimalWell.sav -i -s 1
+
+Note that a few arguments (namely `--import-slot` and `--export-slot`)
+do not allow using `0` to specify "all slots."
+
+### Import/Export Slots
+
+Slot data can be imported or exported to allow transferring slots without
+also transferring "global" data (like collected figurines, or game options).
+For example, to export slot 2 into the file `slot2.dat` with the
+`--export`/`--export-slot` option:
+
+    aw.py AnimalWell.sav -s 2 --export slot2.dat
+
+Then that file could be imported into another slot with the `--import`/`--import-slot`
+option:
+
+    aw.py AnimalWell.sav -s 3 --import slot2.dat
+
+Note that the only data checking the import process does is to ensure that
+the file being imported is exactly the right filesize (149,760 bytes).
+
+If the filename you attempt to export to already exists, this app will
+prompt you if you want to overwrite.  To force overwriting without any
+interactive prompt, use the `-f`/`--force` option:
+
+    aw.py AnimalWell.sav -s 2 --export slot2.dat -f
 
 Library
 -------
