@@ -100,6 +100,11 @@ as well, though that document might lag behind the official templates.
 Running / Installation
 ----------------------
 
+This is a Python-based CLI app and library.  It should run on Python 3.10+,
+though it's received most of its testing on Python 3.12.  There is currently
+no GUI component -- you'll have to be comfortable working in the commandline
+for this to work.
+
 ### Easiest Method: pip
 
 The easiest way to install `animalwellsave` is via `pip` inside a [virtual
@@ -122,6 +127,11 @@ images into the "pencil" minimap layer, you can alternately specify this
 for the installation line:
 
     pip install animalwellsave[PencilImages]
+
+If you want, you can do without the virtual environment and install it for
+just your user with:
+
+    pip install --user animalwellsave[PencilImages]
 
 Once installed, there will be an `awsave` command available to run, like so:
 
