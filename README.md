@@ -135,12 +135,17 @@ Once installed, there will be an `awsave` command available to run, like so:
 The app can also be run right from a git checkout.  The "correct" way to 
 do this is with a virtual environment using
 ["editable" mode](https://setuptools.pypa.io/en/latest/userguide/development_mode.html).
-rom the main project checkout dir (example here is for Unix/MacOS; the
+From the main project checkout dir (example here is for Unix/MacOS; the
 activation line is different for Windows -- see above):
 
     python -m venv .venv
     source .venv/bin/activate
     pip install --editable .
+
+To install the dependencies needed for importing/exporting images to the
+"pencil" minimap layer, you can run:
+
+    pip install -r image-requirements.txt
 
 Once done, you should be able to run the `awsave` command as usual:
 
