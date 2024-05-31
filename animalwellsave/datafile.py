@@ -345,9 +345,13 @@ class NumChoiceData(NumData):
         variable if the numeric data is contained within `self.choices`.
         """
         if self.choices is not None:
-            if self.value in self.choices:
+            # In Python 3.12 we could check `self.value in self.choices`, as I was doing
+            # originally, but it turns out that's something added in 3.12, and I'd like
+            # to be compatible back to 3.10.  See: https://github.com/python/cpython/issues/88123
+            # (not that this method is bad, of course -- more Pythonic, even, probably!)
+            try:
                 self.choice = self.choices(self.value)
-            else:
+            except ValueError:
                 self.choice = None
 
     @property
