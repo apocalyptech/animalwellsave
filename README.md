@@ -1,7 +1,7 @@
 Python-Based CLI Animal Well Savegame Editor
 ============================================
 
-`pyanimalwell` is a save editor (and data backend) for editing
+`animalwellsave` is a save editor (and data backend) for editing
 [Animal Well](https://store.steampowered.com/app/813230/ANIMAL_WELL/) savegames.
 It supports editing nearly everything stored in the savegames.  In addition
 to the editing features you'd expect, it's got some features you might not
@@ -840,6 +840,6 @@ themselves would probably be the best way to know how to use 'em.
 License
 -------
 
-`pyanimalwell` is licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
+`animalwellsave` is licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 A copy can be found at [LICENSE.txt](LICENSE.txt).
 
