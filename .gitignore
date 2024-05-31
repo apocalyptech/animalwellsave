@@ -1,2 +1,6 @@
 __pycache__
 *.swp
+.venv
+animalwellsave.egg-info
+dist
+build

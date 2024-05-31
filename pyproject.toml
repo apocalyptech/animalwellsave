@@ -34,7 +34,7 @@ PencilImages = ["pillow"]
 [project.scripts]
 animalwellsave = "animalwellsave.cli:main"
 
-[tools.setuptools.dynamic]
+[tool.setuptools.dynamic]
 version.attr = "animalwellsave.__version__"
 
 [build-system]
