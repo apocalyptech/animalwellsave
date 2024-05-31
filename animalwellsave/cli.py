@@ -211,6 +211,11 @@ def main():
             help='Update the savegame checksum, even if no other edit actions have been specified.',
             )
 
+    control.add_argument('--invalid-checksum',
+            action='store_true',
+            help='Write an intentionally-incorrect checksum to the savefile',
+            )
+
     control.add_argument('-s', '--slot',
             choices=[0, 1, 2, 3],
             type=int,
@@ -1853,7 +1858,10 @@ def main():
 
         # Write out, if we did anything which needs that
         if do_save:
-            save.save()
+            if args.invalid_checksum:
+                print('NOTICE: Intentionally writing an invalid checksum.  Enjoy hanging out with')
+                print('        your Manticore friend!')
+            save.save(force_invalid_checksum=args.invalid_checksum)
             print(f'Wrote changes!  New checksum: 0x{save.checksum:02X}')
             return True
         else:
