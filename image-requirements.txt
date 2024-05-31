@@ -1,0 +1,3 @@
+# Requirements to enable the minimap "pencil" image processing functionality
+
+pillow

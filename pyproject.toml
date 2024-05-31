@@ -1,0 +1,43 @@
+[project]
+name = "animalwellsave"
+description = "Animal Well CLI Savegame Editor/Library"
+readme = "README.md"
+authors = [
+    {name = "CJ Kucera", email = "cj@apocalyptech.com"},
+]
+license.file = "LICENSE.txt"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">= 3.10"
+dependencies = []
+dynamic = ["version"]
+
+[project.optional-dependencies]
+PencilImages = ["pillow"]
+
+[project.urls]
+"Source code" = "https://github.com/apocalyptech/animalwellsave"
+"Issue tracker" = "https://github.com/apocalyptech/animalwellsave/issues"
+
+[project.scripts]
+animalwellsave = "animalwellsave.cli:main"
+
+[tools.setuptools.dynamic]
+version.attr = "animalwellsave.__version__"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
