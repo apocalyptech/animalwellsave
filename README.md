@@ -104,7 +104,7 @@ can be launched as so:
 
 Or you can call the cli module directly, if you prefer:
 
-    python -m animalwell.cli --help
+    python -m animalwellsave.cli --help
 
 TODO
 ----
@@ -785,7 +785,7 @@ coding habits, etc.
 A quick example of the kinds of things that would be possible:
 
 ```py
-from animalwell.savegame import Savegame, Equipment, Equipped
+from animalwellsave.savegame import Savegame, Equipment, Equipped
 
 with Savegame('AnimalWell.sav') as save:
     slot = save.slots[0]
@@ -800,7 +800,7 @@ with Savegame('AnimalWell.sav') as save:
     save.save()
 ```
 
-See also `animalwell/cli.py`, which is probably the best place to look for
+See also `animalwellsave/cli.py`, which is probably the best place to look for
 examples of interacting with the data.
 
 The objects are set up to allow both defining consecutive fields within
