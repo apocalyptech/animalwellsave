@@ -16,12 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import animalwell.cli
+import animalwellsave.cli
 
 # This is just a little placeholder convenience script while I work on
 # development for this.  If this ever gets to the point of actual
 # release, it'll likely be removed.
 
 if __name__ == '__main__':
-    animalwell.cli.main()
+    animalwellsave.cli.main()
 
