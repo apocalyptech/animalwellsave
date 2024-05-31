@@ -33,7 +33,7 @@ Repository = "https://github.com/apocalyptech/animalwellsave"
 Issues = "https://github.com/apocalyptech/animalwellsave/issues"
 
 [project.scripts]
-animalwellsave = "animalwellsave.cli:main"
+awsave = "animalwellsave.cli:main"
 
 [tool.setuptools.dynamic]
 version.attr = "animalwellsave.__version__"

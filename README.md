@@ -21,6 +21,9 @@ Table of Contents
 
  - [Overview](#overview)
  - [Running / Installation](#running--installation)
+   - [Easiest Method: pip](#easiest-method-pip)
+   - [Git Checkout (the proper way)](#git-checkout-the-proper-way)
+   - [Git Checkout (the lazy way)](#git-checkout-the-lazy-way)
  - [TODO](#todo)
  - [Usage](#usage)
    - [Showing Save Info](#showing-save-info)
@@ -97,12 +100,61 @@ template by quite a bit.
 Running / Installation
 ----------------------
 
-At the moment there is a temporary script right in the main project dir which
-can be launched as so:
+### Easiest Method: pip
 
-    ./aw.py --help
+**Note:** *This method doesn't actually work yet; I'm gearing up to
+getting it properly released to pypi.*
 
-Or you can call the cli module directly, if you prefer:
+The easiest way to install animalwellsave is via `pip` inside a [virtual
+environment](https://docs.python.org/3/library/venv.html).  On Unix/Mac:
+
+    cd /wherever/you/want/to/keep/the/virtualenv
+    python -m venv virtualenv_dir
+    source virtualenv_dir/bin/activate
+    pip install animalwellsave
+
+Or on Windows:
+
+    cd \wherever\you\want\to\keep\the\virtualenv
+    python -m venv virtualenv_dir
+    virtualenv_dir\Scripts\activate
+    pip install animalwellsave
+
+To also pull in the dependencies necessary to support importing/exporting
+images into the "pencil" minimap layer, you can alternately specify this
+for the installation line:
+
+    pip install animalwellsave[PencilImages]
+
+Once installed, there will be an `awsave` command available to run, like so:
+
+    awsave --help
+
+### Git Checkout (the proper way)
+
+The app can also be run right from a git checkout.  The "correct" way to 
+do this is with a virtual environment using
+["editable" mode](https://setuptools.pypa.io/en/latest/userguide/development_mode.html).
+rom the main project checkout dir (example here is for Unix/MacOS; the
+activation line is different for Windows -- see above):
+
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install --editable .
+
+Once done, you should be able to run the `awsave` command as usual:
+
+    awsave --help
+
+### Git Checkout (the lazy way)
+
+Alternatively, if you want to run it directly from a git checkout *without*
+setting up a virtual environment and setting it to editable mode, you can
+just use the shortcut `awsave.py` script right in the main dir:
+
+    ./awsave.py --help
+
+Or, you can call the cli module directly:
 
     python -m animalwellsave.cli --help
 
@@ -139,15 +191,15 @@ Here is a detailed list of all the arguments available on the CLI editor.
 Note that these arguments can be chained together pretty much as long as
 you want.  For instance:
 
-    aw.py AnimalWell.sav -i -s 0 --equip-enable all --inventory-enable pack --firecrackers 6 --upgrade-wand
+    awsave AnimalWell.sav -i -s 0 --equip-enable all --inventory-enable pack --firecrackers 6 --upgrade-wand
 
 ### Showing Save Info
 
 To show information about the save, including for any chosen slots, use
 `-i`/`--info`:
 
-    aw.py AnimalWell.sav -i
-    aw.py AnimalWell.sav --info
+    awsave AnimalWell.sav -i
+    awsave AnimalWell.sav --info
 
 ### Fix Checksum
 
@@ -157,7 +209,7 @@ any other changes are made to the file.)  If the save has an invalid checksum,
 Animal Well will spawn a Manticore friend to follow you around, so this can be
 used to fix it in case any manual hex editing has been going on.
 
-    aw.py AnimalWell.sav --fix-checksum
+    awsave AnimalWell.sav --fix-checksum
 
 ### Choose Slot
 
@@ -166,8 +218,8 @@ necessary.  `-s` or `--slot` can be used for this, to choose
 a specific slot (`1`, `2`, or `3`), or to operate on *all* slots by
 choosing `0`.
 
-    aw.py AnimalWell.sav -i -s 1
-    aw.py AnimalWell.sav --info --slot 2
+    awsave AnimalWell.sav -i -s 1
+    awsave AnimalWell.sav --info --slot 2
 
 Note that a few arguments (namely `--import-slot` and `--export-slot`)
 do not allow using `0` to specify "all slots."
@@ -179,12 +231,12 @@ also transferring "global" data (like collected figurines, or game options).
 For example, to export slot 2 into the file `slot2.dat` with the
 `--export`/`--export-slot` option:
 
-    aw.py AnimalWell.sav -s 2 --export slot2.dat
+    awsave AnimalWell.sav -s 2 --export slot2.dat
 
 Then that file could be imported into another slot with the `--import`/`--import-slot`
 option:
 
-    aw.py AnimalWell.sav -s 3 --import slot2.dat
+    awsave AnimalWell.sav -s 3 --import slot2.dat
 
 Note that the only data checking the import process does is to ensure that
 the file being imported is exactly the right filesize (149,760 bytes).
@@ -193,7 +245,7 @@ If the filename you attempt to export to already exists, this app will
 prompt you if you want to overwrite.  To force overwriting without any
 interactive prompt, use the `-f`/`--force` option:
 
-    aw.py AnimalWell.sav -s 2 --export slot2.dat -f
+    awsave AnimalWell.sav -s 2 --export slot2.dat -f
 
 ### Frame Seed
 
@@ -204,7 +256,7 @@ seed modulo 50, so you could theoretically get all of the segments
 yourself by editing this value 50 times.  `--frame-seed` can be used
 to alter the value:
 
-    aw.py AnimalWell.sav --frame-seed 42
+    awsave AnimalWell.sav --frame-seed 42
 
 ### Global Unlocks (Figurines, etc)
 
@@ -214,8 +266,8 @@ The `--globals-enable` and `--globals-disable` arguments can be used to
 toggle the various states.  The special value `all` can be used to toggle
 all of them at once, and the argument can be specified multiple times.
 
-    aw.py AnimalWell.sav --globals-disable stopwatch --globals-disable pedometer
-    aw.py AnimalWell.sav --globals-enable all
+    awsave AnimalWell.sav --globals-disable stopwatch --globals-disable pedometer
+    awsave AnimalWell.sav --globals-enable all
 
 Valid values are: `stopwatch`, `pedometer`, `pink_phone`, `souvenir_cup`,
 `origami`, `two_rabbits`, `owl`, `cat`, `fish`, `donkey`, `deco_rabbit`,
@@ -228,11 +280,11 @@ total number of hearts, which includes your base health, any gold hearts,
 and any "extra" blue hearts.  The game's maximum is probably 12, though I
 haven't actually tested beyond that.
 
-    aw.py AnimalWell.sav -s 1 --health 8
+    awsave AnimalWell.sav -s 1 --health 8
 
 Relatedly, gold hearts can be added with the `--gold-hearts` option:
 
-    aw.py AnimalWell.sav -s 1 --health 12 --gold-hearts 4
+    awsave AnimalWell.sav -s 1 --health 12 --gold-hearts 4
 
 ### Spawnpoint
 
@@ -242,14 +294,14 @@ be set with the `--spawn` argument.  The upper-left room is at coordinate
 will spawn near the phone.  Otherwise, the player spawns in the upper-left-most
 available spot in the room.
 
-    aw.py AnimalWell.sav -s 1 --spawn 11,11
+    awsave AnimalWell.sav -s 1 --spawn 11,11
 
 ### Steps
 
 You can set the number of steps the player has walked with the `--steps`
 argument:
 
-    aw.py AnimalWell.sav -s 1 --steps 42
+    awsave AnimalWell.sav -s 1 --steps 42
 
 The ingame pedometer rolls over to 0 after hitting 99,999.
 
@@ -257,7 +309,7 @@ The ingame pedometer rolls over to 0 after hitting 99,999.
 
 You can set the number of recorded deaths using the `--deaths` option:
 
-    aw.py AnimalWell.sav -s 1 --deaths 0
+    awsave AnimalWell.sav -s 1 --deaths 0
 
 ### Saves
 
@@ -265,21 +317,21 @@ You can set the number of saves that the player has performed using the
 `--saves` option.  Note that the minimum legal value here is 1, since
 the slot data will not be populated on-disk until the first savegame.
 
-    aw.py AnimalWell.sav -s 1 --saves 1
+    awsave AnimalWell.sav -s 1 --saves 1
 
 ### Bubbles Popped
 
 The number of your B.Wand bubbles which have been popped by hummingbirds
 can be altered with the `--bubbles-popped` argument:
 
-    aw.py AnimalWell.sav -s 1 --bubbles-popped 42
+    awsave AnimalWell.sav -s 1 --bubbles-popped 42
 
 ### Berries Eaten While Full
 
 The number of berries you've eaten while at full health can be altered
 with the `--berries-eaten-while-full` argument:
 
-    aw.py AnimalWell.sav -s 1 --berries-eaten-while-full 10
+    awsave AnimalWell.sav -s 1 --berries-eaten-while-full 10
 
 ### Game Ticks (Elapsed Time)
 
@@ -293,12 +345,12 @@ used to copy your "ingame" counter over to the "including paused" counter,
 in case you feel that your speed effort is being unfairly held back by
 pausing:
 
-    aw.py AnimalWell.sav -s 1 --ticks-copy-ingame
+    awsave AnimalWell.sav -s 1 --ticks-copy-ingame
 
 Alternatively, you can just set the numeric value for both at the same
 time using `--ticks`:
 
-    aw.py AnimalWell.sav -s 1 --ticks 0
+    awsave AnimalWell.sav -s 1 --ticks 0
 
 ### Wings (Flight)
 
@@ -306,8 +358,8 @@ A very late-game unlock gives you the ability to sprout wings and fly
 around very quickly, by double-jumping.  This can be enabled or disabled
 using `--wings-enable` and `--wings-disable`:
 
-    aw.py AnimalWell.sav -s 1 --wings-enable
-    aw.py AnimalWell.sav -s 1 --wings-disable
+    awsave AnimalWell.sav -s 1 --wings-enable
+    awsave AnimalWell.sav -s 1 --wings-disable
 
 ### Firecrackers
 
@@ -315,7 +367,7 @@ Your player firecracker count can be set with the `--firecrackers` argument.
 Setting this to a value greater than zero will also unlock the Firecracker
 equipment, if it's not already unlocked.
 
-    aw.py AnimalWell.sav -s 1 --firecrackers 3
+    awsave AnimalWell.sav -s 1 --firecrackers 3
 
 ### Keys / Matches
 
@@ -323,7 +375,7 @@ Keys and Matches can be set using the `--keys` and `--matches` arguments.
 Note that the keys here are the "generic" ones which show up on the left in your
 inventory.  The maximum numbers available ingame are 6 keys, and 9 matches.
 
-    aw.py AnimalWell.sav -s 1 --keys 6 --matches 9
+    awsave AnimalWell.sav -s 1 --keys 6 --matches 9
 
 ### Equipment
 
@@ -333,8 +385,8 @@ using the `--equip-enable` and `--equip-disable` arguments.  Those can be specif
 more than once, and you can also use `all` as a special option to process all at
 once.
 
-    aw.py AnimalWell.sav -s 1 --equip-enable all
-    aw.py AnimalWell.sav -s 1 --equip-disable disc --equip-disable yoyo
+    awsave AnimalWell.sav -s 1 --equip-enable all
+    awsave AnimalWell.sav -s 1 --equip-disable disc --equip-disable yoyo
 
 Valid values are: `firecracker`, `flute`, `lantern`, `top`, `disc`, `wand`,
 `yoyo`, `slink`, `remote`, `ball`, `wheel`, `uvlight`, `all`.
@@ -348,20 +400,20 @@ Mock Disc in the M. Disc Shrine.  By default, the quest-correction will set the
 game to the dog-head-statue state, but you can have it put the Mock Disc in the
 shrine instead with `--prefer-disc-shrine-state`:
 
-    aw.py AnimalWell.sav -s 1 --equip-enable disc --prefer-disc-shrine-state
+    awsave AnimalWell.sav -s 1 --equip-enable disc --prefer-disc-shrine-state
 
 Alternatively, you can disable the auto-fix attempt entirely using the
 `--dont-fix-disc-state` argument, in case you want to have a doggo friend to
 keep you company (or if you're editing the quest states yourself later):
 
-    aw.py AnimalWell.sav -s 1 --equip-enable disc --dont-fix-disc-state
+    awsave AnimalWell.sav -s 1 --equip-enable disc --dont-fix-disc-state
 
 ### Map Unlocks
 
 The various map-feature unlocks can be enabled using the `--map-enable` argument.
 The special value `all` can be used to unlock all three at once:
 
-    aw.py AnimalWell.sav -s 1 --map-enable all
+    awsave AnimalWell.sav -s 1 --map-enable all
 
 Valid values are: `unlock_map`, `unlock_stamps`, `unlock_pencil`, `all`.
 
@@ -370,24 +422,24 @@ Valid values are: `unlock_map`, `unlock_stamps`, `unlock_pencil`, `all`.
 The B. Wand can be upgraded to the B.B. Wand (or downgraded back) using
 `--upgrade-wand` and `--downgrade-wand`:
 
-    aw.py AnimalWell.sav -s 1 --upgrade-wand
-    aw.py AnimalWell.sav -s 1 --downgrade-wand
+    awsave AnimalWell.sav -s 1 --upgrade-wand
+    awsave AnimalWell.sav -s 1 --downgrade-wand
 
 ### Egg 65
 
 Egg 65 can be enabled or disabled in your inventory using `--egg65-enable` and
 `--eg65-disable`:
 
-    aw.py AnimalWell.sav -s 1 --egg65-enable
-    aw.py AnimalWell.sav -s 1 --egg65-disable
+    awsave AnimalWell.sav -s 1 --egg65-enable
+    awsave AnimalWell.sav -s 1 --egg65-disable
 
 ### Cheater's Ring
 
 The Cheater's Ring can be enabled or disabled in your inventory using
 `--cring-enable` and `--cring-disable`:
 
-    aw.py AnimalWell.sav -s 1 --cring-enable
-    aw.py AnimalWell.sav -s 1 --cring-disable
+    awsave AnimalWell.sav -s 1 --cring-enable
+    awsave AnimalWell.sav -s 1 --cring-disable
 
 ### Progress/Quests
 
@@ -402,8 +454,8 @@ screen.  The arguments to edit this field are `--progress-enable` and
 `--progress-disable`.  The special value `all` can be used to process all
 (well, both) at once:
 
-    aw.py AnimalWell.sav -s 1 --progress-enable all
-    aw.py AnimalWell.sav -s 1 --progress-disable hp_bar
+    awsave AnimalWell.sav -s 1 --progress-enable all
+    awsave AnimalWell.sav -s 1 --progress-disable hp_bar
 
 Valid values are: `hp_bar`, `house_key`, `all`.
 
@@ -413,8 +465,8 @@ complete.  This can be altered with `--quest-state-enable` and
 more than once, and the special value `all` can be used to operate on them all at
 once.
 
-    aw.py AnimalWell.sav -s 1 --quest-enable house_open --quest-enable office-open
-    aw.py AnimalWell.sav -s 1 --quest-disable all
+    awsave AnimalWell.sav -s 1 --quest-enable house_open --quest-enable office-open
+    awsave AnimalWell.sav -s 1 --quest-disable all
 
 Valid values are: `house_open`, `office_open`, `closet_open`, `unlock_map`,
 `unlock_stamps`, `unlock_pencil`, `defeated_chameleon`, `cring`,
@@ -434,8 +486,8 @@ The caged-cat/mother-lynx puzzle state can be set with the `--cats-free` and
 `--cats-cage` arguments.  This can be specified more than once, or you can use
 the special `all` value to operate on all at the same time:
 
-    aw.py AnimalWell.sav -s 1 --cats-free all
-    aw.py AnimalWell.sav -s 1 --cats-cage cat_14_19_1 --cats-cage cat_14_19_2
+    awsave AnimalWell.sav -s 1 --cats-free all
+    awsave AnimalWell.sav -s 1 --cats-cage cat_14_19_1 --cats-cage cat_14_19_2
 
 Valid values are: `cat_16_18_1`, `cat_16_18_2`, `cat_16_18_3`, `cat_14_19_1`,
 `cat_14_19_2`, `wheel`, `all`.  Note that the `wheel` entry controls whether
@@ -456,7 +508,7 @@ coordinates:
 
 The coordinates are set by the numeric index:
 
-    aw.py AnimalWell.sav -s 1 --kangaroo-room 0
+    awsave AnimalWell.sav -s 1 --kangaroo-room 0
 
 Note that the kangaroo will likely be immediately hostile once you enter the
 room.
@@ -471,8 +523,8 @@ any existing state; if you've collected two shards already and specify that
 you want 1 inserted, you will be left with a single inserted shard and none
 in your inventory.
 
-    aw.py AnimalWell.sav -s 1 --kshard-collect 2
-    aw.py AnimalWell.sav -s 1 --kshard-insert 3
+    awsave AnimalWell.sav -s 1 --kshard-collect 2
+    awsave AnimalWell.sav -s 1 --kshard-insert 3
 
 ### Animal Head Teleporters
 
@@ -480,8 +532,8 @@ You can enable/disable the animal head teleporters using the `--teleport-enable`
 and `--teleport-disable` arguments.  The arguments can be specified more than
 once, and you can use the special `all` value to operate on all at once.
 
-    aw.py AnimalWell.sav -s 1 --teleport-enable bird --teleport-enable bear
-    aw.py AnimalWell.sav -s 1 --teleport-disable all
+    awsave AnimalWell.sav -s 1 --teleport-enable bird --teleport-enable bear
+    awsave AnimalWell.sav -s 1 --teleport-disable all
 
 Valid values are: `frog`, `fish`, `bear`, `dog`, `bird`, `squirrel`, `hippo`,
 `all`.
@@ -495,9 +547,9 @@ the reward wall will *not* open in the solved state unless you head to the
 control panel and set one pixel.  (Though the wall can be opened with other
 options in the editor.)
 
-    aw.py AnimalWell.sav -s 1 --mural-default
-    aw.py AnimalWell.sav -s 1 --mural-clear
-    aw.py AnimalWell.sav -s 1 --mural-solved
+    awsave AnimalWell.sav -s 1 --mural-default
+    awsave AnimalWell.sav -s 1 --mural-clear
+    awsave AnimalWell.sav -s 1 --mural-solved
 
 ### Flames
 
@@ -507,8 +559,8 @@ arguments.  Each of those can be specified more than once, or use the special
 flame in your inventory, whereas `--flame-use` will put the flame in its
 respective pedestal.
 
-    aw.py AnimalWell.sav -s 1 --flame-collect p --flame-collect g
-    aw.py AnimalWell.sav -s 1 --flame-use all
+    awsave AnimalWell.sav -s 1 --flame-collect p --flame-collect g
+    awsave AnimalWell.sav -s 1 --flame-use all
 
 Valid values are: `b`, `p`, `v`, `g`, `all`.
 
@@ -521,15 +573,15 @@ present until you get to the Manticore Arena area (or set up the 65th
 Egg).  In "Overworld" state they will chase you around, and in "Space"
 state they'll be friendly up on Bunny Island.
 
-    aw.py AnimalWell.sav -s 1 --blue-manticore overworld --red-manticore space
+    awsave AnimalWell.sav -s 1 --blue-manticore overworld --red-manticore space
 
 ### Teleportation Torus
 
 The teleportation torus (two rooms right of the house/office) can be
 toggled on/off with `--torus-enable` and `--torus-disable`:
 
-    aw.py AnimalWell.sav -s 1 --torus-enable
-    aw.py AnimalWell.sav -s 1 --torus-disable
+    awsave AnimalWell.sav -s 1 --torus-enable
+    awsave AnimalWell.sav -s 1 --torus-disable
 
 ### Eggs
 
@@ -537,8 +589,8 @@ Collected eggs can be enabled or disabled with the `--egg-enable` and
 `--egg-disable` arguments.  The arguments can be specified more than once,
 and the special value `all` can be used to operate on all eggs at once.
 
-    aw.py AnimalWell.sav -s 1 --egg-enable all
-    aw.py AnimalWell.sav -s 1 --egg-disable zen --egg-disable ice
+    awsave AnimalWell.sav -s 1 --egg-enable all
+    awsave AnimalWell.sav -s 1 --egg-disable zen --egg-disable ice
 
 Note that this does *not* include the 65th Egg.
 
@@ -549,8 +601,8 @@ and `--bunny-disable` arguments.  The arguments can be specified more
 than once, and the special value `all` can be used to operate on all
 bunnies at once.
 
-    aw.py AnimalWell.sav -s 1 --bunny-enable floor_is_lava --bunny-enable dream
-    aw.py AnimalWell.sav -s 1 --bunny-disable all
+    awsave AnimalWell.sav -s 1 --bunny-enable floor_is_lava --bunny-enable dream
+    awsave AnimalWell.sav -s 1 --bunny-disable all
 
 This argument can't be used to collect the various "illegal" bunnies
 hidden around the map (or just in game data).
@@ -561,7 +613,7 @@ Ordinarily, fruit and firecrackers only respawn in the game world when you
 die.  The `--respawn-consumables` option will make them all reappear without
 having to do so:
 
-    aw.py AnimalWell.sav -s 1 --respawn-consumables
+    awsave AnimalWell.sav -s 1 --respawn-consumables
 
 ### Ghosts
 
@@ -570,15 +622,15 @@ which point they will respawn (unless a lit candle is keeping them away).
 The `--clear-ghosts` and `--respawn-ghosts` arguments can be used to
 frighten them all off, and cause them to respawn early, respectively:
 
-    aw.py AnimalWell.sav -s 1 --clear-ghosts
-    aw.py AnimalWell.sav -s 1 --respawn-ghosts
+    awsave AnimalWell.sav -s 1 --clear-ghosts
+    awsave AnimalWell.sav -s 1 --respawn-ghosts
 
 ### Squirrels
 
 Frightened squirrels can be respawned onto the map with the
 `--respawn-squirrels` argument:
 
-    aw.py AnimalWell.sav -s 1 --respawn-squirrels
+    awsave AnimalWell.sav -s 1 --respawn-squirrels
 
 ### Buttons
 
@@ -590,8 +642,8 @@ toggle "legitimate" buttons which the user is expected to be able to find.
 The "illegal" buttons associated with hidden bunnies will *not* be
 pressed.
 
-    aw.py AnimalWell.sav -s 1 --buttons-press
-    aw.py AnimalWell.sav -s 1 --buttons-reset
+    awsave AnimalWell.sav -s 1 --buttons-press
+    awsave AnimalWell.sav -s 1 --buttons-reset
 
 Note that resetting buttons will *not* automatically cause their related
 doors/walls to revert to the closed state.  Pressing buttons *will* cause
@@ -623,27 +675,27 @@ opened them originally are still pressed/solved, entering the room after
 closing them will just cause them to re-open again.  Regardless, they can
 be opened/closed like so:
 
-    aw.py AnimalWell.sav -s 1 --doors-open
-    aw.py AnimalWell.sav -s 1 --doors-close
+    awsave AnimalWell.sav -s 1 --doors-open
+    awsave AnimalWell.sav -s 1 --doors-close
 
 Likewise, lockable doors can be opened/closed with:
 
-    aw.py AnimalWell.sav -s 1 --lockable-unlock
-    aw.py AnimalWell.sav -s 1 --lockable-lock
+    awsave AnimalWell.sav -s 1 --lockable-unlock
+    awsave AnimalWell.sav -s 1 --lockable-lock
 
 Egg Chamber doors work a little differently.  Instead of being all-or-nothing,
 they can be toggled individually, and the special value `all` can be used
 to operate on all at once:
 
-    aw.py AnimalWell.sav -s 1 --eggdoor-open all
-    aw.py AnimalWell.sav -s 1 --eggdoor-close first --eggdoor-close third
+    awsave AnimalWell.sav -s 1 --eggdoor-open all
+    awsave AnimalWell.sav -s 1 --eggdoor-close first --eggdoor-close third
 
 Valid values are: `first`, `second`, `third`, `fourth`, `all`.
 
 Moveable walls can be opened/closde like so:
 
-    aw.py AnimalWell.sav -s 1 --walls-open
-    aw.py AnimalWell.sav -s 1 --walls-close
+    awsave AnimalWell.sav -s 1 --walls-open
+    awsave AnimalWell.sav -s 1 --walls-close
 
 Finally, using the Cheater's Ring (or any other noclip cheating activity) can
 allow the player to access "illegal" pink buttons which can cause extra walls
@@ -656,7 +708,7 @@ well.  Note that this *cannot* fix an already-corrupted save, but it could at
 least prevent a save from being corrupted after some of those pink buttons were
 already hit:
 
-    aw.py AnimalWell.sav -s 1 --clear-invalid-walls
+    awsave AnimalWell.sav -s 1 --clear-invalid-walls
 
 ### Chests
 
@@ -664,8 +716,8 @@ All chests in the game can be opened/closed using the `--chests-open` and
 `--chests-close` arguments.  Note that merely opening a chest does *not* provide
 you with the item that the chest provided!
 
-    aw.py AnimalWell.sav -s 1 --chests-open
-    aw.py AnimalWell.sav -s 1 --chests-close
+    awsave AnimalWell.sav -s 1 --chests-open
+    awsave AnimalWell.sav -s 1 --chests-close
 
 ### Candles
 
@@ -674,8 +726,8 @@ Candles throughout the game can be individually lit or blown out using the
 specified more than once, and the special value `all` can be used to operate on
 all candles at once:
 
-    aw.py AnimalWell.sav -s 1 --candles-enable all
-    aw.py AnimalWell.sav -s 1 --candles-disable room_06_07 --candles-disable room_10_13
+    awsave AnimalWell.sav -s 1 --candles-enable all
+    awsave AnimalWell.sav -s 1 --candles-disable room_06_07 --candles-disable room_10_13
 
 Valid values are: `room_04_06`, `room_08_06`, `room_04_07`, `room_06_07`,
 `room_06_09`, `room_15_09`, `room_05_13`, `room_10_13`, `room_16_13`, `all`.
@@ -687,16 +739,16 @@ candle.
 The five water reservoirs in the game can be all filled up or emptied using the
 `--reservoirs-fill` and `--reservoirs-empty` arguments:
 
-    aw.py AnimalWell.sav -s 1 --reservoirs-fill
-    aw.py AnimalWell.sav -s 1 --reservoirs-empty
+    awsave AnimalWell.sav -s 1 --reservoirs-fill
+    awsave AnimalWell.sav -s 1 --reservoirs-empty
 
 ### Detonators
 
 The various detonators around the map can be triggered or re-armed using the
 `--detonators-activate` and `--detonators-rearm` arguments:
 
-    aw.py AnimalWell.sav -s 1 --detonators-activate
-    aw.py AnimalWell.sav -s 1 --detonators-rearm
+    awsave AnimalWell.sav -s 1 --detonators-activate
+    awsave AnimalWell.sav -s 1 --detonators-rearm
 
 Note that merely re-arming a detonator will not automatically rebuild the
 destroyed tiles from the original explosion.  To spawn those back in, you can
@@ -708,15 +760,15 @@ Tiles in the game can get destroyed in a variety of ways, such as the
 Top/Yoyo, detonators, Manticore laser beams, etc.  To respawn all destroyed
 tiles in the map, you can use the `--respawn-destroyed-tiles` argument:
 
-    aw.py AnimalWell.sav -s 1 --respawn-destroyed-tiles
+    awsave AnimalWell.sav -s 1 --respawn-destroyed-tiles
 
 ### Minimap
 
 The minimap can be revealed or cleared using the `--reveal-map` and `--clear-map`
 arguments:
 
-    aw.py AnimalWell.sav -s 1 --reveal-map
-    aw.py AnimalWell.sav -s 1 --clear-map
+    awsave AnimalWell.sav -s 1 --reveal-map
+    awsave AnimalWell.sav -s 1 --clear-map
 
 Note that the fully-revealed map will look different than a "naturally"
 fully-revealed minimap, because all of the "inner" wall space will be filled
@@ -728,8 +780,8 @@ boundaries.
 The user-made marks to the map using the pencil and stamps can be cleared using
 the `--clear-pencil` and `--clear-stamps` options, respectively:
 
-    aw.py AnimalWell.sav -s 1 --clear-pencil
-    aw.py AnimalWell.sav -s 1 --clear-stamps
+    awsave AnimalWell.sav -s 1 --clear-pencil
+    awsave AnimalWell.sav -s 1 --clear-stamps
 
 ### Pencil Images
 
@@ -751,27 +803,27 @@ entire space, which is 800x528.  You can specify the `--pencil-image-playable`
 argument to restrict the import size to the borders of the playable area
 instead, which is 640x352.
 
-    aw.py AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg
-    aw.py AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg --pencil-image-playable
+    awsave AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg
+    awsave AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg --pencil-image-playable
 
 ![Pencil Image Import Results](aw_minimap_bunnies.jpg)
 
 The imported image can be inverted by specifying `--pencil-image-invert`, in
 case your image would look better that way:
 
-    aw.py AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg --pencil-image-invert
+    awsave AnimalWell.sav -s 1 --pencil-image-import bunnies.jpg --pencil-image-invert
 
 For exporting to a graphics file, the utility should understand most common
 image format by its extension, and write the appropriate format:
 
-    aw.py AnimalWell.sav -s 1 --pencil-image-export output1.jpg
-    aw.py AnimalWell.sav -s 1 --pencil-image-export output2.png
+    awsave AnimalWell.sav -s 1 --pencil-image-export output1.jpg
+    awsave AnimalWell.sav -s 1 --pencil-image-export output2.png
 
 If the export file already exists, the utility will prompt you to overwrite.  To
 automatically overwrite without any interactive prompt, use the `-f`/`--force`
 option:
 
-    aw.py AnimalWell.sav -s 1 --pencil-image-export output.jpg -f
+    awsave AnimalWell.sav -s 1 --pencil-image-export output.jpg -f
 
 Library
 -------
