@@ -23,13 +23,14 @@ classifiers = [
 requires-python = ">= 3.10"
 dependencies = []
 dynamic = ["version"]
+keywords = ["animalwell", "animal well", "save editor"]
 
 [project.optional-dependencies]
 PencilImages = ["pillow"]
 
 [project.urls]
-"Source code" = "https://github.com/apocalyptech/animalwellsave"
-"Issue tracker" = "https://github.com/apocalyptech/animalwellsave/issues"
+Repository = "https://github.com/apocalyptech/animalwellsave"
+Issues = "https://github.com/apocalyptech/animalwellsave/issues"
 
 [project.scripts]
 animalwellsave = "animalwellsave.cli:main"
