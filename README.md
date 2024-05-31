@@ -27,7 +27,7 @@ Table of Contents
  - [TODO](#todo)
  - [Usage](#usage)
    - [Showing Save Info](#showing-save-info)
-   - [Fix Checksum](#fix-checksum)
+   - [Checksum](#checksum)
    - [Choose Slot](#choose-slot)
    - [Import/Export Slots](#importexport-slots)
    - [Frame Seed](#frame-seed)
@@ -72,6 +72,7 @@ Table of Contents
    - [Map Marks](#map-marks)
    - [Pencil Images](#pencil-images)
  - [Library](#library)
+ - [Changelog](#changelog)
  - [License](#license)
 
 Overview
@@ -94,18 +95,14 @@ writing the primary format there is an
 plus an [ImHex](https://imhex.werwolv.net/) pattern.  Other translations
 may become available over time.  A human-readable document describing the
 save format can be found [at the wiki of that repo](https://github.com/Kein/awsgtools/wiki/Format-Description)
-as well, though at time of writing it's lagging behind the binary
-template by quite a bit.
+as well, though that document might lag behind the official templates.
 
 Running / Installation
 ----------------------
 
 ### Easiest Method: pip
 
-**Note:** *This method doesn't actually work yet; I'm gearing up to
-getting it properly released to pypi.*
-
-The easiest way to install animalwellsave is via `pip` inside a [virtual
+The easiest way to install `animalwellsave` is via `pip` inside a [virtual
 environment](https://docs.python.org/3/library/venv.html).  On Unix/Mac:
 
     cd /wherever/you/want/to/keep/the/virtualenv
@@ -206,7 +203,7 @@ To show information about the save, including for any chosen slots, use
     awsave AnimalWell.sav -i
     awsave AnimalWell.sav --info
 
-### Fix Checksum
+### Checksum
 
 The `--fix-checksum` option can be used to fix the savegame's checksum without
 changing anything else.  (The utility will automatically update the checksum if
@@ -215,6 +212,13 @@ Animal Well will spawn a Manticore friend to follow you around, so this can be
 used to fix it in case any manual hex editing has been going on.
 
     awsave AnimalWell.sav --fix-checksum
+
+If you wanted to *intentionally* force an invalid checksum, because you'd like
+a Manticore friend to go exploring with, you can use the `--invalid-checksum`
+argument.  If that's the *only* save-edit you want to do, you'll have to specify
+the `--fix-checksum` argument as well:
+
+    awsave AnimalWell.sav --fix-checksum --invalid-checksum
 
 ### Choose Slot
 
@@ -893,6 +897,12 @@ via `value` rather than `choice`.
 
 Apart from that, as I say, just looking through `cli.py` or the objects
 themselves would probably be the best way to know how to use 'em.
+
+Changelog
+---------
+
+**v1.0.0** - *May 31, 2024*
+ - Initial release
 
 License
 -------
