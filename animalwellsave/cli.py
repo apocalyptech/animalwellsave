@@ -22,6 +22,7 @@ import enum
 import argparse
 import textwrap
 import collections
+from . import __version__
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, CatStatus, \
         Unlockable, ManticoreState, Progress, has_image_support
@@ -190,7 +191,7 @@ def main():
     """
 
     parser = argparse.ArgumentParser(
-            description='CLI Animal Well Savegame Editor',
+            description=f'CLI Animal Well Savegame Editor v{__version__}',
             )
 
     ###
@@ -1002,6 +1003,7 @@ def main():
             header = f'Animal Well Savegame v{save.version}'
             print(header)
             print('-'*len(header))
+            print(f'(processed by animalwellsave v{__version__})')
             print('')
             print(f' - Last-Used Slot: {save.last_used_slot+1}')
             print(f' - Checksum: 0x{save.checksum:02X}')
