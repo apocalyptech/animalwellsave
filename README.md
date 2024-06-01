@@ -79,7 +79,7 @@ Overview
 --------
 
 The utility seems quite safe to use -- I've not ever experienced any problems
-with it.  But make sure to bakup your saves before using this!
+with it.  But make sure to backup your saves before using this!
 
 Work on decoding the savegame structure has mostly been done by
 [Kein](https://github.com/Kein/), [just-ero](https://github.com/just-ero),
