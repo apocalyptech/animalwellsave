@@ -196,6 +196,8 @@ few other things which would be nice eventually:
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
  - Sine Wave puzzle.  Basically just completely forgot about this one.
+ - Specific boss-toggle flags (further discourage direct quest state
+   modification)
 
 Usage
 -----
