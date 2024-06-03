@@ -389,6 +389,10 @@ class NumBitfieldData(NumData):
     Arbitrary numeric values can be written to this field as per usual,
     but the `enable`/`disable` methods to toggle individual bits will
     only accept valid options from the configured enum.
+
+    In addition to an `enabled` set which can be used to enumerate
+    enabled items, the class keeps track of a `disabled` set to do
+    the opposite.
     """
 
     def __init__(self, parent, num_type, bitfield, /, offset=None):
@@ -405,6 +409,7 @@ class NumBitfieldData(NumData):
         """
         self.bitfield = bitfield
         self.enabled = set()
+        self.disabled = set()
         super().__init__(parent, num_type, offset=offset)
 
     def _post_value_set(self):
@@ -414,16 +419,25 @@ class NumBitfieldData(NumData):
         are currently enabled.
         """
         self.enabled = set()
+        self.disabled = set()
         if self.bitfield is not None:
             for choice in self.bitfield:
                 if self._value & choice.value == choice.value:
                     self.enabled.add(choice)
+                else:
+                    self.disabled.add(choice)
 
     def __len__(self):
         """
         Returns how many of our known bitfields are selected.
         """
         return len(self.enabled)
+
+    def count(self):
+        """
+        Returns how many total items there are in the bitfield
+        """
+        return len(self.bitfield)
 
     def enable(self, choice):
         """

@@ -205,6 +205,11 @@ def main():
             help='Show known information about the save',
             )
 
+    control.add_argument('-v', '--verbose',
+            action='store_true',
+            help='Include more information in the info view, including missing items (where possible)',
+            )
+
     control.add_argument('--fix', '--fix-checksum',
             action='store_true',
             dest='fix_checksum',
@@ -1017,6 +1022,10 @@ def main():
                 print(' - Unlockables:')
                 for unlocked in sorted(save.unlockables.enabled):
                     print(f'   - {unlocked}')
+            if args.verbose and save.unlockables.disabled:
+                print(' - Missing Unlockables:')
+                for unlocked in sorted(save.unlockables.disabled):
+                    print(f'   - {unlocked}')
 
         # Make a note of fixing the checksum, if we were told to do so
         if args.fix_checksum:
@@ -1082,6 +1091,10 @@ def main():
                             for equip in sorted(slot.equipment.enabled):
                                 print(f'   - {equip}')
                             print(f' - Selected Equipment: {slot.selected_equipment}')
+                        if args.verbose and slot.equipment.disabled:
+                            print(' - Missing Equipment:')
+                            for equip in sorted(slot.equipment.disabled):
+                                print(f'   - {equip}')
                         k_shards_collected = slot.kangaroo_state.num_collected()
                         k_shards_inserted = slot.kangaroo_state.num_inserted()
                         if slot.inventory.enabled or k_shards_collected:
@@ -1090,16 +1103,34 @@ def main():
                                 print(f'   - {inv}')
                             if k_shards_collected > 0:
                                 print(f'   - K. Shards Collected: {k_shards_collected}/3')
+                        if args.verbose and (slot.inventory.disabled or k_shards_collected == 0):
+                            print(' - Missing Inventory:')
+                            for inv in sorted(slot.inventory.disabled):
+                                print(f'   - {inv}')
+                            if k_shards_collected == 0:
+                                print(f'   - K. Shards Collected: {k_shards_collected}/3')
                         print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
                         for egg in sorted(slot.eggs.enabled):
                             print(f'   - {egg}')
+                        if slot.eggs.disabled:
+                            print(' - Missing Eggs:')
+                            for egg in sorted(slot.eggs.disabled):
+                                print(f'   - {egg}')
                         if len(slot.bunnies.enabled) > 0:
                             print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
                             for bunny in sorted(slot.bunnies.enabled):
                                 print(f'   - {bunny}')
+                        if args.verbose and slot.bunnies.disabled:
+                            print(' - Missing Bunnies:')
+                            for bunny in sorted(slot.bunnies.disabled):
+                                print(f'   - {bunny}')
                         if slot.quest_state.enabled:
                             print(f' - Quest State Flags:')
                             for state in sorted(slot.quest_state.enabled):
+                                print(f'   - {state}')
+                        if args.verbose and slot.quest_state.disabled:
+                            print(f' - Missing Quest States:')
+                            for state in sorted(slot.quest_state.disabled):
                                 print(f'   - {state}')
                         if any([flame.choice != FlameState.SEALED for flame in slot.flames]):
                             print(f' - Flame States:')
@@ -1177,6 +1208,10 @@ def main():
                         if slot.teleports.enabled:
                             print(f' - Teleports Active: {len(slot.teleports.enabled)}')
                             for teleport in sorted(slot.teleports.enabled):
+                                print(f'   - {teleport}')
+                        if args.verbose and slot.teleports.disabled:
+                            print(' - Missing Teleports:')
+                            for teleport in sorted(slot.teleports.disabled):
                                 print(f'   - {teleport}')
 
                         if do_slot_actions:

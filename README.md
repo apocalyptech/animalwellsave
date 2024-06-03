@@ -917,6 +917,10 @@ themselves would probably be the best way to know how to use 'em.
 Changelog
 ---------
 
+**v1.1.0** - *(unreleased)*
+ - Added `--verbose` option to also show missing items (inventory, eggs, etc)
+   on the info output, rather than just the things that *are* present.
+
 **v1.0.0** - *May 31, 2024*
  - Initial release
 
