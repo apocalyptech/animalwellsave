@@ -927,6 +927,7 @@ Changelog
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
  - Added lit-candle report to info output
+ - Removed dash in "Post Modern" egg text
 
 **v1.0.0** - *May 31, 2024*
  - Initial release
