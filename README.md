@@ -199,7 +199,6 @@ few other things which would be nice eventually:
  - Sine Wave puzzle.  Basically just completely forgot about this one.
  - Specific boss-toggle flags (further discourage direct quest state
    modification)
- - "Verbose" mode to specifically show what's *missing*, when possible
  - "Debug" mode to output data offsets (both absolute + relative)
 
 Usage
@@ -920,6 +919,7 @@ Changelog
 **v1.1.0** - *(unreleased)*
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
+ - Added lit-candle report to info output
 
 **v1.0.0** - *May 31, 2024*
  - Initial release

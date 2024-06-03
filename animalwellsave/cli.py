@@ -1183,6 +1183,12 @@ def main():
                         num_filled = slot.fill_levels.num_filled()
                         if num_filled > 0:
                             print(f'   - Reservoirs Filled: {num_filled}')
+                        if len(slot.candles.enabled) > 0:
+                            print(f'   - Candles Lit: {len(slot.candles)}/{slot.candles.count()}')
+                        if args.verbose and len(slot.candles.disabled) > 0:
+                            print('   - Missing Candles-to-Light:')
+                            for candle in sorted(slot.candles.disabled):
+                                print(f'     - {candle}')
                         if slot.detonators_triggered.count > 0:
                             print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                         if slot.walls_blasted.count > 0:
