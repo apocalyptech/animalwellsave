@@ -184,6 +184,7 @@ savegames.  Some notable bits of data which can't be edited directly:
  - Achievements *(unsure if setting these in the save would actually make
    them activate on Steam)*
  - Game Options
+ - Global "button" state
 
 While I don't have any current plans to support the above, there are a
 few other things which would be nice eventually:
@@ -198,6 +199,8 @@ few other things which would be nice eventually:
  - Sine Wave puzzle.  Basically just completely forgot about this one.
  - Specific boss-toggle flags (further discourage direct quest state
    modification)
+ - "Verbose" mode to specifically show what's *missing*, when possible
+ - "Debug" mode to output data offsets (both absolute + relative)
 
 Usage
 -----
