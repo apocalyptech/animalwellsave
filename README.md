@@ -218,6 +218,13 @@ To show information about the save, including for any chosen slots, use
     awsave AnimalWell.sav -i
     awsave AnimalWell.sav --info
 
+By default, the info output will just show you things that you *have* collected
+or done throughout the game.  To also show information about things you *haven't*
+collected or done (such as missing eggs, etc), use `-v`/`--verbose`:
+
+    awsave AnimalWell.sav -i -v
+    awsave AnimalWell.sav --info --verbose
+
 ### Checksum
 
 The `--fix-checksum` option can be used to fix the savegame's checksum without
