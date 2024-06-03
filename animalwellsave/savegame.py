@@ -160,7 +160,7 @@ class Egg(LabelEnum):
     RED =             (0x0000000000040000, 'Red')
     ORANGE =          (0x0000000000080000, 'Orange')
     SOUR =            (0x0000000000100000, 'Sour')
-    POST_MODERN =     (0x0000000000200000, 'Post-Modern')
+    POST_MODERN =     (0x0000000000200000, 'Post Modern')
     UNIVERSAL_BASIC = (0x0000000000400000, 'Universal Basic')
     LAISSEZ_FAIRE =   (0x0000000000800000, 'Laissez-Faire')
 
