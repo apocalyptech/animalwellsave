@@ -200,6 +200,7 @@ few other things which would be nice eventually:
  - Specific boss-toggle flags (further discourage direct quest state
    modification)
  - "Debug" mode to output data offsets (both absolute + relative)
+ - Report longer lists (like eggs) in columns?
 
 Usage
 -----
