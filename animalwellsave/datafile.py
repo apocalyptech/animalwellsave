@@ -17,9 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import os
+import sys
 import enum
 import struct
 import collections
+
+from . import is_debug
 
 # "Generic" data processing for Animal Well savegames.  As usual with my
 # homegrown frameworks like this, it's a bit janky, but it does the trick.
@@ -74,14 +77,16 @@ class Data():
     read by the implementing classes.
     """
 
-    def __init__(self, parent, /, offset=None):
+    def __init__(self, debug_label, parent, /, offset=None):
         """
         The `parent` object should have `df` (filehandle) and `offset`
         attributes.  `offset`, if passed in, will be computed relative to
         the parent's offset.  If not passed in, our offset will be the
         current filehandle position.
         """
+        self._debug_label = debug_label
         self.parent = parent
+        self.__indent = None
         self.df = self.parent.df
         if offset is None:
             self.offset = self.df.tell()
@@ -90,6 +95,40 @@ class Data():
             if self.parent is not None:
                 self.offset += self.parent.offset
             self.df.seek(self.offset, os.SEEK_SET)
+
+        # If we've been told to go into debug mode, show our offsets
+        if is_debug():
+            report = []
+            absolute = self.offset
+            report.append(f'0x{absolute:X} absolute')
+            if self.parent is not None:
+                relative = self.offset - self.parent.offset
+                if relative != absolute:
+                    report.append(f'0x{relative:X} from {self.parent._debug_label}')
+            print('{}- {}:\t{}'.format(
+                '  '*self._indent,
+                self._debug_label,
+                ",\t".join(report),
+                ), file=sys.stderr)
+
+    @property
+    def _indent(self):
+        """
+        Used for our debug output; determines the indentation so that we can
+        report on offsets in a tree-like fashion
+        """
+        if self.__indent is None:
+            self.__indent = 0
+            cur = self
+            while True:
+                try:
+                    cur = cur.parent
+                    if cur is None:
+                        break
+                    self.__indent += 1
+                except AttributeError:
+                    break
+        return self.__indent
 
 
 class NumData(Data):
@@ -107,7 +146,7 @@ class NumData(Data):
     count for the data type.
     """
 
-    def __init__(self, parent, num_type, /, offset=None):
+    def __init__(self, debug_label, parent, num_type, /, offset=None):
         """
         The `parent` object should have `df` (filehandle) and `offset`
         attributes.  `offset`, if passed in, will be computed relative to
@@ -116,7 +155,7 @@ class NumData(Data):
 
         `num_type` should be a `NumType` structure.
         """
-        super().__init__(parent, offset=offset)
+        super().__init__(debug_label, parent, offset=offset)
         self.num_type = num_type
         self.struct_string = f'<{self.num_type.struct_char}'
         match self.num_type.bounds:
@@ -306,7 +345,7 @@ class NumChoiceData(NumData):
     whether to allow that kind of thing or not, instead of just allowing?)
     """
 
-    def __init__(self, parent, num_type, choices, /, offset=None):
+    def __init__(self, debug_label, parent, num_type, choices, /, offset=None):
         """
         The `parent` object should have `df` (filehandle) and `offset`
         attributes.  `offset`, if passed in, will be computed relative to
@@ -321,7 +360,7 @@ class NumChoiceData(NumData):
 
         self.choices = choices
         self.choice = None
-        super().__init__(parent, num_type, offset=offset)
+        super().__init__(debug_label, parent, num_type, offset=offset)
 
     @NumData.value.setter
     def value(self, new_value):
@@ -395,7 +434,7 @@ class NumBitfieldData(NumData):
     the opposite.
     """
 
-    def __init__(self, parent, num_type, bitfield, /, offset=None):
+    def __init__(self, debug_label, parent, num_type, bitfield, /, offset=None):
         """
         The `parent` object should have `df` (filehandle) and `offset`
         attributes.  `offset`, if passed in, will be computed relative to
@@ -410,7 +449,7 @@ class NumBitfieldData(NumData):
         self.bitfield = bitfield
         self.enabled = set()
         self.disabled = set()
-        super().__init__(parent, num_type, offset=offset)
+        super().__init__(debug_label, parent, num_type, offset=offset)
 
     def _post_value_set(self):
         """
@@ -509,7 +548,7 @@ class BitCountData(Data):
     save.
     """
 
-    def __init__(self, parent, num_type, count, max_bits, offset=None):
+    def __init__(self, debug_label, parent, num_type, count, max_bits, offset=None):
         """
         The `parent` object should have `df` (filehandle) and `offset`
         attributes.  `offset`, if passed in, will be computed relative to
@@ -522,7 +561,7 @@ class BitCountData(Data):
         up the bitfield.
         """
 
-        super().__init__(parent, offset=offset)
+        super().__init__(debug_label, parent, offset=offset)
         self.num_type = num_type
         if self.num_type.bounds != Bounds.UNSIGNED:
             raise RuntimeError('BitCountData objects can only be populated with unsigned numeric data')
@@ -532,8 +571,8 @@ class BitCountData(Data):
 
         # Read in data
         self._data = []
-        for _ in range(self._data_count):
-            self._data.append(NumData(self, self.num_type))
+        for idx in range(self._data_count):
+            self._data.append(NumData(f'Segment {idx}', self, self.num_type))
         self._fix_count()
 
     def __str__(self):

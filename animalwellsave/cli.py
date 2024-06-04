@@ -22,7 +22,7 @@ import enum
 import argparse
 import textwrap
 import collections
-from . import __version__
+from . import __version__, set_debug
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, CatStatus, \
         Unlockable, ManticoreState, Progress, has_image_support
@@ -208,6 +208,14 @@ def main():
     control.add_argument('-v', '--verbose',
             action='store_true',
             help='Include more information in the info view, including missing items (where possible)',
+            )
+
+    control.add_argument('-d', '--debug',
+            action='store_true',
+            help="""
+                Show debugging output, which will show the offsets (both absolute and relative) for
+                all data in the savegame we know about.  This info will be written to stderr.
+                """,
             )
 
     control.add_argument('--fix', '--fix-checksum',
@@ -891,6 +899,10 @@ def main():
     delete_common_set_items(args.inventory_enable, args.inventory_disable)
     delete_common_set_items(args.quest_state_enable, args.quest_state_disable)
 
+    # Set our debug flag if we've been told to
+    if args.debug:
+        set_debug()
+
     # Find out if we have anything to do
     loop_into_slots = False
     do_slot_actions = False
@@ -1007,7 +1019,12 @@ def main():
             parser.error('--import-slot and --export-slot may only be used with a single slot')
 
     # Load the savegame
+    if args.debug:
+        print('Showing data offsets:', file=sys.stderr)
+        print('', file=sys.stderr)
     with Savegame(args.filename) as save:
+        if args.debug:
+            print('', file=sys.stderr)
         
         if args.info:
             header = f'Animal Well Savegame v{save.version}'

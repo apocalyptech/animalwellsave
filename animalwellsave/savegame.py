@@ -426,16 +426,16 @@ class Timestamp(Data):
     each slot, and shown on the "load game" dialog in-game.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         # Data
-        self.year = NumData(self, UInt16)
-        self.month = NumData(self, UInt8)
-        self.day = NumData(self, UInt8)
-        self.hour = NumData(self, UInt8)
-        self.minute = NumData(self, UInt8)
-        self.second = NumData(self, UInt8)
+        self.year = NumData('Year', self, UInt16)
+        self.month = NumData('Month', self, UInt8)
+        self.day = NumData('Day', self, UInt8)
+        self.hour = NumData('Hour', self, UInt8)
+        self.minute = NumData('Minute', self, UInt8)
+        self.second = NumData('Second', self, UInt8)
 
         # If all fields are zero, assume that the slot is empty
         self.has_data = any([
@@ -453,14 +453,14 @@ class Timestamp(Data):
 
 class Flame(NumChoiceData):
     """
-    A single flame status.  This is just a NumChoiceData with an extra
+    A single flame status.  This is just a NumChoiceData with an explicit
     `name` attribute, so that utilities can report on which flame is
     being used, when iterating over the whole set.
     """
 
-    def __init__(self, parent, name, offset=None):
-        super().__init__(parent, UInt8, FlameState)
-        self.name = name
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, UInt8, FlameState)
+        self.name = self._debug_label
 
 
 class Flames(Data):
@@ -470,14 +470,14 @@ class Flames(Data):
     single-letter attributes.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         # Data
-        self.b = Flame(self, 'B. Flame')
-        self.p = Flame(self, 'P. Flame')
-        self.v = Flame(self, 'V. Flame')
-        self.g = Flame(self, 'G. Flame')
+        self.b = Flame('B. Flame', self)
+        self.p = Flame('P. Flame', self)
+        self.v = Flame('V. Flame', self)
+        self.g = Flame('G. Flame', self)
 
         self.flames = [self.b, self.p, self.v, self.g]
         self._by_letter = {
@@ -514,8 +514,8 @@ class Ticks(NumData):
     Datawise this is just a UInt32.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, UInt32, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, UInt32, offset=offset)
         self._last_string = None
         self._stringval = None
 
@@ -549,11 +549,11 @@ class MapCoord(Data):
     coordinate is (2, 4).
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
-        self.x = NumData(self, UInt32)
-        self.y = NumData(self, UInt32)
+        self.x = NumData('X', self, UInt32)
+        self.y = NumData('Y', self, UInt32)
 
     def __str__(self):
         """
@@ -589,8 +589,8 @@ class Minimap(Data):
     MAP_PLAYABLE_ROOM_START = (2, 4)
     MAP_PLAYABLE_BYTE_W = ROOM_BYTE_W*MAP_PLAYABLE_ROOM_W
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         # Subsequent data might rely on us having seeked to the end of the
         # data, so do so now.
@@ -754,13 +754,13 @@ class Stamp(Data):
     Holds information about a single minimap stamp.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         # Data
-        self.x = NumData(self, UInt16)
-        self.y = NumData(self, UInt16)
-        self.icon = NumChoiceData(self, UInt16, StampIcon)
+        self.x = NumData('X Pos', self, UInt16)
+        self.y = NumData('Y Pos', self, UInt16)
+        self.icon = NumChoiceData('Icon', self, UInt16, StampIcon)
 
     def __str__(self):
         return f'{self.icon} at ({self.x}, {self.y})'
@@ -788,15 +788,15 @@ class Stamps(Data):
     management functions.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         # Data
-        self._num_stamps = NumData(self, UInt8)
-        self.selected_icon = NumChoiceData(self, UInt16, StampIcon)
+        self._num_stamps = NumData('Num Stamps', self, UInt8)
+        self.selected_icon = NumChoiceData('Selected Icon', self, UInt16, StampIcon)
         self._stamps = []
-        for _ in range(64):
-            self._stamps.append(Stamp(self))
+        for idx in range(64):
+            self._stamps.append(Stamp(f'Stamp {idx}', self))
 
     def __len__(self):
         """
@@ -916,8 +916,8 @@ class Mural(Data):
             b'\xbe\xef\x43\x55\x55\x15\x00\xff\xe6\xee' + \
             b'\xfb\xbe\x0f\x00\x00\x00\xfc\xbf\xbb\xbb'
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         # Subsequent data might rely on us having seeked to the end of the
         # data, so do so now.
@@ -968,16 +968,16 @@ class KangarooEncounter(Data):
     track of K. Shard / K. Medal states.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         # Data
-        self.shard_pos_x = NumData(self, Float)
-        self.shard_pos_y = NumData(self, Float)
-        self.room_x = NumData(self, UInt8)
-        self.room_y = NumData(self, UInt8)
-        self.state = NumChoiceData(self, UInt8, KangarooShardState)
-        self.encounter_id = NumData(self, UInt8)
+        self.shard_pos_x = NumData('Shard Position X', self, Float)
+        self.shard_pos_y = NumData('Shard Position Y', self, Float)
+        self.room_x = NumData('Room X', self, UInt8)
+        self.room_y = NumData('Room Y', self, UInt8)
+        self.state = NumChoiceData('Shard State', self, UInt8, KangarooShardState)
+        self.encounter_id = NumData('Encounter ID', self, UInt8)
 
     def clear(self):
         """
@@ -1016,23 +1016,23 @@ class KangarooState(Data):
             4: Preset(154, 128, 16, 16),
             }
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
         self.encounters = []
         self._available_ids = {0, 1, 2, 3, 4}
-        for _ in range(3):
-            enc = KangarooEncounter(self)
+        for idx in range(3):
+            enc = KangarooEncounter(f'Encounter {idx}', self)
             if enc.state.choice != KangarooShardState.NONE:
                 self._available_ids -= {enc.encounter_id.value}
             self.encounters.append(enc)
-        self.next_encounter_id = NumData(self, UInt8)
+        self.next_encounter_id = NumData('Next Encounter ID', self, UInt8)
 
         # This could be a LabelEnum; 0=Idle, 1=Fleeing, 2=Attacking.
         # Though I honestly don't understand the 0 or 1 behaviors.  0
         # seems to mostly result in no kangaroo at all, whereas 1
         # seems to just result in an attacking kangaroo like 2.
-        self.state = NumData(self, UInt8)
+        self.state = NumData('Kangaroo State', self, UInt8)
 
     def __len__(self):
         return 3
@@ -1114,11 +1114,11 @@ class FillLevels(Data):
     NUM_RESERVOIRS = 5
     MAX_VALUE = 80
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
         self.levels = []
-        for _ in range(FillLevels.NUM_RESERVOIRS):
-            self.levels.append(NumData(self, UInt8))
+        for idx in range(FillLevels.NUM_RESERVOIRS):
+            self.levels.append(NumData(f'Reservoir {idx}', self, UInt8))
 
         # Fudge our location so that a data value that comes after is at
         # the correct spot without needing to specify an absolute pos
@@ -1168,15 +1168,15 @@ class TileID(Data):
     doing things properly.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
 
-        self.room_y = NumData(self, UInt8)
-        self.room_x = NumData(self, UInt8)
-        self.tile_y = NumData(self, UInt8)
+        self.room_y = NumData('Room Y', self, UInt8)
+        self.room_x = NumData('Room X', self, UInt8)
+        self.tile_y = NumData('Tile Y', self, UInt8)
         # Again, the top two bits of tile_x are actually `layer`, which we're
         # ignoring for now.
-        self.tile_x = NumData(self, UInt8)
+        self.tile_x = NumData('Tile X', self, UInt8)
 
     def __str__(self):
         return f'({self.room_x}, {self.room_y}): {self.tile_x}, {self.tile_y}'
@@ -1245,8 +1245,8 @@ class TileIDs(Data):
     that runaway overwrite bug described above).
     """
 
-    def __init__(self, parent, num_entries, known_values, offset=None, invalid=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, num_entries, known_values, offset=None, invalid=None):
+        super().__init__(debug_label, parent, offset=offset)
         self._num_entries = num_entries
         self.known_values = known_values
         if invalid is None:
@@ -1255,8 +1255,8 @@ class TileIDs(Data):
             self.invalid = invalid
         self._next_index = None
         self._tiles = []
-        for _ in range(num_entries):
-            self._tiles.append(TileID(self))
+        for idx in range(num_entries):
+            self._tiles.append(TileID(f'Tile {idx}', self))
 
     def __len__(self):
         """
@@ -1288,7 +1288,7 @@ class TileIDs(Data):
         u8 for both, because that makes me itchy, and those fields can't
         hold more than 16 items anyway.
         """
-        self._next_index = NumData(parent, UInt8, offset)
+        self._next_index = NumData(f'{self._debug_label} Index', parent, UInt8, offset)
 
     def clear(self):
         """
@@ -1334,11 +1334,11 @@ class Cranks(Data):
     more implementation to make it useful.
     """
 
-    def __init__(self, parent, offset=None):
-        super().__init__(parent, offset=offset)
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
         self._cranks = []
-        for _ in range(23):
-            self._cranks.append(NumData(self, UInt16))
+        for idx in range(23):
+            self._cranks.append(NumData(f'Crank {idx}', self, UInt16))
 
     def __iter__(self):
         return iter(self._cranks)
@@ -1347,7 +1347,7 @@ class Cranks(Data):
         return len(self._cranks)
 
 
-class Slot():
+class Slot(Data):
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
     stored.
@@ -1355,11 +1355,11 @@ class Slot():
 
     TOTAL_BYTES = 159_760
 
-    def __init__(self, savegame, index, offset):
-        self.savegame = savegame
+    def __init__(self, debug_label, parent, index, offset):
+        super().__init__(debug_label, parent, offset=offset)
+        self.savegame = self.parent
         self.index = index
         self.df = self.savegame.df
-        self.offset = offset
         self.has_data = False
 
         # Actually load in all the data
@@ -1371,14 +1371,14 @@ class Slot():
         """
         self.df.seek(self.offset)
 
-        self.timestamp = Timestamp(self)
+        self.timestamp = Timestamp('Timestamp', self)
         # If the timestamp is all zeroes, assume that the slot is empty
         # (though we'll continue to load the rest of the data anyway)
         self.has_data = self.timestamp.has_data
 
-        self.cranks = Cranks(self, 0x8)
+        self.cranks = Cranks('Cranks', self, 0x8)
 
-        self.locked_doors = TileIDs(self, 16, {
+        self.locked_doors = TileIDs('Locked Doors', self, 16, {
                 (7, 4, 9, 5),
                 (15, 8, 38, 6),
                 (16, 10, 4, 5),
@@ -1386,7 +1386,7 @@ class Slot():
                 (14, 15, 27, 6),
                 (14, 15, 32, 6),
             }, 0x88)
-        self.moved_walls = TileIDs(self, 16, {
+        self.moved_walls = TileIDs('Moved Walls', self, 16, {
                 (2, 5, 2, 1),
                 (15, 5, 6, 3),
                 (6, 6, 16, 14),
@@ -1407,29 +1407,29 @@ class Slot():
                 (13, 13, 11, 8),
                 })
 
-        self.num_steps = NumData(self, UInt32, 0x108)
-        self.fill_levels = FillLevels(self)
+        self.num_steps = NumData('Num Steps', self, UInt32, 0x108)
+        self.fill_levels = FillLevels('Fill Levels', self)
 
-        self.chests_opened = BitCountData(self, UInt64, 2, 101, 0x120)
-        self.button_doors_opened = BitCountData(self, UInt64, 2, 94)
-        self.yellow_buttons_pressed = BitCountData(self, UInt64, 3, 134)
+        self.chests_opened = BitCountData('Chests Opened', self, UInt64, 2, 101, 0x120)
+        self.button_doors_opened = BitCountData('Button Doors Opened', self, UInt64, 2, 94)
+        self.yellow_buttons_pressed = BitCountData('Yellow Buttons Pressed', self, UInt64, 3, 134)
 
-        self.purple_buttons_pressed = BitCountData(self, UInt64, 1, 27, 0x160)
-        self.green_buttons_pressed = BitCountData(self, UInt64, 1, 7)
+        self.purple_buttons_pressed = BitCountData('Purple Buttons Pressed', self, UInt64, 1, 27, 0x160)
+        self.green_buttons_pressed = BitCountData('Green Buttons Pressed', self, UInt64, 1, 7)
 
-        self.picked_fruit = BitCountData(self, UInt64, 2, 115, 0x170)
-        self.picked_firecrackers = BitCountData(self, UInt64, 1, 64)
-        self.eggs = NumBitfieldData(self, UInt64, Egg)
-        self.walls_blasted = BitCountData(self, UInt32, 1, 10)
-        self.detonators_triggered = BitCountData(self, UInt32, 1, 9)
-        self.bunnies = NumBitfieldData(self, UInt32, Bunny)
-        self.squirrels_scared = BitCountData(self, UInt16, 1, 13, 0x19C)
-        self.cat_status = NumBitfieldData(self, UInt16, CatStatus)
+        self.picked_fruit = BitCountData('Picked Fruit', self, UInt64, 2, 115, 0x170)
+        self.picked_firecrackers = BitCountData('Picked Firecrackers', self, UInt64, 1, 64)
+        self.eggs = NumBitfieldData('Eggs', self, UInt64, Egg)
+        self.walls_blasted = BitCountData('Walls Blasted', self, UInt32, 1, 10)
+        self.detonators_triggered = BitCountData('Detonators Triggered', self, UInt32, 1, 9)
+        self.bunnies = NumBitfieldData('Bunnies', self, UInt32, Bunny)
+        self.squirrels_scared = BitCountData('Squirrels Scared', self, UInt16, 1, 13, 0x19C)
+        self.cat_status = NumBitfieldData('Cat Status', self, UInt16, CatStatus)
 
-        self.firecrackers_collected = NumData(self, UInt16, 0x1A2)
-        self.bubbles_popped = NumData(self, UInt16)
+        self.firecrackers_collected = NumData('Firecrackers Collected', self, UInt16, 0x1A2)
+        self.bubbles_popped = NumData('Bubbles Popped', self, UInt16)
 
-        self.num_saves = NumData(self, UInt16, 0x1A8)
+        self.num_saves = NumData('Num Saves', self, UInt16, 0x1A8)
         self.locked_doors.populate_index(self)
 
         # Kind of playing silly buggers here and defining the same u16 with
@@ -1437,58 +1437,58 @@ class Slot():
         # invalid ones.  That way we can mess with them separately.  (This
         # is the cleanest way to do it given the restrictions I'd designed
         # into NumBitfieldData and the CLI processing.)
-        self.pink_buttons_pressed = NumBitfieldData(self, UInt16, PinkButton, 0x1AC)
-        self.invalid_pink_buttons = NumBitfieldData(self, UInt16, PinkButtonInvalid, 0x1AC)
+        self.pink_buttons_pressed = NumBitfieldData('Pink Buttons Pressed', self, UInt16, PinkButton, 0x1AC)
+        self.invalid_pink_buttons = NumBitfieldData('Invalid Pink Buttons', self, UInt16, PinkButtonInvalid, 0x1AC)
 
-        self.keys = NumData(self, UInt8, 0x1B1)
-        self.matches = NumData(self, UInt8)
-        self.firecrackers = NumData(self, UInt8)
-        self.health = NumData(self, UInt8)
-        self.gold_hearts = NumData(self, UInt8)
-        self.last_groundhog_year = NumData(self, UInt16)
+        self.keys = NumData('Num Keys', self, UInt8, 0x1B1)
+        self.matches = NumData('Num Matches', self, UInt8)
+        self.firecrackers = NumData('Num Firecrackers', self, UInt8)
+        self.health = NumData('Health', self, UInt8)
+        self.gold_hearts = NumData('Gold Hearts', self, UInt8)
+        self.last_groundhog_year = NumData('Last Groundhog Year', self, UInt16)
         self.moved_walls.populate_index(self)
-        self.egg_doors = NumBitfieldData(self, UInt8, EggDoor)
+        self.egg_doors = NumBitfieldData('Egg Doors', self, UInt8, EggDoor)
 
-        self.elapsed_ticks_ingame = Ticks(self, 0x1BC)
-        self.elapsed_ticks_withpause = Ticks(self)
+        self.elapsed_ticks_ingame = Ticks('Ingame Ticks', self, 0x1BC)
+        self.elapsed_ticks_withpause = Ticks('Total Ticks', self)
 
-        self.spawn_room = MapCoord(self, 0x1D4)
+        self.spawn_room = MapCoord('Spawn', self, 0x1D4)
 
-        self.equipment = NumBitfieldData(self, UInt16, Equipment, 0x1DC)
-        self.inventory = NumBitfieldData(self, UInt8, Inventory)
+        self.equipment = NumBitfieldData('Equipment', self, UInt16, Equipment, 0x1DC)
+        self.inventory = NumBitfieldData('Inventory', self, UInt8, Inventory)
 
-        self.candles = NumBitfieldData(self, UInt16, CandleState, 0x1E0)
-        self.num_hits = NumData(self, UInt16)
-        self.num_deaths = NumData(self, UInt16)
-        self.ghosts_scared = BitCountData(self, UInt16, 1, 11)
+        self.candles = NumBitfieldData('Candles', self, UInt16, CandleState, 0x1E0)
+        self.num_hits = NumData('Num Hits', self, UInt16)
+        self.num_deaths = NumData('Num Deaths', self, UInt16)
+        self.ghosts_scared = BitCountData('Ghosts Scared', self, UInt16, 1, 11)
 
-        self.selected_equipment = NumChoiceData(self, UInt8, Equipped, 0x1EA)
+        self.selected_equipment = NumChoiceData('Selected Equipment', self, UInt8, Equipped, 0x1EA)
 
-        self.quest_state = NumBitfieldData(self, UInt32, QuestState, 0x1EC)
-        self.blue_manticore = NumChoiceData(self, UInt8, ManticoreState)
-        self.red_manticore = NumChoiceData(self, UInt8, ManticoreState)
+        self.quest_state = NumBitfieldData('Quest State', self, UInt32, QuestState, 0x1EC)
+        self.blue_manticore = NumChoiceData('Blue Manticore', self, UInt8, ManticoreState)
+        self.red_manticore = NumChoiceData('Red Manticore', self, UInt8, ManticoreState)
 
-        self.kangaroo_state = KangarooState(self, 0x1F4)
+        self.kangaroo_state = KangarooState('Kangaroo State', self, 0x1F4)
 
-        self.progress = NumBitfieldData(self, UInt16, Progress, 0x21C)
-        self.flames = Flames(self)
+        self.progress = NumBitfieldData('Progress', self, UInt16, Progress, 0x21C)
+        self.flames = Flames('Flames', self)
 
-        self.teleports_seen = NumBitfieldData(self, UInt8, Teleport, 0x223)
-        self.teleports = NumBitfieldData(self, UInt8, Teleport)
-        self.stamps = Stamps(self)
+        self.teleports_seen = NumBitfieldData('Teleports Seen', self, UInt8, Teleport, 0x223)
+        self.teleports = NumBitfieldData('Teleports Active', self, UInt8, Teleport)
+        self.stamps = Stamps('Minimap Stamps', self)
         # Elevator data would be here, but I'm not bothering to model
         # it at the moment.  Also then an x/y location of the currenly-
         # selected mural pixel.
 
-        self.minimap = Minimap(self, 0x3EC)
-        self.pencilmap = Minimap(self, 0xD22D)
-        self.destructionmap = Minimap(self, 0x1A06E)
+        self.minimap = Minimap('Minimap Revealed', self, 0x3EC)
+        self.pencilmap = Minimap('Minimap Pencil Layer', self, 0xD22D)
+        self.destructionmap = Minimap('Destroyed Blocks', self, 0x1A06E)
 
-        self.mural = Mural(self, 0x26EAF)
+        self.mural = Mural('Bunny Mural', self, 0x26EAF)
         # Stalactite/Icicle data follows here, but I'm not going to
         # model it at the moment.
 
-        self.berries_eaten_while_full = NumData(self, UInt16, 0x26FFA)
+        self.berries_eaten_while_full = NumData('Berries Eaten While Full', self, UInt16, 0x26FFA)
 
     def export_data(self):
         """
@@ -1542,6 +1542,10 @@ class Savegame():
         with open(self.filename, 'rb') as read_df:
             self.df = io.BytesIO(read_df.read())
 
+        # Pretend to be a Data object
+        self.parent = None
+        self.offset = 0
+
         # Read in the savegame
         self._read()
 
@@ -1565,20 +1569,20 @@ class Savegame():
         the constructor, but I wanted this in its own function anyway
         """
         self.df.seek(self.offset)
-        self.version = NumData(self, UInt32)
+        self.version = NumData('Save Version', self, UInt32)
         if self.version.value != 9:
             raise RuntimeError(f'Unknown savefile version: {self.version}')
 
-        self.frame_seed = NumData(self, UInt32, 0x8)
-        self.last_used_slot = NumData(self, UInt8)
-        self.checksum = NumData(self, UInt8)
+        self.frame_seed = NumData('Frame Seed', self, UInt32, 0x8)
+        self.last_used_slot = NumData('Last Used Slot', self, UInt8)
+        self.checksum = NumData('Checksum', self, UInt8)
 
-        self.unlockables = NumBitfieldData(self, UInt32, Unlockable, 0x10)
+        self.unlockables = NumBitfieldData('Globals', self, UInt32, Unlockable, 0x10)
 
         self.slots = [
-                Slot(self, 0, 0x00018),
-                Slot(self, 1, 0x27028),
-                Slot(self, 2, 0x4E038),
+                Slot('Slot 1', self, 0, 0x00018),
+                Slot('Slot 2', self, 1, 0x27028),
+                Slot('Slot 3', self, 2, 0x4E038),
                 ]
 
     def save(self, force_invalid_checksum=False, force_checksum=None):

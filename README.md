@@ -177,6 +177,8 @@ The editor currently does not attempt to support *everything* inside the
 savegames.  Some notable bits of data which can't be edited directly:
 
  - Crank status
+   - Maybe at least have an argument to set the reservoir-puzzle cranks
+     to a "solved" state?
  - Elevator status
  - Stalactite/Stalagmite/Icicle destruction
  - "Illegal" Bunnies
@@ -199,7 +201,6 @@ few other things which would be nice eventually:
  - Sine Wave puzzle.  Basically just completely forgot about this one.
  - Specific boss-toggle flags (further discourage direct quest state
    modification)
- - "Debug" mode to output data offsets (both absolute + relative)
  - Report longer lists (like eggs) in columns?
 
 Usage
@@ -225,6 +226,14 @@ collected or done (such as missing eggs, etc), use `-v`/`--verbose`:
 
     awsave AnimalWell.sav -i -v
     awsave AnimalWell.sav --info --verbose
+
+Additionally, the in-save data offsets for every bit of data that the data
+library knows about can be printed with `-d`/`--debug`.  This will show the
+info for all slots as well, regardless of which slots have been chosen to show.
+It will write this information to stderr:
+
+    awsave AnimalWell.sav -d
+    awsave AnimalWell.sav --debug
 
 ### Checksum
 
@@ -930,6 +939,7 @@ Changelog
  - Added lit-candle report to info output
  - Removed dash in "Post Modern" egg text
  - Improved K. Shard reporting in info output
+ - Added `--debug` output to show data offsets within the savegame
 
 **v1.0.0** - *May 31, 2024*
  - Initial release
