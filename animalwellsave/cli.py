@@ -1108,12 +1108,21 @@ def main():
                                     suffix = ''
                                 print(f'   - K. Shards In Inventory: {k_shards_collected}/3{suffix}')
                         if args.verbose and (slot.inventory.disabled or k_shards_collected == 0):
-                            print(' - Missing Inventory:')
-                            for inv in sorted(slot.inventory.disabled):
-                                print(f'   - {inv}')
-                            missing_k_shards = 3 - k_shards_collected - k_shards_inserted
-                            if missing_k_shards > 0:
-                                print(f'   - Missing K. Shards: {missing_k_shards}')
+                            # Filter out disabled inventory which might not make sense to report on
+                            disabled = set()
+                            for item in slot.inventory.disabled:
+                                if item == Inventory.S_MEDAL and QuestState.USED_S_MEDAL in slot.quest_state.enabled:
+                                    continue
+                                if item == Inventory.E_MEDAL and QuestState.USED_E_MEDAL in slot.quest_state.enabled:
+                                    continue
+                                disabled.add(item)
+                            if disabled or k_shards_collected == 0:
+                                print(' - Missing Inventory:')
+                                for inv in sorted(disabled):
+                                    print(f'   - {inv}')
+                                missing_k_shards = 3 - k_shards_collected - k_shards_inserted
+                                if missing_k_shards > 0:
+                                    print(f'   - Missing K. Shards: {missing_k_shards}')
                         print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
                         for egg in sorted(slot.eggs.enabled):
                             print(f'   - {egg}')
@@ -1134,9 +1143,20 @@ def main():
                             for state in sorted(slot.quest_state.enabled):
                                 print(f'   - {state}')
                         if args.verbose and slot.quest_state.disabled:
-                            print(f' - Missing Quest States:')
-                            for state in sorted(slot.quest_state.disabled):
-                                print(f'   - {state}')
+                            disabled = set()
+                            # Filter out disabled quest states which might not make sense to report on
+                            for item in slot.quest_state.disabled:
+                                if item == QuestState.SHRINE_NO_DISC and QuestState.STATUE_NO_DISC in slot.quest_state.enabled:
+                                    continue
+                                if item == QuestState.STATUE_NO_DISC and QuestState.SHRINE_NO_DISC in slot.quest_state.enabled:
+                                    continue
+                                if item == QuestState.FIGHTING_EEL and QuestState.DEFEATED_EEL in slot.quest_state.enabled:
+                                    continue
+                                disabled.add(item)
+                            if disabled:
+                                print(f' - Missing Quest States:')
+                                for state in sorted(disabled):
+                                    print(f'   - {state}')
                         if any([flame.choice != FlameState.SEALED for flame in slot.flames]):
                             print(f' - Flame States:')
                             for flame in slot.flames:
