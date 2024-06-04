@@ -1102,13 +1102,18 @@ def main():
                             for inv in sorted(slot.inventory.enabled):
                                 print(f'   - {inv}')
                             if k_shards_collected > 0:
-                                print(f'   - K. Shards Collected: {k_shards_collected}/3')
+                                if k_shards_inserted > 0:
+                                    suffix = f' (inserted: {k_shards_inserted})'
+                                else:
+                                    suffix = ''
+                                print(f'   - K. Shards In Inventory: {k_shards_collected}/3{suffix}')
                         if args.verbose and (slot.inventory.disabled or k_shards_collected == 0):
                             print(' - Missing Inventory:')
                             for inv in sorted(slot.inventory.disabled):
                                 print(f'   - {inv}')
-                            if k_shards_collected == 0:
-                                print(f'   - K. Shards Collected: {k_shards_collected}/3')
+                            missing_k_shards = 3 - k_shards_collected - k_shards_inserted
+                            if missing_k_shards > 0:
+                                print(f'   - Missing K. Shards: {missing_k_shards}')
                         print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
                         for egg in sorted(slot.eggs.enabled):
                             print(f'   - {egg}')

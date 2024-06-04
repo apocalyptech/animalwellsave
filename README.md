@@ -928,6 +928,7 @@ Changelog
    on the info output, rather than just the things that *are* present.
  - Added lit-candle report to info output
  - Removed dash in "Post Modern" egg text
+ - Improved K. Shard reporting in info output
 
 **v1.0.0** - *May 31, 2024*
  - Initial release
