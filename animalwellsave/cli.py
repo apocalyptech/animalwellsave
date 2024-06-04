@@ -1490,7 +1490,7 @@ def main():
                         do_save = True
 
                     if args.kshard_insert is not None:
-                        print(f'{slot_label}: Setting total number of inserted K. Shards to: {args.kshard_collect}')
+                        print(f'{slot_label}: Setting total number of inserted K. Shards to: {args.kshard_insert}')
                         slot.kangaroo_state.set_shard_state(args.kshard_insert, KangarooShardState.INSERTED)
                         do_save = True
 
