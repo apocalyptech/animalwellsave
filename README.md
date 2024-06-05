@@ -998,12 +998,10 @@ Changelog
    - Bat
    - Ostriches
    - Eel/Bonefish
+ - Added `--solve-cranks` argument to solve most crank-related puzzles
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
  - Added `--debug` output to show data offsets within the savegame
- - Fixed a bug in Mural handling which could have caused some problems for
-   hypothetical data reads after the mural.
- - Added `--solve-cranks` argument to solve most crank-related puzzles
  - Info-reporting tweaks:
    - Added lit-candle report to info output
    - Removed dash in "Post Modern" egg text
@@ -1011,6 +1009,8 @@ Changelog
    - Reworded the Dog Head Statue description in Quest State
  - Added elevator modelling in the data library, though it's not directly
    accessible via the CLI.
+ - Fixed a bug in Mural handling which could have caused some problems for
+   hypothetical data reads after the mural.
 
 **v1.0.0** - *May 31, 2024*
  - Initial release
