@@ -498,7 +498,17 @@ screen.  The arguments to edit this field are `--progress-enable` and
 Valid values are: `hp_bar`, `house_key`, `all`.
 
 The *main* field which defines progress/quest information is rather more
-complete.  This can be altered with `--quest-state-enable` and
+complete, but note that it's not really recommended to alter this structure
+directly.  Some of the states in here rely on other states and other bit of data
+to be a "valid" gamestate (or at least, one which could be encountered in an
+unmodified game).  Specific arguments exist for managing the B.B. Wand, Egg 65,
+Cheater's Ring, Teleporation Torus, Wings, map unlocks, and boss statuses.  Still,
+if you want to tweak any of these by hand, they're available here.  Manual
+tweaking will be performed at the very *end* of the slot processing, so you can
+use this argument to override any other massaging that previous processing might
+have done.
+
+The main quest state bitfield can be altered with `--quest-state-enable` and
 `--quest-state-disable`.  As with other options of this sort, it can be specified
 more than once, and the special value `all` can be used to operate on them all at
 once.
@@ -511,12 +521,6 @@ Valid values are: `house_open`, `office_open`, `closet_open`, `unlock_map`,
 `used_s_medal`, `used_e_medal`, `wings`, `bb_wand`, `egg_65`, `torus`,
 `defeated_bat`, `freed_ostrich`, `defeated_ostrich`, `fighting_eel`,
 `defeated_eel`, `shrine_no_disc`, `statue_no_disc`, `all`.
-
-Note that all the flags in this area aren't *really* intended to be altered
-by hand; it's best to stick to the more formalized options elsewhere.  For
-instance, there are specific arguments to manage the B.B. Wand, Egg 65,
-Cheater's Ring, Teleportation Torus, Wings, and Map Data.  Still, if you
-wanted to tweak any of these by hand here, they're available.
 
 ### Caged Cats
 

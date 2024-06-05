@@ -491,30 +491,6 @@ def main():
             help="Disables the specified progress flag.  Can be specified more than once, or use 'all' to disable all",
             )
 
-    progress.add_argument('--quest-state-enable',
-            type=QuestState,
-            action=EnumSetAction,
-            help="""
-                Enable the specified quest state flag.  These are generally not
-                recommended to mess with by hand -- various flags in here are
-                already wrapped up in dedicated arguments.  Messing with them
-                could cause strange behavior ingame.  Caveat emptor!  Can be
-                specified more than once, or use 'all' to enable all.
-                """,
-            )
-
-    progress.add_argument('--quest-state-disable',
-            type=QuestState,
-            action=EnumSetAction,
-            help="""
-                Disable the specified quest state flag.  These are generally not
-                recommended to mess with by hand -- various flags in here are
-                already wrapped up in dedicated arguments.  Messing with them
-                could cause strange behavior ingame.  Caveat emptor!  Can be
-                specified more than once, or use 'all' to disable all.
-                """,
-            )
-
     progress.add_argument('--cats-free',
             type=CatStatus,
             action=EnumSetAction,
@@ -673,6 +649,30 @@ def main():
             help="""
                 Respawn all bosses (except for Manticore).  Will override any previous
                 defeat/respawn arguments for bosses.
+                """,
+            )
+
+    progress.add_argument('--quest-state-enable',
+            type=QuestState,
+            action=EnumSetAction,
+            help="""
+                Enable the specified quest state flag.  These are generally not
+                recommended to mess with by hand; practically anything you can
+                alter in here can be done with dedicated arguments.  Messing with
+                them directly could cause strange behavior ingame.  Caveat emptor!
+                Can be specified more than once, or use 'all' to enable all.
+                """,
+            )
+
+    progress.add_argument('--quest-state-disable',
+            type=QuestState,
+            action=EnumSetAction,
+            help="""
+                Disable the specified quest state flag.  These are generally not
+                recommended to mess with by hand; practically anything you can
+                alter in here can be done with dedicated arguments.  Messing with
+                them directly could cause strange behavior ingame.  Caveat emptor!
+                Can be specified more than once, or use 'all' to disable all.
                 """,
             )
 
@@ -1030,8 +1030,6 @@ def main():
             # Progress/Quests
             args.progress_enable,
             args.progress_disable,
-            args.quest_state_enable,
-            args.quest_state_disable,
             args.cats_free,
             args.cats_cage,
             args.kangaroo_room is not None,
@@ -1056,6 +1054,8 @@ def main():
             args.wheel_ostrich_respawn,
             args.eel_defeat,
             args.eel_respawn,
+            args.quest_state_enable,
+            args.quest_state_disable,
 
             # Map Edits
             args.egg_enable,
