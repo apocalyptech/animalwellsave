@@ -633,15 +633,15 @@ toggled on/off with `--torus-enable` and `--torus-disable`:
 ### Bosses
 
 There are several arguments to alter the state of bosses in the game, specifically:
-the Chameleon, Bat, Wheel Ostrich, and Eel/Bonefish.  They use the word `defeat`
+the Chameleon, Bat, Ostriches, and Eel/Bonefish.  They use the word `defeat`
 to indicate getting rid of the boss, or `respawn` to bring them back:
 
     awsave AnimalWell.sav -s 1 --chameleon-defeat
     awsave AnimalWell.sav -s 1 --chameleon-respawn
     awsave AnimalWell.sav -s 1 --bat-defeat
     awsave AnimalWell.sav -s 1 --bat-respawn
-    awsave AnimalWell.sav -s 1 --wheel-ostrich-defeat
-    awsave AnimalWell.sav -s 1 --wheel-ostrich-respawn
+    awsave AnimalWell.sav -s 1 --ostrich-defeat
+    awsave AnimalWell.sav -s 1 --ostrich-respawn
     awsave AnimalWell.sav -s 1 --eel-defeat
     awsave AnimalWell.sav -s 1 --eel-respawn
 
@@ -649,11 +649,14 @@ As always, arguments can be combined into one command:
 
     awsave AnimalWell.sav -s 1 --bat-defeat --chameleon-respawn
 
-For the Wheel Ostrich, the processing will also stop/start the
-ostrich-controlled movable platforms as appropriate, and if the ostrich
-is respawned, it will also un-press the purple button directly
-underneath the ostrich wheel.  That way, the ostrich won't just
-immediately become active again when you enter the room again.
+For the Ostriches, note that the same flag controls *both* Ostrich
+bosses -- both the one which pokes at you underground, and the
+wheel-bound one.  The ostrich processing will also stop/start the
+ostrich-controlled movable platforms as appropriate.  If the app
+is told to respawn the ostriches, it will also un-press the purple
+button directly underneath the ostrich wheel.  That way, the
+ostrich won't just immediately become active again when you enter
+the room again.
 
 For the Eel/Bonefish, respawning it will put it in its pre-awakened
 state.
@@ -993,7 +996,7 @@ Changelog
    Specifically:
    - Chameleon
    - Bat
-   - Wheel Ostrich
+   - Ostriches
    - Eel/Bonefish
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.

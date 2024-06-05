@@ -603,11 +603,13 @@ def main():
     for boss, extra_defeat, extra_respawn in [
             ('chameleon', None, None),
             ('bat', None, None),
-            ('wheel-ostrich',
-                "Will additionally stop the ostrich-controlled platforms",
-                """Will set the ostrich to its pre-freed state, restart the platforms, and
-                    additionally un-press the purple button so that the ostrich doesn't
-                    immediately free itself again.""",
+            ('ostrich',
+                """This affects both ostrich bosses in the game.  Will additionally
+                    stop the ostrich-controlled platforms""",
+                """This affects both ostrich bosses in the game.  Will set the
+                    wheel ostrich to its pre-freed state, restart the platforms, and
+                    additionally un-press the purple button so that the ostrich
+                    doesn't immediately free itself again.""",
                 ),
             ('eel', None, 'Will be set to its pre-awakened state'),
             ]:
@@ -963,20 +965,20 @@ def main():
     if args.bosses_defeat:
         args.chameleon_defeat = True
         args.bat_defeat = True
-        args.wheel_ostrich_defeat = True
+        args.ostrich_defeat = True
         args.eel_defeat = True
         args.chameleon_respawn = False
         args.bat_respawn = False
-        args.wheel_ostrich_respawn = False
+        args.ostrich_respawn = False
         args.eel_respawn = False
     if args.bosses_respawn:
         args.chameleon_defeat = False
         args.bat_defeat = False
-        args.wheel_ostrich_defeat = False
+        args.ostrich_defeat = False
         args.eel_defeat = False
         args.chameleon_respawn = True
         args.bat_respawn = True
-        args.wheel_ostrich_respawn = True
+        args.ostrich_respawn = True
         args.eel_respawn = True
 
     # Set our debug flag if we've been told to
@@ -1050,8 +1052,8 @@ def main():
             args.chameleon_respawn,
             args.bat_defeat,
             args.bat_respawn,
-            args.wheel_ostrich_defeat,
-            args.wheel_ostrich_respawn,
+            args.ostrich_defeat,
+            args.ostrich_respawn,
             args.eel_defeat,
             args.eel_respawn,
             args.quest_state_enable,
@@ -1717,11 +1719,11 @@ def main():
                             slot.quest_state.disable(QuestState.DEFEATED_BAT)
                             do_save = True
 
-                    if args.wheel_ostrich_defeat:
+                    if args.ostrich_defeat:
                         # Vanilla game state implies both "freed" and "defeated" states
                         if QuestState.DEFEATED_OSTRICH not in slot.quest_state.enabled \
                                 or QuestState.FREED_OSTRICH not in slot.quest_state.enabled:
-                            print(f'{slot_label}: Marking Wheel Ostrich boss as defeated (and stopping platforms, if necessary)')
+                            print(f'{slot_label}: Marking Ostrich bosses as defeated (and stopping platforms, if necessary)')
                             if QuestState.DEFEATED_OSTRICH not in slot.quest_state.enabled:
                                 slot.quest_state.enable(QuestState.DEFEATED_OSTRICH)
                             if QuestState.FREED_OSTRICH not in slot.quest_state.enabled:
@@ -1730,10 +1732,10 @@ def main():
                             slot.elevators.inactive.enable(ElevatorDisabled.OSTRICH)
                             do_save = True
 
-                    if args.wheel_ostrich_respawn:
+                    if args.ostrich_respawn:
                         if QuestState.DEFEATED_OSTRICH in slot.quest_state.enabled \
                                 or QuestState.FREED_OSTRICH in slot.quest_state.enabled:
-                            print(f'{slot_label}: Respawning Wheel Ostrich (to pre-freed state, unpressing purple')
+                            print(f'{slot_label}: Respawning Ostrich Bosses (to pre-freed state, unpressing purple')
                             print('        button and reactivating platforms if necessary)')
                             if QuestState.DEFEATED_OSTRICH in slot.quest_state.enabled:
                                 slot.quest_state.disable(QuestState.DEFEATED_OSTRICH)
