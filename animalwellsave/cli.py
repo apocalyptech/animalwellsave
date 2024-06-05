@@ -780,6 +780,14 @@ def main():
             help="Blows out the specified candles.  Can be specified more than once, or use 'all' to enable all",
             )
 
+    map_options.add_argument('--solve-cranks',
+            action='store_true',
+            help="""
+                Sets crank status to the 'solved' state for cranks which are involved in puzzles (ie: reservoir
+                bounce platforms and the sine wave puzzle)
+                """,
+            )
+
     reservoirs = map_options.add_mutually_exclusive_group()
 
     reservoirs.add_argument('--reservoirs-fill',
@@ -993,6 +1001,7 @@ def main():
             args.chests_close,
             args.candles_enable,
             args.candles_disable,
+            args.solve_cranks,
             args.reservoirs_fill,
             args.reservoirs_empty,
             args.detonators_activate,
@@ -1742,6 +1751,22 @@ def main():
                                 print(f'{slot_label}: Blowing out candle: {candle}')
                                 slot.candles.disable(candle)
                                 do_save = True
+
+                    if args.solve_cranks:
+                        print(f'{slot_label}: Setting crank puzzles to "solved" states (excluding Seahorse Boss)')
+                        # These values are obviously not the *only* values which work
+                        # Water reservoir at (7, 11)
+                        slot.cranks[7].value = 464
+                        slot.cranks[8].value = 64624
+                        # Water reservoir at (4, 15)
+                        slot.cranks[13].value = 63840
+                        slot.cranks[14].value = 1584
+                        slot.cranks[15].value = 32
+                        # Sine wave puzzle:
+                        slot.cranks[19].value = 40
+                        slot.cranks[20].value = 168
+                        slot.cranks[21].value = 140
+                        do_save = True
 
                     if args.reservoirs_fill:
                         print(f'{slot_label}: Filling all reservoirs')

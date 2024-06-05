@@ -1346,6 +1346,9 @@ class Cranks(Data):
     def __len__(self):
         return len(self._cranks)
 
+    def __getitem__(self, idx):
+        return self._cranks[idx]
+
 
 class Slot(Data):
     """

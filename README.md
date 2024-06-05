@@ -65,6 +65,7 @@ Table of Contents
    - [Doors / Walls](#doors--walls)
    - [Chests](#chests)
    - [Candles](#candles)
+   - [Crank Puzzles](#crank-puzzles)
    - [Water Reservoirs](#water-reservoirs)
    - [Detonators](#detonators)
    - [Destroyed Tiles](#destroyed-tiles)
@@ -176,9 +177,7 @@ TODO
 The editor currently does not attempt to support *everything* inside the
 savegames.  Some notable bits of data which can't be edited directly:
 
- - Crank status
-   - Maybe at least have an argument to set the reservoir-puzzle cranks
-     to a "solved" state?
+ - General Crank status
  - Elevator status
  - Stalactite/Stalagmite/Icicle destruction
  - "Illegal" Bunnies
@@ -198,7 +197,6 @@ few other things which would be nice eventually:
  - Similarly, mapping buttons/reservoirs to which doors they open would be
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
- - Sine Wave puzzle.  Basically just completely forgot about this one.
  - Specific boss-toggle flags (further discourage direct quest state
    modification)
  - Report longer lists (like eggs) in columns?
@@ -775,6 +773,17 @@ Valid values are: `room_04_06`, `room_08_06`, `room_04_07`, `room_06_07`,
 The numbers in the value names refer to the room coordinates containing the
 candle.
 
+### Crank Puzzles
+
+There are four puzzles in the game which are solved by manipulating cranks/levers:
+three to fill water reservoirs, and one "sine wave" puzzle.  The `--solve-cranks`
+argument can be used to set most of those cranks to values which will result in
+the puzzle being completed.  The one exception is the Seahorse Boss room, since
+the cranks need to be adjusted in realtime to account for the Seahorse position
+and also which reservoir is being filled at the time.
+
+    awsave AnimalWell.sav -s 1 --solve-cranks
+
 ### Water Reservoirs
 
 The five water reservoirs in the game can be all filled up or emptied using the
@@ -936,12 +945,15 @@ Changelog
 **v1.1.0** - *(unreleased)*
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
- - Added lit-candle report to info output
- - Removed dash in "Post Modern" egg text
- - Improved K. Shard reporting in info output
  - Added `--debug` output to show data offsets within the savegame
  - Fixed a bug in Mural handling which could have caused some problems for
    hypothetical data reads after the mural.
+ - Added `--solve-cranks` argument to solve most crank-related puzzles
+ - Info-reporting tweaks:
+   - Added lit-candle report to info output
+   - Removed dash in "Post Modern" egg text
+   - Improved K. Shard reporting in info output
+   - Reworded the Dog Head Statue description in Quest State
 
 **v1.0.0** - *May 31, 2024*
  - Initial release
