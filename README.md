@@ -109,8 +109,13 @@ for this to work.
 
 ### Easiest Method: pip
 
-The easiest way to install `animalwellsave` is via `pip` inside a [virtual
-environment](https://docs.python.org/3/library/venv.html).  On Unix/Mac:
+At the basic level, once Python is installed, you can install `animalwellsave`
+with a simple:
+
+    pip install animalwellsave
+
+It's recommended to install in a [virtual environment](https://docs.python.org/3/library/venv.html),
+though.  On Unix/Mac:
 
     cd /wherever/you/want/to/keep/the/virtualenv
     python -m venv virtualenv_dir
