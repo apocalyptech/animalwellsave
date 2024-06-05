@@ -420,6 +420,39 @@ class Progress(LabelEnum):
     HOUSE_KEY = (0x10, 'Drop House Key')
 
 
+class ElevatorDirection(LabelEnum):
+    """
+    Bitfield which controls which direction the reversible elevators are
+    going in the game.
+    """
+
+    BLUE_RAT = (0x1, 'Blue Rat (0: down, 1: up)')
+    RED_RAT =  (0x2, 'Red Rat (0: right, 1: left)')
+    OSTRICH =  (0x4, 'Ostrich (0: right, 1: left)')
+    DOG =      (0x8, 'Dog (0: down, 1: up)')
+
+
+class ElevatorDisabled(LabelEnum):
+    """
+    Bitfield to define if the specified elevators have been disabled.
+    There are three elevators marked as disabled at the start of the game:
+    5, 6, and 7.  Presumably these are the ones which are *only* moveable
+    with manual intervention using the Wheel.
+
+    Elevator 3 is the Wheel Ostrich "elevator," which will get added to
+    the disabled list when the ostrich is freed.
+    """
+
+    E1 =      (0x01, 'Elevator 1')
+    E2 =      (0x02, 'Elevator 2')
+    OSTRICH = (0x04, 'Wheel Ostrich Platforms')
+    E4 =      (0x08, 'Elevator 4')
+    E5 =      (0x10, 'Elevator 5')
+    E6 =      (0x20, 'Elevator 6')
+    E7 =      (0x40, 'Elevator 7')
+    E8 =      (0x80, 'Elevator 8')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -1350,6 +1383,38 @@ class Cranks(Data):
         return self._cranks[idx]
 
 
+class ElevatorState(Data):
+    """
+    Class to hold the "state" of a single elevator, meaning just its
+    current position and speed.
+    """
+
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
+
+        self.position = NumData('Position', self, Float)
+        self.speed = NumData('Speed', self, Float)
+
+
+class Elevators(Data):
+    """
+    Class to hold all state information about the elevators in the game,
+    which also includes some horizontally-moving platforms (though only
+    of the sort controlled by animal wheels -- not the smaller
+    back-and-forth platforms such as seen in the first few rooms of
+    the game).
+    """
+
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
+
+        self.states = []
+        for idx in range(8):
+            self.states.append(ElevatorState(f'Elevator {idx} State', self))
+        self.directions = NumBitfieldData('Directions', self, UInt8, ElevatorDirection)
+        self.inactive = NumBitfieldData('Inactive', self, UInt8, ElevatorDisabled)
+
+
 class Slot(Data):
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -1479,9 +1544,8 @@ class Slot(Data):
         self.teleports_seen = NumBitfieldData('Teleports Seen', self, UInt8, Teleport, 0x223)
         self.teleports = NumBitfieldData('Teleports Active', self, UInt8, Teleport)
         self.stamps = Stamps('Minimap Stamps', self)
-        # Elevator data would be here, but I'm not bothering to model
-        # it at the moment.  Also then an x/y location of the currenly-
-        # selected mural pixel.
+        self.elevators = Elevators('Elevators', self)
+        # Next in the data is the x/y location of the currenly-selected mural pixel.
 
         self.minimap = Minimap('Minimap Revealed', self, 0x3EC)
         self.pencilmap = Minimap('Minimap Pencil Layer', self, 0xD22D)

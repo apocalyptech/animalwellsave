@@ -642,3 +642,35 @@ class BitCountData(Data):
         self._set_all(0)
         self.count = 0
 
+    def set_bit(self, bit):
+        """
+        Sets the specified bit within the bitfield.  This is starting to verge
+        on territory which once again might make more sense to just merge into
+        NumBitfieldData instead, but apparently I'm sticking to my guns and
+        making it weird.
+        """
+        if bit >= self.max_bits:
+            raise ValueError(f'Cannot alter bit {bit}; only {self.max_bits} are used')
+        bits_per_segment = self.num_type.num_bytes*8
+        segment = int(bit/bits_per_segment)
+        bit -= bits_per_segment*segment
+        mask = 1<<bit
+        self._data[segment].value |= mask
+        self._fix_count()
+
+    def clear_bit(self, bit):
+        """
+        Clears the specified bit within the bitfield.  This is starting to verge
+        on territory which once again might make more sense to just merge into
+        NumBitfieldData instead, but apparently I'm sticking to my guns and
+        making it weird.
+        """
+        if bit >= self.max_bits:
+            raise ValueError(f'Cannot alter bit {bit}; only {self.max_bits} are used')
+        bits_per_segment = self.num_type.num_bytes*8
+        segment = int(bit/bits_per_segment)
+        bit -= bits_per_segment*segment
+        mask = 1<<bit
+        self._data[segment].value &= ~mask
+        self._fix_count()
+

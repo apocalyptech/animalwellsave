@@ -25,7 +25,7 @@ import collections
 from . import __version__, set_debug
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, CatStatus, \
-        Unlockable, ManticoreState, Progress, has_image_support
+        Unlockable, ManticoreState, Progress, ElevatorDisabled, has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -624,6 +624,58 @@ def main():
             help='Disable Teleportation Torus',
             )
 
+    for boss, extra_defeat, extra_respawn in [
+            ('chameleon', None, None),
+            ('bat', None, None),
+            ('wheel-ostrich',
+                "Will additionally stop the ostrich-controlled platforms",
+                """Will set the ostrich to its pre-freed state, restart the platforms, and
+                    additionally un-press the purple button so that the ostrich doesn't
+                    immediately free itself again.""",
+                ),
+            ('eel', None, 'Will be set to its pre-awakened state'),
+            ]:
+
+        capitalized = boss.replace('-', ' ').title()
+
+        bossgroup = progress.add_mutually_exclusive_group()
+
+        if extra_defeat:
+            extra = f'.  {extra_defeat}'
+        else:
+            extra = ''
+        bossgroup.add_argument(f'--{boss}-defeat',
+                action='store_true',
+                help=f'Mark the {capitalized} boss as defeated{extra}',
+                )
+
+        if extra_respawn:
+            extra = f'.  {extra_respawn}'
+        else:
+            extra = ''
+        bossgroup.add_argument(f'--{boss}-respawn',
+                action='store_true',
+                help=f'Respawn the {capitalized} boss{extra}',
+                )
+
+    bossgroup = progress.add_mutually_exclusive_group()
+
+    bossgroup.add_argument('--bosses-defeat',
+            action='store_true',
+            help="""
+                Mark all bosses (except for Manticore) as defeated.  Will override any
+                previous defeat/respawn arguments for bosses.
+                """,
+            )
+
+    bossgroup.add_argument('--bosses-respawn',
+            action='store_true',
+            help="""
+                Respawn all bosses (except for Manticore).  Will override any previous
+                defeat/respawn arguments for bosses.
+                """,
+            )
+
     ###
     ### Map Options
     ###
@@ -907,6 +959,26 @@ def main():
     delete_common_set_items(args.inventory_enable, args.inventory_disable)
     delete_common_set_items(args.quest_state_enable, args.quest_state_disable)
 
+    # Handle aggregate options
+    if args.bosses_defeat:
+        args.chameleon_defeat = True
+        args.bat_defeat = True
+        args.wheel_ostrich_defeat = True
+        args.eel_defeat = True
+        args.chameleon_respawn = False
+        args.bat_respawn = False
+        args.wheel_ostrich_respawn = False
+        args.eel_respawn = False
+    if args.bosses_respawn:
+        args.chameleon_defeat = False
+        args.bat_defeat = False
+        args.wheel_ostrich_defeat = False
+        args.eel_defeat = False
+        args.chameleon_respawn = True
+        args.bat_respawn = True
+        args.wheel_ostrich_respawn = True
+        args.eel_respawn = True
+
     # Set our debug flag if we've been told to
     if args.debug:
         set_debug()
@@ -976,6 +1048,14 @@ def main():
             args.red_manticore,
             args.torus_enable,
             args.torus_disable,
+            args.chameleon_defeat,
+            args.chameleon_respawn,
+            args.bat_defeat,
+            args.bat_respawn,
+            args.wheel_ostrich_defeat,
+            args.wheel_ostrich_respawn,
+            args.eel_defeat,
+            args.eel_respawn,
 
             # Map Edits
             args.egg_enable,
@@ -1607,6 +1687,82 @@ def main():
                         if QuestState.TORUS in slot.quest_state.enabled:
                             print(f'{slot_label}: Disabling Teleportation Torus')
                             slot.quest_state.disable(QuestState.TORUS)
+                            do_save = True
+
+                    # Boss defeats / respawns.  I'd tried to be clever originally and was looping
+                    # over a few vars, but there's enough special-cases for many of these that it
+                    # got to be way overengineered.  So, back to dumb hardcoding.  :)
+
+                    if args.chameleon_defeat:
+                        if QuestState.DEFEATED_CHAMELEON not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Marking Chameleon boss as defeated')
+                            slot.quest_state.enable(QuestState.DEFEATED_CHAMELEON)
+                            do_save = True
+
+                    if args.chameleon_respawn:
+                        if QuestState.DEFEATED_CHAMELEON in slot.quest_state.enabled:
+                            print(f'{slot_label}: Respawning Chameleon boss')
+                            slot.quest_state.disable(QuestState.DEFEATED_CHAMELEON)
+                            do_save = True
+
+                    if args.bat_defeat:
+                        if QuestState.DEFEATED_BAT not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Marking Bat boss as defeated')
+                            slot.quest_state.enable(QuestState.DEFEATED_BAT)
+                            do_save = True
+
+                    if args.bat_respawn:
+                        if QuestState.DEFEATED_BAT in slot.quest_state.enabled:
+                            print(f'{slot_label}: Respawning Bat boss')
+                            slot.quest_state.disable(QuestState.DEFEATED_BAT)
+                            do_save = True
+
+                    if args.wheel_ostrich_defeat:
+                        # Vanilla game state implies both "freed" and "defeated" states
+                        if QuestState.DEFEATED_OSTRICH not in slot.quest_state.enabled \
+                                or QuestState.FREED_OSTRICH not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Marking Wheel Ostrich boss as defeated (and stopping platforms, if necessary)')
+                            if QuestState.DEFEATED_OSTRICH not in slot.quest_state.enabled:
+                                slot.quest_state.enable(QuestState.DEFEATED_OSTRICH)
+                            if QuestState.FREED_OSTRICH not in slot.quest_state.enabled:
+                                slot.quest_state.enable(QuestState.FREED_OSTRICH)
+                            # Also stop the elevator
+                            slot.elevators.inactive.enable(ElevatorDisabled.OSTRICH)
+                            do_save = True
+
+                    if args.wheel_ostrich_respawn:
+                        if QuestState.DEFEATED_OSTRICH in slot.quest_state.enabled \
+                                or QuestState.FREED_OSTRICH in slot.quest_state.enabled:
+                            print(f'{slot_label}: Respawning Wheel Ostrich (to pre-freed state, unpressing purple')
+                            print('        button and reactivating platforms if necessary)')
+                            if QuestState.DEFEATED_OSTRICH in slot.quest_state.enabled:
+                                slot.quest_state.disable(QuestState.DEFEATED_OSTRICH)
+                            if QuestState.FREED_OSTRICH in slot.quest_state.enabled:
+                                slot.quest_state.disable(QuestState.FREED_OSTRICH)
+                            # Also undo the purple button press so that the ostrich doesn't
+                            # immediately start attacking again.  Just hardcoding the index here
+                            slot.purple_buttons_pressed.clear_bit(22)
+                            # Also restart the elevator
+                            slot.elevators.inactive.disable(ElevatorDisabled.OSTRICH)
+                            do_save = True
+                        do_save = True
+
+                    if args.eel_defeat:
+                        if QuestState.DEFEATED_EEL not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Marking Eel/Bonefish boss as defeated')
+                            slot.quest_state.enable(QuestState.DEFEATED_EEL)
+                            # Also clear "fighting" state, if we have it
+                            if QuestState.FIGHTING_EEL in slot.quest_state.enabled:
+                                slot.quest_state.disable(QuestState.FIGHTING_EEL)
+                            do_save = True
+
+                    if args.eel_respawn:
+                        if QuestState.DEFEATED_EEL in slot.quest_state.enabled:
+                            print(f'{slot_label}: Respawning Eel/Bonefish boss (to pre-awakened state)')
+                            slot.quest_state.disable(QuestState.DEFEATED_EEL)
+                            # Also clear "fighting" state, if we have it
+                            if QuestState.FIGHTING_EEL in slot.quest_state.enabled:
+                                slot.quest_state.disable(QuestState.FIGHTING_EEL)
                             do_save = True
 
                     ###

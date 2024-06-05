@@ -56,6 +56,7 @@ Table of Contents
    - [Flames](#flames)
    - [Manticores](#manticores)
    - [Teleportation Torus](#teleportation-torus)
+   - [Bosses](#bosses)
    - [Eggs](#eggs)
    - [Bunnies](#bunnies)
    - [Respawn Consumables](#respawn-consumables)
@@ -197,8 +198,6 @@ few other things which would be nice eventually:
  - Similarly, mapping buttons/reservoirs to which doors they open would be
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
- - Specific boss-toggle flags (further discourage direct quest state
-   modification)
  - Report longer lists (like eggs) in columns?
 
 Usage
@@ -622,6 +621,43 @@ toggled on/off with `--torus-enable` and `--torus-disable`:
     awsave AnimalWell.sav -s 1 --torus-enable
     awsave AnimalWell.sav -s 1 --torus-disable
 
+### Bosses
+
+There are several arguments to alter the state of bosses in the game, specifically:
+the Chameleon, Bat, Wheel Ostrich, and Eel/Bonefish.  They use the word `defeat`
+to indicate getting rid of the boss, or `respawn` to bring them back:
+
+    awsave AnimalWell.sav -s 1 --chameleon-defeat
+    awsave AnimalWell.sav -s 1 --chameleon-respawn
+    awsave AnimalWell.sav -s 1 --bat-defeat
+    awsave AnimalWell.sav -s 1 --bat-respawn
+    awsave AnimalWell.sav -s 1 --wheel-ostrich-defeat
+    awsave AnimalWell.sav -s 1 --wheel-ostrich-respawn
+    awsave AnimalWell.sav -s 1 --eel-defeat
+    awsave AnimalWell.sav -s 1 --eel-respawn
+
+As always, arguments can be combined into one command:
+
+    awsave AnimalWell.sav -s 1 --bat-defeat --chameleon-respawn
+
+For the Wheel Ostrich, the processing will also stop/start the
+ostrich-controlled movable platforms as appropriate, and if the ostrich
+is respawned, it will also un-press the purple button directly
+underneath the ostrich wheel.  That way, the ostrich won't just
+immediately become active again when you enter the room again.
+
+For the Eel/Bonefish, respawning it will put it in its pre-awakened
+state.
+
+You can also trigger an action for all four of these bosses at once with
+`--bosses-defeat` or `--bosses-respawn`:
+
+    awsave AnimalWell.sav -s 1 --bosses-defeat
+    awsave AnimalWell.sav -s 1 --bosses-respawn
+
+Note that specifying either of those will totally override any other boss
+defeat/respawn arguments you specified.
+
 ### Eggs
 
 Collected eggs can be enabled or disabled with the `--egg-enable` and
@@ -943,6 +979,13 @@ Changelog
 ---------
 
 **v1.1.0** - *(unreleased)*
+ - Added explicit arguments to defeat or respawn the game's bosses, so that
+   direct manipulation of the Quest State flags is not necessary to do so.
+   Specifically:
+   - Chameleon
+   - Bat
+   - Wheel Ostrich
+   - Eel/Bonefish
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
  - Added `--debug` output to show data offsets within the savegame
@@ -954,6 +997,8 @@ Changelog
    - Removed dash in "Post Modern" egg text
    - Improved K. Shard reporting in info output
    - Reworded the Dog Head Statue description in Quest State
+ - Added elevator modelling in the data library, though it's not directly
+   accessible via the CLI.
 
 **v1.0.0** - *May 31, 2024*
  - Initial release
