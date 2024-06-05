@@ -185,13 +185,18 @@ savegames.  Some notable bits of data which can't be edited directly:
 
  - General Crank status
  - Elevator status
- - Stalactite/Stalagmite/Icicle destruction
  - "Illegal" Bunnies
- - Some seemingly-unimportant flags have been omitted from a few areas
+
+Some data is, likewise, not actually even present in the data library
+yet:
+
+ - Stalactite/Stalagmite/Icicle destruction
+ - Some seemingly-unimportant flags have been omitted from a few areas,
+   for instance the global "switch" state (left/right), early-game flags
+   like "woke up," etc.
  - Achievements *(unsure if setting these in the save would actually make
    them activate on Steam)*
  - Game Options
- - Global "button" state
 
 While I don't have any current plans to support the above, there are a
 few other things which would be nice eventually:
