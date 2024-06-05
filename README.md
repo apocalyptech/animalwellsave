@@ -1003,9 +1003,9 @@ Changelog
    on the info output, rather than just the things that *are* present.
  - Added `--debug` output to show data offsets within the savegame
  - Info-reporting tweaks:
-   - Added lit-candle report to info output
+   - Added lit-candle report
+   - Improved K. Shard reporting
    - Removed dash in "Post Modern" egg text
-   - Improved K. Shard reporting in info output
    - Reworded the Dog Head Statue description in Quest State
  - Added elevator modelling in the data library, though it's not directly
    accessible via the CLI.
