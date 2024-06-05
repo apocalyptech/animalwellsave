@@ -129,7 +129,7 @@ class QuestState(LabelEnum):
     FIGHTING_EEL =       (0x08000000, 'Fighting Eel')
     DEFEATED_EEL =       (0x10000000, 'Defeated Eel')
     SHRINE_NO_DISC =     (0x20000000, 'No Disc in Dog Shrine')
-    STATUE_NO_DISC =     (0x40000000, 'No Disc in Ghost Dog Head')
+    STATUE_NO_DISC =     (0x40000000, 'No Disc in Dog Head Statue')
 
 
 class Egg(LabelEnum):
