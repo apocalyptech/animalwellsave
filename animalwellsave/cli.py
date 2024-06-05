@@ -19,8 +19,10 @@
 import os
 import sys
 import enum
+import math
 import argparse
 import textwrap
+import itertools
 import collections
 from . import __version__, set_debug
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
@@ -184,6 +186,86 @@ def check_file_overwrite(args, filename):
     return do_write
 
 
+def column_chunks(l, columns):
+    """
+    Divide up a given list `l` into the specified number of
+    `columns`.  Yields each column in turn, as a list.  (Does
+    *not* do any padding.)
+    """
+    length = len(l)
+    if length == 0:
+        yield []
+    else:
+        n = math.ceil(length/columns)
+        for i in range(0, length, n):
+            yield l[i:i + n]
+
+
+def print_columns(
+        data,
+        *,
+        minimum_lines=12,
+        max_width=79,
+        indent='   ',
+        padding='  ',
+        prefix='- ',
+        columns=None,
+        ):
+    """
+    Function to take a list of `data` and output in columns, if we can.
+
+    `minimum_lines` determines how many items there should be before we
+    start outputting in columns.
+
+    `max_width` determines how wide the output is allowed to be.
+
+    `indent` is the start-of-line indentation that will be prefixed on
+    every line (and is taken into account when computing versus
+    `max_width`).
+
+    `padding` is the padding that will be printed between each column.
+
+    `prefix` is a string prefix which will be prefixed on each item to
+    be printed.
+
+    `columns` can be used to force a certain number of columns without
+    doing any width checking.
+    """
+    if len(data) == 0:
+        return
+    str_data = [f'{prefix}{item}' for item in data]
+    force_output = False
+    if columns is None:
+        num_columns = math.ceil(len(str_data)/minimum_lines)
+    else:
+        num_columns = columns
+        force_output = True
+
+    # There might be a better way to do this, but what we're doing is starting
+    # at our "ideal" column number, seeing if it fits in our max_width, and
+    # then decreasing by one until it actually fits.  We could, instead, take
+    # a look at the max length overall and base stuff on that, or take an
+    # average and hope for the best, but the upside is that this *will* give
+    # us the most number of columns we can fit for the data, if need be.
+    while True:
+        max_widths = [0]*num_columns
+        cols = list(column_chunks(str_data, num_columns))
+        for idx, col in enumerate(cols):
+            for item in col:
+                max_widths[idx] = max(max_widths[idx], len(item))
+        total_width = len(indent) + sum(max_widths) + (len(padding)*(num_columns-1))
+        if force_output or total_width <= max_width or num_columns == 1:
+            format_str = '{}{}'.format(
+                    indent,
+                    padding.join([f'{{:<{l}}}' for l in max_widths]),
+                    )
+            for row_data in itertools.zip_longest(*cols, fillvalue=''):
+                print(format_str.format(*row_data))
+            break
+        else:
+            num_columns -= 1
+
+
 def main():
     """
     Main CLI app.  Returns `True` if a file was saved out, or `False`
@@ -215,6 +297,15 @@ def main():
             help="""
                 Show debugging output, which will show the offsets (both absolute and relative) for
                 all data in the savegame we know about.  This info will be written to stderr.
+                """,
+            )
+
+    control.add_argument('-1', '--single-column',
+            dest='single_column',
+            action='store_true',
+            help="""
+                By default, info output will use columns to show longer lists of data.  This option
+                will force the output to have one item per line, instead
                 """,
             )
 
@@ -981,6 +1072,12 @@ def main():
         args.ostrich_respawn = True
         args.eel_respawn = True
 
+    # Figure out if we're restricting column output
+    if args.single_column:
+        columns = 1
+    else:
+        columns = None
+
     # Set our debug flag if we've been told to
     if args.debug:
         set_debug()
@@ -1128,12 +1225,10 @@ def main():
             print(f' - Frame Seed: {save.frame_seed} (bunny mural: {(save.frame_seed % 50)+1}/50)')
             if save.unlockables.enabled:
                 print(' - Unlockables:')
-                for unlocked in sorted(save.unlockables.enabled):
-                    print(f'   - {unlocked}')
+                print_columns(sorted(save.unlockables.enabled), columns=columns)
             if args.verbose and save.unlockables.disabled:
                 print(' - Missing Unlockables:')
-                for unlocked in sorted(save.unlockables.disabled):
-                    print(f'   - {unlocked}')
+                print_columns(sorted(save.unlockables.disabled), columns=columns)
 
         # Make a note of fixing the checksum, if we were told to do so
         if args.fix_checksum:
@@ -1196,25 +1291,23 @@ def main():
                         print(f'   - Matches: {slot.matches}')
                         if slot.equipment.enabled:
                             print(' - Equipment Unlocked:')
-                            for equip in sorted(slot.equipment.enabled):
-                                print(f'   - {equip}')
+                            print_columns(sorted(slot.equipment.enabled), columns=columns)
                             print(f' - Selected Equipment: {slot.selected_equipment}')
                         if args.verbose and slot.equipment.disabled:
                             print(' - Missing Equipment:')
-                            for equip in sorted(slot.equipment.disabled):
-                                print(f'   - {equip}')
+                            print_columns(sorted(slot.equipment.disabled), columns=columns)
                         k_shards_collected = slot.kangaroo_state.num_collected()
                         k_shards_inserted = slot.kangaroo_state.num_inserted()
                         if slot.inventory.enabled or k_shards_collected:
                             print(' - Inventory Unlocked:')
-                            for inv in sorted(slot.inventory.enabled):
-                                print(f'   - {inv}')
+                            report = list([str(i) for i in slot.inventory.enabled])
                             if k_shards_collected > 0:
                                 if k_shards_inserted > 0:
                                     suffix = f' (inserted: {k_shards_inserted})'
                                 else:
                                     suffix = ''
-                                print(f'   - K. Shards In Inventory: {k_shards_collected}/3{suffix}')
+                                report.append('K. Shards In Inventory: {k_shards_collected}/3{suffix}')
+                            print_columns(sorted(report), columns=columns)
                         if args.verbose and (slot.inventory.disabled or k_shards_collected == 0):
                             # Filter out disabled inventory which might not make sense to report on
                             disabled = set()
@@ -1223,33 +1316,27 @@ def main():
                                     continue
                                 if item == Inventory.E_MEDAL and QuestState.USED_E_MEDAL in slot.quest_state.enabled:
                                     continue
-                                disabled.add(item)
+                                disabled.add(str(item))
+                            missing_k_shards = 3 - k_shards_collected - k_shards_inserted
+                            if missing_k_shards > 0:
+                                disabled.add(f'Missing K. Shards: {missing_k_shards}')
                             if disabled or k_shards_collected == 0:
                                 print(' - Missing Inventory:')
-                                for inv in sorted(disabled):
-                                    print(f'   - {inv}')
-                                missing_k_shards = 3 - k_shards_collected - k_shards_inserted
-                                if missing_k_shards > 0:
-                                    print(f'   - Missing K. Shards: {missing_k_shards}')
+                                print_columns(sorted(disabled))
                         print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
-                        for egg in sorted(slot.eggs.enabled):
-                            print(f'   - {egg}')
-                        if slot.eggs.disabled:
+                        print_columns(sorted(slot.eggs.enabled), columns=columns)
+                        if args.verbose and slot.eggs.disabled:
                             print(' - Missing Eggs:')
-                            for egg in sorted(slot.eggs.disabled):
-                                print(f'   - {egg}')
+                            print_columns(sorted(slot.eggs.disabled), columns=columns)
                         if len(slot.bunnies.enabled) > 0:
                             print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
-                            for bunny in sorted(slot.bunnies.enabled):
-                                print(f'   - {bunny}')
+                            print_columns(sorted(slot.bunnies.enabled), columns=columns)
                         if args.verbose and slot.bunnies.disabled:
                             print(' - Missing Bunnies:')
-                            for bunny in sorted(slot.bunnies.disabled):
-                                print(f'   - {bunny}')
+                            print_columns(sorted(slot.bunnies.disabled), columns=columns)
                         if slot.quest_state.enabled:
                             print(f' - Quest State Flags:')
-                            for state in sorted(slot.quest_state.enabled):
-                                print(f'   - {state}')
+                            print_columns(sorted(slot.quest_state.enabled), columns=columns)
                         if args.verbose and slot.quest_state.disabled:
                             disabled = set()
                             # Filter out disabled quest states which might not make sense to report on
@@ -1263,8 +1350,7 @@ def main():
                                 disabled.add(item)
                             if disabled:
                                 print(f' - Missing Quest States:')
-                                for state in sorted(disabled):
-                                    print(f'   - {state}')
+                                print_columns(sorted(disabled), columns=columns)
                         if any([flame.choice != FlameState.SEALED for flame in slot.flames]):
                             print(f' - Flame States:')
                             for flame in slot.flames:
@@ -1320,8 +1406,7 @@ def main():
                             print(f'   - Candles Lit: {len(slot.candles)}/{slot.candles.count()}')
                         if args.verbose and len(slot.candles.disabled) > 0:
                             print('   - Missing Candles-to-Light:')
-                            for candle in sorted(slot.candles.disabled):
-                                print(f'     - {candle}')
+                            print_columns(sorted(slot.candles.disabled), indent='     ', columns=columns)
                         if slot.detonators_triggered.count > 0:
                             print(f'   - Detonators Triggered: {slot.detonators_triggered}')
                         if slot.walls_blasted.count > 0:
@@ -1346,12 +1431,10 @@ def main():
                             print(f'   - Red Manticore: {slot.red_manticore}')
                         if slot.teleports.enabled:
                             print(f' - Teleports Active: {len(slot.teleports.enabled)}')
-                            for teleport in sorted(slot.teleports.enabled):
-                                print(f'   - {teleport}')
+                            print_columns(sorted(slot.teleports.enabled), columns=columns)
                         if args.verbose and slot.teleports.disabled:
                             print(' - Missing Teleports:')
-                            for teleport in sorted(slot.teleports.disabled):
-                                print(f'   - {teleport}')
+                            print_columns(sorted(slot.teleports.disabled), columns=columns)
 
                         if do_slot_actions:
                             print('')

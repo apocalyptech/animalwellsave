@@ -208,7 +208,6 @@ few other things which would be nice eventually:
  - Similarly, mapping buttons/reservoirs to which doors they open would be
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
- - Report longer lists (like eggs) in columns?
 
 Usage
 -----
@@ -241,6 +240,13 @@ It will write this information to stderr:
 
     awsave AnimalWell.sav -d
     awsave AnimalWell.sav --debug
+
+Finally, by default the info dump will use column outputs when showing long lists,
+such as unlocked eggs.  To have the utility only output one item per line, use
+the `-1`/`--single-column` argument:
+
+    awsave AnimalWell.sav -i -1
+    awsave AnimalWell.sav --info --single-column
 
 ### Checksum
 
@@ -1007,6 +1013,8 @@ Changelog
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
  - Added `--debug` output to show data offsets within the savegame
+ - Converted info report to use columns for long lists of data, and added a
+   `-1`/`--single-column` argument to revert to one item per line.
  - Info-reporting tweaks:
    - Added lit-candle report
    - Improved K. Shard reporting
