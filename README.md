@@ -1007,10 +1007,11 @@ Changelog
    - Improved K. Shard reporting
    - Removed dash in "Post Modern" egg text
    - Reworded the Dog Head Statue description in Quest State
- - Added elevator modelling in the data library, though it's not directly
-   accessible via the CLI.
  - Fixed a bug in Mural handling which could have caused some problems for
    hypothetical data reads after the mural.
+ - Info added to data model (though not directly accessible via the CLI):
+   - Elevator/Platform Data *(Ostrich Boss processing does touch this a bit)*
+   - Bunny Mural last-selected-pixel coordinates
 
 **v1.0.0** - *May 31, 2024*
  - Initial release

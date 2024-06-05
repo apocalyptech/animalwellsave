@@ -892,6 +892,26 @@ class Stamps(Data):
         self._num_stamps.value = 0
 
 
+class MuralCoord(Data):
+    """
+    Mural coordinate, just used to keep track of the last-selected pixel
+    while editing.  This is two UInt8s, for X and Y.  The mural size is
+    40x20.
+    """
+
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
+
+        self.x = NumData('X', self, UInt8)
+        self.y = NumData('Y', self, UInt8)
+
+    def __str__(self):
+        """
+        String representation should be the full coordinate tuple
+        """
+        return f'({self.x}, {self.y})'
+
+
 class Mural(Data):
     """
     Class to store information about the Bunny Mural.  This class is
@@ -1545,10 +1565,11 @@ class Slot(Data):
         self.teleports = NumBitfieldData('Teleports Active', self, UInt8, Teleport)
         self.stamps = Stamps('Minimap Stamps', self)
         self.elevators = Elevators('Elevators', self)
-        # Next in the data is the x/y location of the currenly-selected mural pixel.
+        self.mural_coords = MuralCoord('Mural Coordinates', self)
+        self.minimap = Minimap('Minimap Revealed', self)
 
-        self.minimap = Minimap('Minimap Revealed', self, 0x3EC)
         self.pencilmap = Minimap('Minimap Pencil Layer', self, 0xD22D)
+
         self.destructionmap = Minimap('Destroyed Blocks', self, 0x1A06E)
 
         self.mural = Mural('Bunny Mural', self, 0x26EAF)
