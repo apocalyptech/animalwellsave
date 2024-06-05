@@ -921,7 +921,7 @@ class Mural(Data):
 
         # Subsequent data might rely on us having seeked to the end of the
         # data, so do so now.
-        self.df.seek(Minimap.MAP_BYTE_TOTAL, os.SEEK_CUR)
+        self.df.seek(Mural.TOTAL_BYTES, os.SEEK_CUR)
 
     def _fill_with_data(self, data):
         """

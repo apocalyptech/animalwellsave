@@ -940,6 +940,8 @@ Changelog
  - Removed dash in "Post Modern" egg text
  - Improved K. Shard reporting in info output
  - Added `--debug` output to show data offsets within the savegame
+ - Fixed a bug in Mural handling which could have caused some problems for
+   hypothetical data reads after the mural.
 
 **v1.0.0** - *May 31, 2024*
  - Initial release
