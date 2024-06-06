@@ -101,7 +101,7 @@ class QuestState(LabelEnum):
     HOUSE_OPEN =         (0x00000001, 'House Open')
     OFFICE_OPEN =        (0x00000002, 'Office Open')
     CLOSET_OPEN =        (0x00000004, 'Closet Open')
-    # Not sure what this is, honestly
+    # Global switch state -- 0 for left, 1 for right.  Leaving this out for now though
     #SWITCH_STATE =       (0x00000100, 'Switch State')
     UNLOCK_MAP =         (0x00000200, 'Map Unlocked')
     UNLOCK_STAMPS =      (0x00000400, 'Stamps Unlocked')
