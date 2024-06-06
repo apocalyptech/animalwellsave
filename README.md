@@ -15,6 +15,7 @@ expect, including:
  - Clearing out "illegal" pink-button presses (acquired via cheating) to
    avoid future savefile corruption
  - Image import/export to/from the "pencil" map layer
+ - And much more!  Read on for the full details
 
 Table of Contents
 -----------------
@@ -98,7 +99,7 @@ writing the primary format there is an
 [010 Editor](https://www.sweetscape.com/010editor/) binary template
 plus an [ImHex](https://imhex.werwolv.net/) pattern.  Other translations
 may become available over time.  A human-readable document describing the
-save format can be found [at the wiki of that repo](https://github.com/Kein/awsgtools/wiki/Format-Description)
+save format can be found [at the wiki of that repo](https://github.com/Kein/awsgtools/wiki)
 as well, though that document might lag behind the official templates.
 
 Running / Installation
@@ -158,8 +159,8 @@ activation line is different for Windows -- see above):
     source .venv/bin/activate
     pip install --editable .
 
-To install the dependencies needed for importing/exporting images to the
-"pencil" minimap layer, you can run:
+Optionally, to install the dependencies needed for importing/exporting images
+to the "pencil" minimap layer, you can run:
 
     pip install -r image-requirements.txt
 
@@ -183,7 +184,8 @@ TODO
 ----
 
 The editor currently does not attempt to support *everything* inside the
-savegames.  Some notable bits of data which can't be edited directly:
+savegames.  Some notable bits of data which can't be edited directly (but
+which are present in the data library):
 
  - General Crank status
  - Elevator status
@@ -210,6 +212,7 @@ few other things which would be nice eventually:
  - Similarly, mapping buttons/reservoirs to which doors they open would be
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
+ - Ability to perform slot actions on an exported slot file?
 
 Usage
 -----
@@ -398,7 +401,7 @@ is *just* ingame time (which does not seem to be used anywhere), and
 another which includes all the time spent in "pause" menus.  There are
 two arguments related to ticks.  First, `--ticks-copy-ingame` can be
 used to copy your "ingame" counter over to the "including paused" counter,
-in case you feel that your speed effort is being unfairly held back by
+in case you feel that your speedrun effort is being unfairly held back by
 pausing:
 
     awsave AnimalWell.sav -s 1 --ticks-copy-ingame
@@ -429,7 +432,8 @@ equipment, if it's not already unlocked.
 
 Keys and Matches can be set using the `--keys` and `--matches` arguments.
 Note that the keys here are the "generic" ones which show up on the left in your
-inventory.  The maximum numbers available ingame are 6 keys, and 9 matches.
+inventory.  The maximum numbers available in the vanilla game are 6 keys, and
+9 matches.
 
     awsave AnimalWell.sav -s 1 --keys 6 --matches 9
 
@@ -578,11 +582,11 @@ The room in which the kangaroo next spawns can be set with the `--kangaroo-room`
 argumnent.  The rooms are numbered from 0 to 4, and correspond to the following
 coordinates:
 
-0. 6, 6
-1. 9, 11
-2. 12, 11
-3. 9, 13
-4. 16, 16
+0. (6, 6)
+1. (9, 11)
+2. (12, 11)
+3. (9, 13)
+4. (16, 16)
 
 The coordinates are set by the numeric index:
 
@@ -723,6 +727,17 @@ and the special value `all` can be used to operate on all eggs at once.
 
 Note that this does *not* include the 65th Egg.
 
+Valid values are: `reference`, `brown`, `raw`, `pickled`, `big`, `swan`,
+`forbidden`, `shadow`, `vanity`, `service`, `depraved`, `chaos`, `upside_down`,
+`evil`, `sweet`, `chocolate`, `value`, `plant`, `red`, `orange`, `sour`,
+`post_modern`, `universal_basic`, `laissez_faire`, `zen`, `future`,
+`friendship`, `truth`, `transcendental`, `ancient`, `magic`, `mystic`,
+`holiday`, `rain`, `razzle`, `dazzle`, `virtual`, `normal`, `great`,
+`gorgeous`, `planet`, `moon`, `galaxy`, `sunset`, `goodnight`, `dream`,
+`travel`, `promise`, `ice`, `fire`, `bubble`, `desert`, `clover`, `brick`,
+`neon`, `iridescent`, `rust`, `scarlet`, `sapphire`, `ruby`, `jade`,
+`obsidian`, `crystal`, `golden`, `all`.
+
 ### Bunnies
 
 Collected bunnies can be enabled or disabled with the `--bunny-enable`
@@ -735,6 +750,10 @@ bunnies at once.
 
 This argument can't be used to collect the various "illegal" bunnies
 hidden around the map (or just in game data).
+
+Valid values are: `tutorial`, `origami`, `crow`, `ghost`, `fish_mural`, `map`,
+`tv`, `uv`, `bulb`, `chinchilla`, `bunny_mural`, `duck`, `ghost_dog`, `dream`,
+`floor_is_lava`, `spike_room`, `all`.
 
 ### Respawn Consumables
 
@@ -1052,12 +1071,12 @@ Changelog
    - Added `--move-disc-to-shrine` and `--move-disc-to-statue` args, to
      shuffle the Mock Disc between its two homes.
  - Added `--solve-cranks` argument to solve most crank-related puzzles.
- - Added `--verbose` option to also show missing items (inventory, eggs, etc)
-   on the info output, rather than just the things that *are* present.
- - Added `--debug` output to show data offsets within the savegame
- - Converted info report to use columns for long lists of data, and added a
-   `-1`/`--single-column` argument to revert to one item per line.
  - Info-reporting tweaks:
+   - Added `--verbose` option to also show missing items (inventory, eggs, etc)
+     on the info output, rather than just the things that *are* present.
+   - Added `--debug` output to show data offsets within the savegame
+   - Converted info report to use columns for long lists of data, and added a
+     `-1`/`--single-column` argument to revert to one item per line.
    - Added lit-candle report
    - Improved K. Shard reporting
    - Removed dash in "Post Modern" egg text
