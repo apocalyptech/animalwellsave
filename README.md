@@ -48,6 +48,7 @@ Table of Contents
    - [Egg 65](#egg-65)
    - [Cheater's Ring](#cheaters-ring)
    - [Progress/Quests](#progressquests)
+   - [Mock Disc Location](#mock-disc-location)
    - [Caged Cats](#caged-cats)
    - [Kangaroo Room](#kangaroo-room)
    - [K. Shards](#k-shards)
@@ -209,7 +210,6 @@ few other things which would be nice eventually:
  - Similarly, mapping buttons/reservoirs to which doors they open would be
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
- - Option for explicitly setting Disc / Mock Disc state
 
 Usage
 -----
@@ -539,6 +539,24 @@ Valid values are: `house_open`, `office_open`, `closet_open`, `unlock_map`,
 `used_s_medal`, `used_e_medal`, `wings`, `bb_wand`, `egg_65`, `torus`,
 `defeated_bat`, `freed_ostrich`, `defeated_ostrich`, `fighting_eel`,
 `defeated_eel`, `shrine_no_disc`, `statue_no_disc`, `all`.
+
+### Mock Disc Location
+
+In ordinary gameplay, the Mock Disc can either live in the Dog Head Statue, or the
+Mock Disc Shrine.  The `--move-disc-to-shrine` and `--move-disc-to-statue`
+arguments can be used to move the Mock Disc from one to the other:
+
+    awsave AnimalWell.sav -s 1 --move-disc-to-shrine
+    awsave AnimalWell.sav -s 1 --move-disc-to-statue
+
+Note that these arguments will only make changes if the Mock Disc is already stored
+in one of those two locations.  If you've got a nonstandard game state (due to
+earlier editing, etc), you'll have to alter the various flags by hand using the
+`--quest-state-enable` and `--quest-state-disable` arguments.  Also note that these
+arguments aren't really intended to be used alongside arguments which add or remove
+the Disc or Mock Disc from player equipment/inventory -- the arguments for giving
+the player the Disc, specifically, can ensure either of these two states.  See
+the [Equipment section](#equipment) for more detail.
 
 ### Caged Cats
 
@@ -1031,6 +1049,8 @@ Changelog
    - Added `--house-open` and `--house-close` arguments to manage the state of
      the doors around the house.
    - Added arguments to manage S. Medal and E. Medal insertion state.
+   - Added `--move-disc-to-shrine` and `--move-disc-to-statue` args, to
+     shuffle the Mock Disc between its two homes.
  - Added `--solve-cranks` argument to solve most crank-related puzzles.
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.

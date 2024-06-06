@@ -582,6 +582,28 @@ def main():
             help="Disables the specified progress flag.  Can be specified more than once, or use 'all' to disable all",
             )
 
+    disc = progress.add_mutually_exclusive_group()
+
+    disc.add_argument('--move-disc-to-shrine',
+            action='store_true',
+            help="""
+                Moves the Mock Disc to the Shrine, if it is not there already.  This will only
+                activate if the player has the regular disc, does not have the mock disc, and
+                the mock disc is currently in the Dog Head Statue.  Not intended to be used
+                in conjunction with arguments which alter Disc and Mock Disc inventory states.
+                """,
+            )
+
+    disc.add_argument('--move-disc-to-statue',
+            action='store_true',
+            help="""
+                Moves the Mock Disc to the Dog Head Statue, if it is not there already.  This will
+                only activate if the player has the regular disc, does not have the mock disc,
+                and the mock disc is currently in the Shrine.  Not intended to be used
+                in conjunction with arguments which alter Disc and Mock Disc inventory states.
+                """,
+            )
+
     progress.add_argument('--cats-free',
             type=CatStatus,
             action=EnumSetAction,
@@ -1165,6 +1187,8 @@ def main():
             # Progress/Quests
             args.progress_enable,
             args.progress_disable,
+            args.move_disc_to_shrine,
+            args.move_disc_to_statue,
             args.cats_free,
             args.cats_cage,
             args.kangaroo_room is not None,
@@ -1716,6 +1740,30 @@ def main():
                                 print(f'{slot_label}: Disabling progress flag: {progress}')
                                 slot.progress.disable(progress)
                                 do_save = True
+
+                    if args.move_disc_to_shrine:
+                        if Equipment.DISC in slot.equipment.enabled \
+                                and Inventory.MOCK_DISC not in slot.inventory.enabled \
+                                and QuestState.STATUE_NO_DISC not in slot.quest_state.enabled \
+                                and QuestState.SHRINE_NO_DISC in slot.quest_state.enabled:
+                            print(f'{slot_label}: Moving Mock Disc from Dog Head Statue to Shrine')
+                            slot.quest_state.enable(QuestState.STATUE_NO_DISC)
+                            slot.quest_state.disable(QuestState.SHRINE_NO_DISC)
+                            do_save = True
+                        else:
+                            print('*** WARNING: Conditions not met for --move-disc-to-shrine, skipping. ***')
+
+                    if args.move_disc_to_statue:
+                        if Equipment.DISC in slot.equipment.enabled \
+                                and Inventory.MOCK_DISC not in slot.inventory.enabled \
+                                and QuestState.STATUE_NO_DISC in slot.quest_state.enabled \
+                                and QuestState.SHRINE_NO_DISC not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Moving Mock Disc from Shrine to Dog Head Statue')
+                            slot.quest_state.disable(QuestState.STATUE_NO_DISC)
+                            slot.quest_state.enable(QuestState.SHRINE_NO_DISC)
+                            do_save = True
+                        else:
+                            print('*** WARNING: Conditions not met for --move-disc-to-statue, skipping. ***')
 
                     if args.cats_free:
                         for cat in sorted(args.cats_free):
