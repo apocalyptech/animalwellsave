@@ -624,6 +624,30 @@ def main():
                 """,
             )
 
+    smedal = progress.add_mutually_exclusive_group()
+
+    smedal.add_argument('--s-medal-insert',
+            action='store_true',
+            help='Mark the S. Medal as inserted (to open the passageway it was blocking)',
+            )
+
+    smedal.add_argument('--s-medal-remove',
+            action='store_true',
+            help='Mark the S. Medal as not inserted (this will not put the S. Medal in your inventory)',
+            )
+
+    emedal = progress.add_mutually_exclusive_group()
+
+    emedal.add_argument('--e-medal-insert',
+            action='store_true',
+            help='Mark the E. Medal as inserted (to open the passageway it was blocking)',
+            )
+
+    emedal.add_argument('--e-medal-remove',
+            action='store_true',
+            help='Mark the E. Medal as not inserted (this will not put the E. Medal in your inventory)',
+            )
+
     progress.add_argument('--teleport-enable',
             type=Teleport,
             action=EnumSetAction,
@@ -1146,6 +1170,10 @@ def main():
             args.kangaroo_room is not None,
             args.kshard_collect is not None,
             args.kshard_insert is not None,
+            args.s_medal_insert,
+            args.s_medal_remove,
+            args.e_medal_insert,
+            args.e_medal_remove,
             args.teleport_enable,
             args.teleport_disable,
             args.mural_clear,
@@ -1717,6 +1745,30 @@ def main():
                         print(f'{slot_label}: Setting total number of inserted K. Shards to: {args.kshard_insert}')
                         slot.kangaroo_state.set_shard_state(args.kshard_insert, KangarooShardState.INSERTED)
                         do_save = True
+
+                    if args.s_medal_insert:
+                        if QuestState.USED_S_MEDAL not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Marking S. Medal as inserted')
+                            slot.quest_state.enable(QuestState.USED_S_MEDAL)
+                            do_save = True
+
+                    if args.s_medal_remove:
+                        if QuestState.USED_S_MEDAL in slot.quest_state.enabled:
+                            print(f'{slot_label}: Removing S. Medal from recess')
+                            slot.quest_state.disable(QuestState.USED_S_MEDAL)
+                            do_save = True
+
+                    if args.e_medal_insert:
+                        if QuestState.USED_E_MEDAL not in slot.quest_state.enabled:
+                            print(f'{slot_label}: Marking E. Medal as inserted')
+                            slot.quest_state.enable(QuestState.USED_E_MEDAL)
+                            do_save = True
+
+                    if args.e_medal_remove:
+                        if QuestState.USED_E_MEDAL in slot.quest_state.enabled:
+                            print(f'{slot_label}: Removing E. Medal from recess')
+                            slot.quest_state.disable(QuestState.USED_E_MEDAL)
+                            do_save = True
 
                     if args.teleport_enable:
                         for teleport in sorted(args.teleport_enable):

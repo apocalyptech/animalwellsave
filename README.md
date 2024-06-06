@@ -51,6 +51,7 @@ Table of Contents
    - [Caged Cats](#caged-cats)
    - [Kangaroo Room](#kangaroo-room)
    - [K. Shards](#k-shards)
+   - [S. Medal and E. Medal](#s-medal-and-e-medal)
    - [Animal Head Teleporters](#animal-head-teleporters)
    - [Bunny Mural](#bunny-mural)
    - [Flames](#flames)
@@ -208,8 +209,6 @@ few other things which would be nice eventually:
  - Similarly, mapping buttons/reservoirs to which doors they open would be
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
- - May as well do args for medal insertions.  Then QuestState will be
-   basically entirely deprecated (will still keep it around though)
  - Option for explicitly setting Disc / Mock Disc state
 
 Usage
@@ -520,9 +519,9 @@ The *main* field which defines progress/quest information is rather more
 complete, but note that it's not really recommended to alter this structure
 directly.  Some of the states in here rely on other states and other bit of data
 to be a "valid" gamestate (or at least, one which could be encountered in an
-unmodified game).  Specific arguments exist for managing the B.B. Wand, Egg 65,
-Cheater's Ring, Teleporation Torus, Wings, map unlocks, and boss statuses.  Still,
-if you want to tweak any of these by hand, they're available here.  Manual
+unmodified game).  Specific arguments exist for managing all quest state flags
+supported by the editor, and should take care of any weird edge cases for you.
+Still, if you want to tweak any of these by hand, they're available here.  Manual
 tweaking will be performed at the very *end* of the slot processing, so you can
 use this argument to override any other massaging that previous processing might
 have done.
@@ -586,6 +585,17 @@ in your inventory.
 
     awsave AnimalWell.sav -s 1 --kshard-collect 2
     awsave AnimalWell.sav -s 1 --kshard-insert 3
+
+### S. Medal and E. Medal
+
+The state of the S. Medal and E. Medal insertion can be set with the
+`--s-medal-insert`, `--s-medal-remove`, `--e-medal-insert`, and
+`--e-medal-remove` arguments.  Note that removing the medal from the
+recess does not automatically give you the medal in your inventory; use
+the inventory management functions for that.
+
+    awsave AnimalWell.save -s 1 --s-medal-insert --e-medal-insert
+    awsave AnimalWell.save -s 1 --s-medal-remove --e-medal-remove
 
 ### Animal Head Teleporters
 
@@ -1011,16 +1021,17 @@ Changelog
 ---------
 
 **v1.1.0** - *(unreleased)*
- - Added explicit arguments to defeat or respawn the game's bosses, so that
-   direct manipulation of the Quest State flags is not necessary to do so.
-   Specifically:
-   - Chameleon
-   - Bat
-   - Ostriches
-   - Eel/Bonefish
+ - Added explicit arguments to set various Quest State flags without having
+   to manipulate those flags via the `--quest-state-*` arguments:
+   - Added arguments to defeat or respawn the game's bosses.  Specifically:
+     - Chameleon
+     - Bat
+     - Ostriches
+     - Eel/Bonefish
+   - Added `--house-open` and `--house-close` arguments to manage the state of
+     the doors around the house.
+   - Added arguments to manage S. Medal and E. Medal insertion state.
  - Added `--solve-cranks` argument to solve most crank-related puzzles.
- - Added `--house-open` and `--house-close` arguments to manage the state of
-   the doors around the house.
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
  - Added `--debug` output to show data offsets within the savegame
