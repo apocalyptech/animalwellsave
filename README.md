@@ -1057,7 +1057,7 @@ themselves would probably be the best way to know how to use 'em.
 Changelog
 ---------
 
-**v1.1.0** - *(unreleased)*
+**v1.1.0** - *Jun 6, 2024*
  - Added explicit arguments to set various Quest State flags without having
    to manipulate those flags via the `--quest-state-*` arguments:
    - Added arguments to defeat or respawn the game's bosses.  Specifically:

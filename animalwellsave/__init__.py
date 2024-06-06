@@ -1,6 +1,6 @@
 
 # Software version
-__version__ = '1.1.0-beta.1'
+__version__ = '1.1.0'
 
 # Debug (basically just outputting offsets for our vars)
 _debug = False
