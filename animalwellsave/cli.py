@@ -898,6 +898,18 @@ def main():
                 """,
             )
 
+    house = map_options.add_mutually_exclusive_group()
+
+    house.add_argument('--house-open',
+            action='store_true',
+            help='Open the house/office/closet doors',
+            )
+
+    house.add_argument('--house-close',
+            action='store_true',
+            help='Close the house/office/closet doors',
+            )
+
     chests = map_options.add_mutually_exclusive_group()
 
     chests.add_argument('--chests-open',
@@ -1176,6 +1188,8 @@ def main():
             args.walls_open,
             args.walls_close,
             args.clear_invalid_walls,
+            args.house_open,
+            args.house_close,
             args.chests_open,
             args.chests_close,
             args.candles_enable,
@@ -1966,6 +1980,28 @@ def main():
                     if args.walls_close:
                         print(f'{slot_label}: Closing all movable walls')
                         slot.moved_walls.clear()
+                        do_save = True
+
+                    if args.house_open:
+                        print(f'{slot_label}: Marking doors around the house as opened')
+                        for state in [
+                                QuestState.HOUSE_OPEN,
+                                QuestState.OFFICE_OPEN,
+                                QuestState.CLOSET_OPEN,
+                                ]:
+                            if state not in slot.quest_state.enabled:
+                                slot.quest_state.enable(state)
+                        do_save = True
+
+                    if args.house_close:
+                        print(f'{slot_label}: Marking doors around the house as closed')
+                        for state in [
+                                QuestState.HOUSE_OPEN,
+                                QuestState.OFFICE_OPEN,
+                                QuestState.CLOSET_OPEN,
+                                ]:
+                            if state in slot.quest_state.enabled:
+                                slot.quest_state.disable(state)
                         do_save = True
 
                     if args.chests_open:

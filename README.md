@@ -208,6 +208,9 @@ few other things which would be nice eventually:
  - Similarly, mapping buttons/reservoirs to which doors they open would be
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
+ - May as well do args for medal insertions.  Then QuestState will be
+   basically entirely deprecated (will still keep it around though)
+ - Option for explicitly setting Disc / Mock Disc state
 
 Usage
 -----
@@ -765,8 +768,7 @@ There are five categories of openable doors/walls in the game:
    buttons or other late-game bunny puzzles, etc.  These can be toggled
    with the `--walls-open` and `--walls-close` arguments.
 5. Other "special" doors like the House/Office/Closet doors, whose states
-   are mostly controlled via the [progress/quest options](#progressquests)
-   and aren't enumerated here.
+   are mostly controlled via the [progress/quest options](#progressquests).
 
 For "regular" doors in the game, note that if the buttons/puzzles which
 opened them originally are still pressed/solved, entering the room after
@@ -795,7 +797,7 @@ Moveable walls can be opened/closde like so:
     awsave AnimalWell.sav -s 1 --walls-open
     awsave AnimalWell.sav -s 1 --walls-close
 
-Finally, using the Cheater's Ring (or any other noclip cheating activity) can
+Using the Cheater's Ring (or any other noclip cheating activity) can
 allow the player to access "illegal" pink buttons which can cause extra walls
 to open up in the game.  At time of writing, there's a bug in the game where
 opening too many of these can end up causing savefile corruption while in-game,
@@ -807,6 +809,13 @@ least prevent a save from being corrupted after some of those pink buttons were
 already hit:
 
     awsave AnimalWell.sav -s 1 --clear-invalid-walls
+
+Finally, the doors controlled by "quest state" information are the three doors
+related to the house: the main house door, office, and closet.  These can
+be opened or closed with the `--house-open` and `--house-close` arguments:
+
+    awsave AnimalWell.sav -s 1 --house-open
+    awsave AnimalWell.sav -s 1 --house-close
 
 ### Chests
 
@@ -1009,7 +1018,9 @@ Changelog
    - Bat
    - Ostriches
    - Eel/Bonefish
- - Added `--solve-cranks` argument to solve most crank-related puzzles
+ - Added `--solve-cranks` argument to solve most crank-related puzzles.
+ - Added `--house-open` and `--house-close` arguments to manage the state of
+   the doors around the house.
  - Added `--verbose` option to also show missing items (inventory, eggs, etc)
    on the info output, rather than just the things that *are* present.
  - Added `--debug` output to show data offsets within the savegame
