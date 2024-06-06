@@ -1298,17 +1298,18 @@ def main():
                             print_columns(sorted(slot.equipment.disabled), columns=columns)
                         k_shards_collected = slot.kangaroo_state.num_collected()
                         k_shards_inserted = slot.kangaroo_state.num_inserted()
+                        missing_k_shards = 3 - k_shards_collected - k_shards_inserted
                         if slot.inventory.enabled or k_shards_collected:
                             print(' - Inventory Unlocked:')
-                            report = list([str(i) for i in slot.inventory.enabled])
+                            report = list(slot.inventory.enabled)
                             if k_shards_collected > 0:
                                 if k_shards_inserted > 0:
-                                    suffix = f' (inserted: {k_shards_inserted})'
+                                    suffix = f', plus {k_shards_inserted} inserted'
                                 else:
                                     suffix = ''
-                                report.append('K. Shards In Inventory: {k_shards_collected}/3{suffix}')
+                                report.append(f'K. Shards ({k_shards_collected}/3{suffix})')
                             print_columns(sorted(report), columns=columns)
-                        if args.verbose and (slot.inventory.disabled or k_shards_collected == 0):
+                        if args.verbose and (slot.inventory.disabled or missing_k_shards > 0):
                             # Filter out disabled inventory which might not make sense to report on
                             disabled = set()
                             for item in slot.inventory.disabled:
@@ -1316,13 +1317,11 @@ def main():
                                     continue
                                 if item == Inventory.E_MEDAL and QuestState.USED_E_MEDAL in slot.quest_state.enabled:
                                     continue
-                                disabled.add(str(item))
-                            missing_k_shards = 3 - k_shards_collected - k_shards_inserted
+                                disabled.add(item)
                             if missing_k_shards > 0:
-                                disabled.add(f'Missing K. Shards: {missing_k_shards}')
-                            if disabled or k_shards_collected == 0:
-                                print(' - Missing Inventory:')
-                                print_columns(sorted(disabled))
+                                disabled.add(f'K. Shards ({missing_k_shards} missing)')
+                            print(' - Missing Inventory:')
+                            print_columns(sorted(disabled), columns=columns)
                         print(f' - Eggs Collected: {len(slot.eggs.enabled)}')
                         print_columns(sorted(slot.eggs.enabled), columns=columns)
                         if args.verbose and slot.eggs.disabled:

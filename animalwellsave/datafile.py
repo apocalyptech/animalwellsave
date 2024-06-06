@@ -318,7 +318,37 @@ class LabelEnum(enum.Enum):
         """
         Sort by our label
         """
-        return self.label.casefold() < other.label.casefold()
+        if type(other) == str:
+            return self.label.casefold() < other.casefold()
+        else:
+            return self.label.casefold() < other.label.casefold()
+
+    def __gt__(self, other):
+        """
+        Sort by our label
+        """
+        if type(other) == str:
+            return self.label.casefold() > other.casefold()
+        else:
+            return self.label.casefold() > other.label.casefold()
+
+    def __le__(self, other):
+        """
+        Sort by our label
+        """
+        if type(other) == str:
+            return self.label.casefold() <= other.casefold()
+        else:
+            return self.label.casefold() <= other.label.casefold()
+
+    def __ge__(self, other):
+        """
+        Sort by our label
+        """
+        if type(other) == str:
+            return self.label.casefold() >= other.casefold()
+        else:
+            return self.label.casefold() >= other.label.casefold()
 
     def __str__(self):
         """
