@@ -1498,7 +1498,7 @@ class Slot(Data):
         self.num_steps = NumData('Num Steps', self, UInt32, 0x108)
         self.fill_levels = FillLevels('Fill Levels', self)
 
-        self.chests_opened = BitCountData('Chests Opened', self, UInt64, 2, 101, 0x120)
+        self.chests_opened = BitCountData('Chests Opened', self, UInt64, 2, 102, 0x120)
         self.button_doors_opened = BitCountData('Button Doors Opened', self, UInt64, 2, 94)
         self.yellow_buttons_pressed = BitCountData('Yellow Buttons Pressed', self, UInt64, 3, 134)
 

@@ -1076,8 +1076,11 @@ Changelog
  - Added `--nuts` to set stolen-nut count
  - Report on status of Space / Bunny Island buttons and CE Temple chest, and
    alter those states when specifying our button and chest arguments.
+ - Added in the chest holding the Golden Egg (at 12,19), which was otherwise
+   omitted from the chest opening/closing arguments.
  - Fixed a bug which could cause map-feature-activations (press all buttons,
-   open all chests, etc) to reset/close items we don't know about.
+   open all chests, etc) to reset/close items we don't know about.  (This had
+   been affecting the Golden Egg chest referenced above.)
 
 **v1.1.0** - *Jun 6, 2024*
  - Added explicit arguments to set various Quest State flags without having
