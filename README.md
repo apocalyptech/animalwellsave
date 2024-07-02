@@ -45,6 +45,7 @@ Table of Contents
    - [Keys / Matches](#keys--matches)
    - [Nuts](#nuts)
    - [Equipment](#equipment)
+   - [Inventory](#inventory)
    - [Map Unlocks](#map-unlocks)
    - [B.B. Wand](#bb-wand)
    - [Egg 65](#egg-65)
@@ -466,7 +467,7 @@ once.
 Valid values are: `firecracker`, `flute`, `lantern`, `top`, `disc`, `wand`,
 `yoyo`, `slink`, `remote`, `ball`, `wheel`, `uvlight`, `all`.
 
-Note that whenever you toggle the Disc state using this option, the game will
+Note that whenever you toggle the Disc state using this option, this utility will
 by default attempt to set the game's quest states appropriately, to avoid having
 you get chased by a ghost dog.  This can end up changing where the Mock Disc is
 in the gameworld.  When giving yourself the Disc, there are two valid game states:
@@ -482,6 +483,34 @@ Alternatively, you can disable the auto-fix attempt entirely using the
 keep you company (or if you're editing the quest states yourself later):
 
     awsave AnimalWell.sav -s 1 --equip-enable disc --dont-fix-disc-state
+
+### Inventory
+
+Inventory refers to other items which you acquire throughout the game which are
+*not* usable equipment items.  These can be individually toggled on or off
+using the `--inventory-enable` and `--inventory-disable` arguments.  These can
+be specified more than once, and you can also use `all` as a special option to
+process all at once.
+
+    awsave AnimalWell.sav -s 1 --inventory-enable all
+    awsave AnimalWell.sav -s 1 --inventory-disable house_key --inventory-disable office_key
+
+Valid values are: `mock_disc`, `s_medal`, `house_key`, `office_key`, `e_medal`,
+`pack`, `all`.
+
+Note that if you add the Mock Disc using this option, this utility will by default
+attempt to set the game's quest state appropriately as if you'd picked up the Mock Disc
+ingame.  You can disable this behavior with the `--dont-fix-disc-state` argument:
+
+    awsave AnimalWell.sav -s 1 --inventory-enable mock_disc --dont-fix-disc-state
+
+Relatedly, if you add all equipment *and* all inventory using the following options:
+
+    awsave AnimalWell.sav -s 1 --equip-enable all --inventory-enable all
+
+... the utility will by default exclude the Mock Disc from the inventory unlocks, since
+that's not actually a valid gamestate.  As with the other Disc / Mock Disc options, you
+can force both in your inventory at the same time by specifying `--dont-fix-disc-state`.
 
 ### Map Unlocks
 
@@ -1087,6 +1116,9 @@ Changelog
  - Improve kangaroo state reporting slightly, and set its state to "Lurking"
    instead of "Attacking" when setting its current room, which should make that
    spawn be more reliable.
+ - Exclude Mock Disc from inventory unlocks if the user specifies both
+   `--equip-enable all` and `--inventory-enable all` (this can be disabled by
+   also using the `--dont-fix-disc-state` argument).
 
 **v1.1.0** - *Jun 6, 2024*
  - Added explicit arguments to set various Quest State flags without having

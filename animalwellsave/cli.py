@@ -1682,6 +1682,24 @@ def main():
                                 doing_disc_actions = True
 
                     if args.inventory_enable:
+
+                        # Some shenanigans here!  If the user specifies both `--equip-enable all` and
+                        # `--inventory-enable all`, it's *likely* that they want to exclude the Mock
+                        # Disc.  They could explicitly exclude that with `--inventory-disable mock_disc`
+                        # but IMO it makes sense to exclude by default, for this specific case.  We
+                        # will *not* do the exclusion if the user specified `--dont-fix-disc-state`,
+                        # though.
+                        if args.fix_disc_state and args.equip_enable:
+                            # The check here is actually a bit ridiculous, since we don't actually retain
+                            # information about whether the user selected `all` or individual options.  So
+                            # we're manually checking to see if we have the full set.
+                            all_equipment = all([e in args.equip_enable for e in Equipment])
+                            all_inventory = all([i in args.inventory_enable for i in Inventory])
+                            if all_equipment and all_inventory:
+                                print('NOTICE: Excluding Mock Disc from inventory unlocks.  (Specify --dont-fix-disc-state to add it anyway.)')
+                                args.inventory_enable.remove(Inventory.MOCK_DISC)
+
+                        # Now continue on...
                         for inv in sorted(args.inventory_enable):
                             if inv not in slot.inventory.enabled:
                                 print(f'{slot_label}: Enabling inventory item: {inv}')
