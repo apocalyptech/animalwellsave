@@ -455,20 +455,26 @@ class ElevatorDisabled(LabelEnum):
 
 class KangarooActivityState(LabelEnum):
     """
-    The current state of the kangaroo.  I don't *totally* understand all of
-    these.  State 0 is the one I'm especially unsure of.  In some rooms, it
-    seems to make the kangaroo present and in others it seems entirely absent.
-    State 1 (Lurking) seems to be the "safest" to set, if you want to force
-    the kangaroo to be present in a specific room.  It may not be there from
-    the very beginning, but the player should be able to trigger it to go
-    into attacking mode (whether that's time-based or by in-room movement
-    triggers, I'm not sure).  Then State 2 (Attacking) is the active attack
-    state.  So long as the player is within 1 room of the kangaroo room,
-    it will remain attacking, but if you get further away than that, it'll
-    despawn and move onto the next.
+    The current state of the kangaroo.
+
+     - State 0: Initial Encounter.  This is only present in the game when
+       you have yet to encounter the kangaroo.  In this state the kangaroo's
+       room will always be room 4 (16,16).  The kangaroo will likely not
+       spawn if it's set to other rooms with this state.
+
+     - State 1: Lurking.  This is the "safest" to set, if you want to force
+       the kangaroo to be present in a specific room.  It may not be there from
+       the very beginning, but the player should be able to trigger it to go
+       into attacking mode (which I believe is just based on passing a physical
+       trigger in the room itself).
+
+     - State 2: Attacking.  This is the active attack state.  So long as the
+       player remains within 1 room of the kangaroo room, it'll keep attacking
+       in that room, but if the player gets further away, the kangaroo despawns
+       and moves onto the next room.
     """
 
-    UNKNOWN = (0, '(unknown)')
+    INITIAL = (0, 'Initial Encounter')
     LURKING = (1, 'Lurking')
     ATTACKING = (2, 'Attacking')
 
@@ -1127,13 +1133,11 @@ class KangarooState(Data):
 
     def force_kangaroo_room(self, room_id):
         """
-        Forces the Kangaroo to appear in the specified room.  They will likely be
-        already in the attacking state when you arrive.
+        Forces the Kangaroo to appear in the specified room, in its "lurking"
+        state (ie: it will likely not be immediately present, but once the player
+        passes a trigger, the kangaroo will start attacking).
         """
         self.next_encounter_id.value = room_id
-        # As mentioned in the KangarooState docs, I don't actually understand these IDs
-        # fully.  Nevertheless, LURKING seems to be the best one to set, so that's
-        # what I'm doing.
         self.state.value = KangarooActivityState.LURKING
 
     def set_shard_state(self, count, state):
