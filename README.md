@@ -1076,6 +1076,8 @@ Changelog
  - Added `--nuts` to set stolen-nut count
  - Report on status of Space / Bunny Island buttons and CE Temple chest, and
    alter those states when specifying our button and chest arguments.
+ - Fixed a bug which could cause map-feature-activations (press all buttons,
+   open all chests, etc) to reset/close items we don't know about.
 
 **v1.1.0** - *Jun 6, 2024*
  - Added explicit arguments to set various Quest State flags without having

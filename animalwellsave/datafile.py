@@ -659,7 +659,7 @@ class BitCountData(Data):
         individual_bits = self.num_type.num_bytes*8
         for data in self._data:
             this_bits = min(bits_to_fill, individual_bits)
-            data.value = (2**this_bits)-1
+            data.value |= (2**this_bits)-1
             bits_to_fill -= this_bits
         self.count = self.max_bits
 
