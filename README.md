@@ -214,7 +214,7 @@ few other things which would be nice eventually:
    nice, to be able to couple those a bit more closely.  At the moment,
    button/door states are all-or-nothing.
  - Ability to perform slot actions on an exported slot file?
- - Once [Kaitai Struct](https://doc.kaitai.io/)'s
+ - Once [Kaitai Struct](https://kaitai.io/)'s
    [serialization features](https://doc.kaitai.io/serialization.html)
    make it into an official release, it'd be nice to convert over to that.
    Something like that is really what I'd wanted to do at the start, rather
