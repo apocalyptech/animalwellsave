@@ -43,6 +43,7 @@ Table of Contents
    - [Wings (Flight)](#wings-flight)
    - [Firecrackers](#firecrackers)
    - [Keys / Matches](#keys--matches)
+   - [Nuts](#nuts)
    - [Equipment](#equipment)
    - [Map Unlocks](#map-unlocks)
    - [B.B. Wand](#bb-wand)
@@ -442,6 +443,14 @@ inventory.  The maximum numbers available in the vanilla game are 6 keys, and
 9 matches.
 
     awsave AnimalWell.sav -s 1 --keys 6 --matches 9
+
+### Nuts
+
+The number of nuts that you've stolen from squirrels cna be set with the `--nuts`
+argument.  Note that the game doesn't actually report this count to the user in
+any way.
+
+    awsave AnimalWell.sav -s 1 --nuts 4
 
 ### Equipment
 
@@ -1062,6 +1071,11 @@ themselves would probably be the best way to know how to use 'em.
 
 Changelog
 ---------
+
+**v1.2.0** - *(unreleased)*
+ - Added `--nuts` to set stolen-nut count
+ - Report on status of Space / Bunny Island buttons and CE Temple chest, and
+   alter those states when specifying our button and chest arguments.
 
 **v1.1.0** - *Jun 6, 2024*
  - Added explicit arguments to set various Quest State flags without having

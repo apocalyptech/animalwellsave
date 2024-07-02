@@ -469,6 +469,11 @@ def main():
             help="Set the number of matches in your inventory",
             )
 
+    inventory.add_argument('--nuts',
+            type=int,
+            help="Set the number of nuts stolen from squirrels",
+            )
+
     inventory.add_argument('--equip-enable',
             type=Equipment,
             action=EnumSetAction,
@@ -1172,6 +1177,7 @@ def main():
             args.firecrackers is not None,
             args.keys is not None,
             args.matches is not None,
+            args.nuts is not None,
             args.equip_enable,
             args.equip_disable,
             args.inventory_enable,
@@ -1355,6 +1361,8 @@ def main():
                             print(f'   - Firecrackers: {slot.firecrackers}')
                         print(f'   - Keys: {slot.keys}')
                         print(f'   - Matches: {slot.matches}')
+                        if slot.nuts > 0:
+                            print(f'   - Nuts: {slot.nuts}')
                         if slot.equipment.enabled:
                             print(' - Equipment Unlocked:')
                             print_columns(sorted(slot.equipment.enabled), columns=columns)
@@ -1441,6 +1449,8 @@ def main():
                             print(f'   - Minimap Stamps: {len(slot.stamps)}')
                         print(f' - Permanent Map Data:')
                         print(f'   - Chests Opened: {slot.chests_opened}')
+                        if slot.layer1_chests_opened > 0:
+                            print(f'   - CE Temple Chests Opened: {slot.layer1_chests_opened}')
                         if slot.squirrels_scared > 0:
                             print(f'   - Squirrels Scared: {slot.squirrels_scared}')
                         if slot.yellow_buttons_pressed > 0:
@@ -1458,6 +1468,8 @@ def main():
                             print('       corruption!  We recommend using the --clear-invalid-walls option on')
                             print('       this save to clean it up.')
                             print('     ***WARNING:***')
+                        if slot.layer2_buttons_pressed > 0:
+                            print(f'   - Space / Bunny Island Buttons Pressed: {slot.layer2_buttons_pressed}')
                         if slot.button_doors_opened > 0:
                             print(f'   - Button-Activated Doors Opened: {slot.button_doors_opened}')
                         if len(slot.locked_doors) > 0:
@@ -1609,6 +1621,11 @@ def main():
                     if args.matches is not None:
                         print(f'{slot_label}: Updating match count to: {args.matches}')
                         slot.matches.value = args.matches
+                        do_save = True
+
+                    if args.nuts is not None:
+                        print(f'{slot_label}: Updating stolen nut count to: {args.nuts}')
+                        slot.nuts.value = args.nuts
                         do_save = True
 
                     changed_equipment = False
@@ -2022,6 +2039,7 @@ def main():
                         slot.purple_buttons_pressed.fill()
                         slot.green_buttons_pressed.fill()
                         slot.pink_buttons_pressed.enable_all()
+                        slot.layer2_buttons_pressed.fill()
                         do_save = True
 
                     if args.buttons_reset:
@@ -2030,6 +2048,7 @@ def main():
                         slot.purple_buttons_pressed.clear()
                         slot.green_buttons_pressed.clear()
                         slot.pink_buttons_pressed.disable_all()
+                        slot.layer2_buttons_pressed.clear()
                         do_save = True
 
                     if args.doors_open:
@@ -2107,11 +2126,13 @@ def main():
                     if args.chests_open:
                         print(f'{slot_label}: Marking all chests as opened')
                         slot.chests_opened.fill()
+                        slot.layer1_chests_opened.fill()
                         do_save = True
 
                     if args.chests_close:
                         print(f'{slot_label}: Marking all chests as closed')
                         slot.chests_opened.clear()
+                        slot.layer1_chests_opened.clear()
                         do_save = True
 
                     if args.candles_enable:

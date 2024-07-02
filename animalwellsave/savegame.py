@@ -1527,8 +1527,10 @@ class Slot(Data):
         # into NumBitfieldData and the CLI processing.)
         self.pink_buttons_pressed = NumBitfieldData('Pink Buttons Pressed', self, UInt16, PinkButton, 0x1AC)
         self.invalid_pink_buttons = NumBitfieldData('Invalid Pink Buttons', self, UInt16, PinkButtonInvalid, 0x1AC)
-
-        self.keys = NumData('Num Keys', self, UInt8, 0x1B1)
+        self.nuts = NumData('Num Nuts', self, UInt8)
+        self.layer1_chests_opened = BitCountData('Layer 1 (CE Temple) Chests', self, UInt8, 1, 1)
+        self.layer2_buttons_pressed = BitCountData('Layer 2 (Space / Bunny Island) Buttons', self, UInt8, 1, 4)
+        self.keys = NumData('Num Keys', self, UInt8)
         self.matches = NumData('Num Matches', self, UInt8)
         self.firecrackers = NumData('Num Firecrackers', self, UInt8)
         self.health = NumData('Health', self, UInt8)
