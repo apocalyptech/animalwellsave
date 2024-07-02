@@ -453,6 +453,26 @@ class ElevatorDisabled(LabelEnum):
     E8 =      (0x80, 'Elevator 8')
 
 
+class KangarooActivityState(LabelEnum):
+    """
+    The current state of the kangaroo.  I don't *totally* understand all of
+    these.  State 0 is the one I'm especially unsure of.  In some rooms, it
+    seems to make the kangaroo present and in others it seems entirely absent.
+    State 1 (Lurking) seems to be the "safest" to set, if you want to force
+    the kangaroo to be present in a specific room.  It may not be there from
+    the very beginning, but the player should be able to trigger it to go
+    into attacking mode (whether that's time-based or by in-room movement
+    triggers, I'm not sure).  Then State 2 (Attacking) is the active attack
+    state.  So long as the player is within 1 room of the kangaroo room,
+    it will remain attacking, but if you get further away than that, it'll
+    despawn and move onto the next.
+    """
+
+    UNKNOWN = (0, '(unknown)')
+    LURKING = (1, 'Lurking')
+    ATTACKING = (2, 'Attacking')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -1080,12 +1100,7 @@ class KangarooState(Data):
                 self._available_ids -= {enc.encounter_id.value}
             self.encounters.append(enc)
         self.next_encounter_id = NumData('Next Encounter ID', self, UInt8)
-
-        # This could be a LabelEnum; 0=Idle, 1=Fleeing, 2=Attacking.
-        # Though I honestly don't understand the 0 or 1 behaviors.  0
-        # seems to mostly result in no kangaroo at all, whereas 1
-        # seems to just result in an attacking kangaroo like 2.
-        self.state = NumData('Kangaroo State', self, UInt8)
+        self.state = NumChoiceData('Kangaroo State', self, UInt8, KangarooActivityState)
 
     def __len__(self):
         return 3
@@ -1116,12 +1131,10 @@ class KangarooState(Data):
         already in the attacking state when you arrive.
         """
         self.next_encounter_id.value = room_id
-        # As mentioned above, I don't actually understand these IDs really.  Setting
-        # 1 or 2 seems to always lead to attacking.  I'm setting 2 just because that
-        # seems the "safest" to ensure the spawn, though I'd really prefer something
-        # that would let the kangaroo start in that "lurking" state instead...
-        # TODO: ^
-        self.state.value = 2
+        # As mentioned in the KangarooState docs, I don't actually understand these IDs
+        # fully.  Nevertheless, LURKING seems to be the best one to set, so that's
+        # what I'm doing.
+        self.state.value = KangarooActivityState.LURKING
 
     def set_shard_state(self, count, state):
         """

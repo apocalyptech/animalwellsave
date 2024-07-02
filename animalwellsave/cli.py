@@ -1433,17 +1433,10 @@ def main():
                         if Equipment.FIRECRACKER in slot.equipment.enabled:
                             print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
-                        # I don't fully grok what the state value implies, other than that
-                        # when it's zero, the kangaroo doesn't tend to be there, and when
-                        # it's 1 or 2, it generally is.
-                        if slot.kangaroo_state.state != 0:
-                            kangaroo_suffix = ''
-                        else:
-                            kangaroo_suffix = ' (possibly -- unsure about the data)'
-                        print('   - Next Kangaroo Room: {} (coords {}{})'.format(
+                        print('   - Next Kangaroo Room: {} {}, in state: {}'.format(
                             slot.kangaroo_state.next_encounter_id,
                             slot.kangaroo_state.get_cur_kangaroo_room_str(),
-                            kangaroo_suffix,
+                            slot.kangaroo_state.state,
                             ))
                         if QuestState.UNLOCK_STAMPS in slot.quest_state.enabled:
                             print(f'   - Minimap Stamps: {len(slot.stamps)}')

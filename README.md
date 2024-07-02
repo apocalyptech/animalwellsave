@@ -607,8 +607,11 @@ The coordinates are set by the numeric index:
 
     awsave AnimalWell.sav -s 1 --kangaroo-room 0
 
-Note that the kangaroo will likely be immediately hostile once you enter the
-room.
+The kangaroo might not be immediately present when you first enter the room, but
+it will be triggered into its attacking mode (often from offscreen) once you move
+around to the appropriate trigger area.  Once in its attacking mode, you can only
+move one room away from the kangaroo before it despawns and moves on to a
+different room.
 
 ### K. Shards
 
@@ -1081,6 +1084,9 @@ Changelog
  - Fixed a bug which could cause map-feature-activations (press all buttons,
    open all chests, etc) to reset/close items we don't know about.  (This had
    been affecting the Golden Egg chest referenced above.)
+ - Improve kangaroo state reporting slightly, and set its state to "Lurking"
+   instead of "Attacking" when setting its current room, which should make that
+   spawn be more reliable.
 
 **v1.1.0** - *Jun 6, 2024*
  - Added explicit arguments to set various Quest State flags without having
