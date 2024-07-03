@@ -740,6 +740,8 @@ source image uses the exact colors, which are:
 3. Red: `#FA6464`
 4. White: `#FFE6C8`
 
+![Bunny Mural Import Results](aw_mural_fish.jpg)
+
 ### Flames
 
 The four flame states can be set using the `--flame-collect` and `--flame-use`
