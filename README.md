@@ -1198,7 +1198,7 @@ Changelog
      Ring, etc.)
    - Added import/export of the bunny mural, with both "raw" and real image
      options, via: `--mural-raw-import`, `--mural-raw-export`,
-     `--mural-image-import`, and `--mural-image-export'.
+     `--mural-image-import`, and `--mural-image-export`.
  - Report on status of Space / Bunny Island buttons and CE Temple chest, and
    alter those states when specifying our button and chest arguments.
  - Added in the chest holding the Golden Egg (at 12,19), which was otherwise
