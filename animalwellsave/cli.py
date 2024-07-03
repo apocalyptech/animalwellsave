@@ -1470,9 +1470,11 @@ def main():
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
                         if any([s != BigStalactiteState.INTACT for s in slot.big_stalactites]):
                             print('   - Big Stalactite States:')
+                            to_report = []
                             for idx, stalactite in enumerate(slot.big_stalactites):
                                 if stalactite != BigStalactiteState.INTACT:
-                                    print(f'     - {stalactite.debug_label}: {stalactite}')
+                                    to_report.append(f'{stalactite.debug_label}: {stalactite}')
+                            print_columns(to_report, columns=columns, indent='     ')
                         if slot.deposit_small_broken > 0:
                             print(f'   - Small Stalactites/Stalagmites Broken: {slot.deposit_small_broken}')
                         if slot.icicles_broken > 0:
