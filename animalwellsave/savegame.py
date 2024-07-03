@@ -1021,6 +1021,17 @@ class Mural(Data):
             b'\xbe\xef\x43\x55\x55\x15\x00\xff\xe6\xee' + \
             b'\xfb\xbe\x0f\x00\x00\x00\xfc\xbf\xbb\xbb'
 
+    COLORS = {
+            # black
+            (0x0A, 0x14, 0x32): 0,
+            # blue
+            (0x64, 0xC8, 0xFF): 1,
+            # red
+            (0xFA, 0x64, 0x64): 2,
+            # white
+            (0xFF, 0xE6, 0xC8): 3,
+            }
+
     def __init__(self, debug_label, parent, offset=None):
         super().__init__(debug_label, parent, offset=offset)
 
@@ -1065,6 +1076,128 @@ class Mural(Data):
                 ''.join([f'\\x{x:02x}' for x in data[s:s+interval]])
                 ))
             s += interval
+
+    def import_raw(self, filename):
+        """
+        Imports raw data from `filename`.  This doesn't really do any
+        checking on the data, apart from making sure it's the correct
+        length.
+        """
+        with open(filename, 'rb') as df:
+            data = df.read()
+            if len(data) != Mural.TOTAL_BYTES:
+                raise RuntimeError(f'imported raw bunny mural data must be exactly {Mural.TOTAL_BYTES} bytes')
+            self._fill_with_data(data)
+
+    def export_raw(self, filename):
+        """
+        Exports our raw data into `filename`.
+        """
+        with open(filename, 'wb') as odf:
+            self.df.seek(self.offset)
+            data = self.df.read(Mural.TOTAL_BYTES)
+            odf.write(data)
+
+    def import_image(self, filename):
+        """
+        Imports the image at `filename` into our bunny mural.  The image requirements
+        are that it be an indexed image with four defined colors, and at a resolution
+        of 40x20.  The most common image formats which support indexed colors are
+        PNG and GIF.  (JPEG does not use indexed color.)
+        """
+        global has_image_support
+        if not has_image_support:
+            raise RuntimeError('Pillow module does not seem to be available; import_png is not usable')
+
+        # Load in the image and make sure it meets our criteria
+        im = Image.open(filename)
+        if im.mode != 'P':
+            raise RuntimeError('imported bunny mural images must use indexed colors')
+        if len(im.palette.colors) != 4:
+            raise RuntimeError('imported bunny mural images must have exactly four indexed colors')
+        if im.width != Mural.WIDTH or im.height != Mural.HEIGHT:
+            raise RuntimeError(f'imported bunny mural images must be exactly {Mural.WIDTH}x{Mural.HEIGHT}')
+
+        # Translate color indexes in case the colormap isn't in the
+        # same order we expect.  Also attempt to find "closest color" when
+        # we have unknown colors, though this is likely to result in
+        # bad-looking images unless the colors happen to be quite close
+        # to the mural colors.
+        color_translate = {}
+        for color, index in im.palette.colors.items():
+            if color in Mural.COLORS:
+                if index != Mural.COLORS[color]:
+                    color_translate[index] = Mural.COLORS[color]
+            else:
+                # Attempt to find the closest color.  Will probably look terrible!
+                # Somewhat arbitrarily using the "redmean" technique found at:
+                #
+                #     https://en.wikipedia.org/wiki/Color_difference#sRGB
+                #
+                # This is called "overthinking the problem!"
+                chosen_index = None
+                cur_diff = 99999999999
+                for stock_color, stock_index in Mural.COLORS.items():
+                    rbar = (color[0] + stock_color[0])*0.5
+                    # Omitting the math.sqrt here since it's technically unnecessary
+                    diff = (2+(rbar/256))*(color[0]-stock_color[0])**2 + \
+                           4*(color[1]-stock_color[1])**2 + \
+                           (2+((255-rbar)/256))*(color[2]-stock_color[2])**2
+                    if diff < cur_diff:
+                        cur_diff = diff
+                        chosen_index = stock_index
+                if chosen_index is not None:
+                    color_translate[index] = chosen_index
+
+        # Now do the import.
+        # TODO: This is probably the least-efficient and terrible way to do
+        # this.  Adapted from the similarly-terrible pencil image export code.
+        self.df.seek(self.offset)
+        for y in range(im.height):
+            x = 0
+            for x0 in range(int(im.width/4)):
+                byte = 0
+                x += 4
+                for idx in range(4):
+                    x -= 1
+                    pixel = im.getpixel((x, y))
+                    byte <<= 2
+                    byte |= color_translate.get(pixel, pixel)
+                x += 4
+                self.df.write(struct.pack('<B', byte))
+
+
+    def export_image(self, filename):
+        """
+        Exports the bunny mural to the filename `filename`.  The export format
+        will be determined by the filename extension, but it will only work
+        if the format supports indexed colors.  The most common formats which
+        support that are PNG and GIF.  JPEG does *not* support indexed color.
+        """
+        global has_image_support
+        if not has_image_support:
+            raise RuntimeError('Pillow module does not seem to be available; export_png is not usable')
+
+        # Collect the image data in the form that Pillow wants
+        self.df.seek(self.offset)
+        raw_data = self.df.read(Mural.TOTAL_BYTES)
+        new_data = []
+        for byte in raw_data:
+            for _ in range(4):
+                new_data.append(byte & 0x3)
+                byte >>= 2
+
+        # Now create the image and write it out
+        im = Image.new(
+                'P',
+                (Mural.WIDTH, Mural.HEIGHT),
+                )
+        # Relying on the fact that Python dicts remember insertion order, here.
+        # I always feel rather itchy when doing that...
+        for color in Mural.COLORS.keys():
+            im.palette.getcolor(color)
+        im.putdata(new_data)
+        im.save(filename)
 
 
 class KangarooEncounter(Data):

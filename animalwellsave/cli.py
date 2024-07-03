@@ -705,6 +705,39 @@ def main():
             help='Set the mural to its solved state',
             )
 
+    mural2 = progress.add_mutually_exclusive_group()
+
+    mural2.add_argument('--mural-raw-export',
+            type=str,
+            metavar='FILENAME',
+            help='Export the raw mural data to the specified file',
+            )
+
+    mural2.add_argument('--mural-raw-import',
+            type=str,
+            metavar='FILENAME',
+            help='Import the specified file as raw mural data',
+            )
+
+    if has_image_support:
+
+        mural2.add_argument('--mural-image-export',
+                type=str,
+                metavar='FILENAME',
+                help='Export the bunny mural data as an image file (should be PNG or GIF)',
+                )
+
+        mural2.add_argument('--mural-image-import',
+                type=str,
+                metavar='FILENAME',
+                help="""
+                    Import the specified image file into the bunny mural data.  The
+                    image must be 40x20 and indexed with only four colors.  (The
+                    most common file formats to support indexed color are PNG and GIF.
+                    A JPEG will not work since those can't be indexed.)
+                    """,
+                )
+
     progress.add_argument('--flame-collect',
             type=str,
             choices=['b', 'p', 'v', 'g', 'all'],
@@ -1233,6 +1266,10 @@ def main():
             args.mural_clear,
             args.mural_default,
             args.mural_solved,
+            args.mural_raw_export,
+            args.mural_raw_import,
+            has_image_support and args.mural_image_export,
+            has_image_support and args.mural_image_import,
             args.flame_collect,
             args.flame_use,
             args.blue_manticore,
@@ -1920,6 +1957,34 @@ def main():
                         print(f'{slot_label}: Setting mural to its solved state (NOTE: you will need to activate one pixel to get the door to open)')
                         slot.mural.to_solved()
                         do_save = True
+
+                    if args.mural_raw_import:
+                        print(f'{slot_label}: Importing raw bunny mural data in "{args.mural_raw_import}"')
+                        slot.mural.import_raw(args.mural_raw_import)
+                        do_save = True
+
+                    if args.mural_raw_export:
+                        print(f'{slot_label}: Exporting raw bunny mural data to: {args.mural_raw_export}')
+                        if check_file_overwrite(args, args.mural_raw_export):
+                            slot.mural.export_raw(args.mural_raw_export)
+                            print('Raw bunny mural data exported!')
+                        else:
+                            print('NOTICE: Raw bunny mural data NOT exported')
+
+                    if has_image_support:
+
+                        if args.mural_image_import:
+                            print(f'{slot_label}: Importing image "{args.mural_image_import}" to bunny mural')
+                            slot.mural.import_image(args.mural_image_import)
+                            do_save = True
+
+                        if args.mural_image_export:
+                            print(f'{slot_label}: Exporting bunny mural image to: {args.mural_image_export}')
+                            if check_file_overwrite(args, args.mural_image_export):
+                                slot.mural.export_image(args.mural_image_export)
+                                print('Bunny mural exported!')
+                            else:
+                                print('NOTICE: Bunny mural NOT exported')
 
                     for arg, status in [
                             (args.flame_collect, FlameState.COLLECTED),

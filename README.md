@@ -58,6 +58,7 @@ Table of Contents
    - [S. Medal and E. Medal](#s-medal-and-e-medal)
    - [Animal Head Teleporters](#animal-head-teleporters)
    - [Bunny Mural](#bunny-mural)
+     - [Mural Import/Export](#mural-importexport)
    - [Flames](#flames)
    - [Manticores](#manticores)
    - [Teleportation Torus](#teleportation-torus)
@@ -221,7 +222,6 @@ few other things which would be nice eventually:
    make it into an official release, it'd be nice to convert over to that.
    Something like that is really what I'd wanted to do at the start, rather
    than my own janky weirdness.
- - Bunny Mural import/export?
 
 Usage
 -----
@@ -692,6 +692,54 @@ options in the editor.)
     awsave AnimalWell.sav -s 1 --mural-clear
     awsave AnimalWell.sav -s 1 --mural-solved
 
+### Mural Import/Export
+
+The Bunny Mural can be exported and imported in a few different formats.  First,
+it can be imported or exported in the "raw" format, which is the exact same
+way it's stored in savefiles and game memory.  There aren't any public tools that
+I'm aware of at time of writing to edit in this format, but it's available
+regardless.  The arguments to use are `--mural-raw-export` and `--mural-raw-import`:
+
+    awsave AnimalWell.sav -s 1 --mural-raw-export mural.dat
+    awsave AnimalWell.sav -s 1 --mural-raw-import mural.dat
+
+When exporting the file, if the filename already exists, you will be prompted
+to overwrite it.  To skip the confirmation and always overwrite, specify `-f` or
+`--force`:
+
+    awsave AnimalWell.sav -s 1 --mural-raw-export mural.dat -f
+
+Additionally, the mural can be exported or imported as an image file, **so long as
+the [Python Imaging Library (Pillow)](https://python-pillow.org/) is installed.**
+If that library isn't available, these options won't be present.
+
+Note that the file type must support "indexed" color.  The most common image
+formats which support indexed color are PNG and GIF -- note that JPEG *cannot*
+be used for this, since that format does not support indexed color.  The
+arguments to use for this are `--mural-image-export` and
+`--mural-image-import`:
+
+    awsave AnimalWell.sav -s 1 --mural-image-export mural.png
+    awsave AnimalWell.sav -s 1 --mural-image-import edited.png
+
+As with the raw export, the utility will prompt for overwriting when necessary,
+unless you also specify `-f` or `--force`:
+
+    awsave AnimalWell.sav -s 1 --mural-image-export mural.png -f
+
+Note that imported files *must* be a 40x20 image which uses indexed color, and only
+has four colors defined in its colormap.  It's probably easiest to start with an
+exported file to make sure the image is in the proper format.  If any of the colors
+in the image's colormap don't *exactly* match one of the mural's default colors,
+the import process will do its best to match it to the closest color, but note that
+this can end up making it look pretty bad.  You'll have the best results if the
+source image uses the exact colors, which are:
+
+1. Black: `#0A1432`
+2. Blue: `#64C8FF`
+3. Red: `#FA6464`
+4. White: `#FFE6C8`
+
 ### Flames
 
 The four flame states can be set using the `--flame-collect` and `--flame-use`
@@ -1146,6 +1194,9 @@ Changelog
      slot.  These can otherwise interfere with the BDTP solution.  (Illegal
      bunnies can only be acquired via cheating/glitching, as with the Cheater's
      Ring, etc.)
+   - Added import/export of the bunny mural, with both "raw" and real image
+     options, via: `--mural-raw-import`, `--mural-raw-export`,
+     `--mural-image-import`, and `--mural-image-export'.
  - Report on status of Space / Bunny Island buttons and CE Temple chest, and
    alter those states when specifying our button and chest arguments.
  - Added in the chest holding the Golden Egg (at 12,19), which was otherwise
