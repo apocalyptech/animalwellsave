@@ -194,7 +194,6 @@ which are present in the data library):
 
  - General Crank status
  - Elevator status
- - "Illegal" Bunnies
 
 Some data is, likewise, not actually even present in the data library
 yet:
