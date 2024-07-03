@@ -75,6 +75,7 @@ Table of Contents
    - [Water Reservoirs](#water-reservoirs)
    - [Detonators](#detonators)
    - [Destroyed Tiles](#destroyed-tiles)
+   - [Stalactites / Stalagmites / Icicles](#stalactites--stalagmites--icicles)
    - [Minimap](#minimap)
    - [Map Marks](#map-marks)
    - [Pencil Images](#pencil-images)
@@ -196,7 +197,6 @@ which are present in the data library):
 Some data is, likewise, not actually even present in the data library
 yet:
 
- - Stalactite/Stalagmite/Icicle destruction
  - Some seemingly-unimportant flags have been omitted from a few areas,
    for instance the global "switch" state (left/right), early-game flags
    like "woke up," etc.
@@ -974,6 +974,14 @@ tiles in the map, you can use the `--respawn-destroyed-tiles` argument:
 
     awsave AnimalWell.sav -s 1 --respawn-destroyed-tiles
 
+### Stalactites / Stalagmites / Icicles
+
+The small stalactites, stalagmites, and icicles in the game can be cleared or
+respawned using `--small-deposits-break` or `--small-deposits-respawn`:
+
+    awsave AnimalWell.sav -s 1 --small-deposits-break
+    awsave AnimalWell.sav -s 1 --small-deposits-respawn
+
 ### Minimap
 
 The minimap can be revealed or cleared using the `--reveal-map` and `--clear-map`
@@ -1106,6 +1114,8 @@ Changelog
 
 **v1.2.0** - *(unreleased)*
  - Added `--nuts` to set stolen-nut count
+ - Added `--small-deposits-break` and `--small-deposits-respawn` to manage
+   small stalactites/stalagmites/icicles.
  - Report on status of Space / Bunny Island buttons and CE Temple chest, and
    alter those states when specifying our button and chest arguments.
  - Added in the chest holding the Golden Egg (at 12,19), which was otherwise

@@ -1592,8 +1592,9 @@ class Slot(Data):
         self.destructionmap = Minimap('Destroyed Blocks', self, 0x1A06E)
 
         self.mural = Mural('Bunny Mural', self, 0x26EAF)
-        # Stalactite/Icicle data follows here, but I'm not going to
-        # model it at the moment.
+
+        self.deposit_small_broken = BitCountData('Small Deposits Broken', self, UInt64, 8, 423, 0x26F98)
+        self.icicles_broken = BitCountData('Icicles Broken', self, UInt64, 4, 159)
 
         self.berries_eaten_while_full = NumData('Berries Eaten While Full', self, UInt16, 0x26FFA)
 

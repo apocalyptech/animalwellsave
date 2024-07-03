@@ -1028,6 +1028,18 @@ def main():
             help='Respawn any destroyed tiles on the map (such as through detonators, top blocks, Manticore glass)',
             )
 
+    deposits = map_options.add_mutually_exclusive_group()
+
+    deposits.add_argument('--small-deposits-break',
+            action='store_true',
+            help='Breaks all small stalactites/stalagmites/icicles on the map',
+            )
+
+    deposits.add_argument('--small-deposits-respawn',
+            action='store_true',
+            help='Respawn all small stalactites/stalagmites/icicles on the map',
+            )
+
     ###
     ### Minimap Options
     ###
@@ -1257,6 +1269,8 @@ def main():
             args.reservoirs_empty,
             args.detonators_activate,
             args.detonators_rearm,
+            args.small_deposits_break,
+            args.small_deposits_respawn,
             args.respawn_destroyed_tiles,
 
             # Minimap
@@ -1433,6 +1447,10 @@ def main():
                         if Equipment.FIRECRACKER in slot.equipment.enabled:
                             print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
+                        if slot.deposit_small_broken > 0:
+                            print(f'   - Small Stalactites/Stalagmites Broken: {slot.deposit_small_broken}')
+                        if slot.icicles_broken > 0:
+                            print(f'   - Icicles Broken: {slot.icicles_broken}')
                         print('   - Next Kangaroo Room: {} {}, in state: {}'.format(
                             slot.kangaroo_state.next_encounter_id,
                             slot.kangaroo_state.get_cur_kangaroo_room_str(),
@@ -2203,6 +2221,18 @@ def main():
                     if args.respawn_destroyed_tiles:
                         print(f'{slot_label}: Respawning all destroyed tiles')
                         slot.destructionmap.clear_map()
+                        do_save = True
+
+                    if args.small_deposits_break:
+                        print(f'{slot_label}: Breaking/clearing all small stalactites/stalagmites/icicles')
+                        slot.deposit_small_broken.fill()
+                        slot.icicles_broken.fill()
+                        do_save = True
+
+                    if args.small_deposits_respawn:
+                        print(f'{slot_label}: Respawning all small stalactites/stalagmites/icicles')
+                        slot.deposit_small_broken.clear()
+                        slot.icicles_broken.clear()
                         do_save = True
 
                     ###
