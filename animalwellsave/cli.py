@@ -851,6 +851,11 @@ def main():
             help="Disable the specified bunny.  Can be specified more than once, or use 'all' to disable all",
             )
 
+    map_options.add_argument('--illegal-bunny-clear',
+            action='store_true',
+            help="Clear any 'illegal' bunnies from the slot, so that BDTP can be solved again.",
+            )
+
     map_options.add_argument('--respawn-consumables',
             action='store_true',
             help="Respawn map consumables (fruit and firecrackers)",
@@ -1250,6 +1255,7 @@ def main():
             args.egg_disable,
             args.bunny_enable,
             args.bunny_disable,
+            args.illegal_bunny_clear,
             args.respawn_consumables,
             args.clear_ghosts,
             args.respawn_ghosts,
@@ -1426,6 +1432,13 @@ def main():
                         if len(slot.bunnies.enabled) > 0:
                             print(f' - Bunnies Collected: {len(slot.bunnies.enabled)}')
                             print_columns(sorted(slot.bunnies.enabled), columns=columns)
+                        if len(slot.illegal_bunnies.enabled) > 0:
+                            print(f' - Illegal Bunnies Collected: {len(slot.illegal_bunnies.enabled)}')
+                            print('   ***WARNING***')
+                            print('   Having illegal bunnies collected will cause the BDTP puzzle to be')
+                            print('   unsolveable.  We recommend using the --illegal-bunny-clear option')
+                            print('   on this save to clean it up.')
+                            print('   ***WARNING***')
                         if args.verbose and slot.bunnies.disabled:
                             print(' - Missing Bunnies:')
                             print_columns(sorted(slot.bunnies.disabled), columns=columns)
@@ -1487,11 +1500,11 @@ def main():
                             print(f'   - Valid Pink Buttons Pressed: {len(slot.pink_buttons_pressed)}')
                         if len(slot.invalid_pink_buttons) > 0:
                             print(f'   - Invalid Pink Buttons Pressed: {len(slot.invalid_pink_buttons)}')
-                            print('     ***WARNING:***')
+                            print('     ***WARNING***')
                             print('       Having invalid pink buttons pressed can end up leading to savefile')
                             print('       corruption!  We recommend using the --clear-invalid-walls option on')
                             print('       this save to clean it up.')
-                            print('     ***WARNING:***')
+                            print('     ***WARNING***')
                         if slot.layer2_buttons_pressed > 0:
                             print(f'   - Space / Bunny Island Buttons Pressed: {slot.layer2_buttons_pressed}')
                         if slot.button_doors_opened > 0:
@@ -2053,6 +2066,12 @@ def main():
                                 print(f'{slot_label}: Enabling bunny: {bunny}')
                                 slot.bunnies.enable(bunny)
                                 do_save = True
+
+                    if args.illegal_bunny_clear:
+                        if slot.illegal_bunnies.enabled:
+                            print(f'{slot_label}: Clearing illegal bunnies')
+                            slot.illegal_bunnies.disable_all()
+                            do_save = True
 
                     if args.respawn_consumables:
                         print(f'{slot_label}: Respawning fruit and firecrackers')

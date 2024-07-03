@@ -212,43 +212,55 @@ class Egg(LabelEnum):
 
 class Bunny(LabelEnum):
     """
-    Bunnies!  This enum currently omits all the illegal/invalid bunnies.
-    It's possible we may want to at least optionally expose those in the
-    future, though...
+    Bunnies!  This enum omits all the illegal/invalid bunnies, which are
+    stored in a separate enum.  The commented number afterwards is the
+    pillar next to which the bunny spawns, in Space / Bunny Island.  (Those
+    numbers are commonly-reported by online guides, etc.)
     """
 
     TUTORIAL =      (0x00000001, 'Tutorial') #4
-    #ILL_01 =        (0x00000002, 'Illegal 1')
     ORIGAMI =       (0x00000004, 'Origami') #17
     CROW =          (0x00000008, 'Crow') #10
     GHOST =         (0x00000010, 'Ghost') #9
-    #ILL_02 =        (0x00000020, 'Illegal 2')
     FISH_MURAL =    (0x00000040, 'Fish Mural') #8
     MAP =           (0x00000080, 'Map Numbers') #5
     TV =            (0x00000100, 'TV') #16
     UV =            (0x00000200, 'UV') #7
     BULB =          (0x00000400, 'Bulb') #13
     CHINCHILLA =    (0x00000800, 'Chinchilla') #2
-    #ILL_03 =        (0x00001000, 'Illegal 3')
-    #ILL_04 =        (0x00002000, 'Illegal 4')
-    #ILL_05 =        (0x00004000, 'Illegal 5')
     BUNNY_MURAL =   (0x00008000, 'Bunny Mural') #1
-    #ILL_06 =        (0x00010000, 'Illegal 6')
-    #ILL_07 =        (0x00020000, 'Illegal 7')
-    #ILL_08 =        (0x00040000, 'Illegal 8')
-    #ILL_09 =        (0x00080000, 'Illegal 9')
-    #ILL_10 =        (0x00100000, 'Illegal 10')
-    #ILL_11 =        (0x00200000, 'Illegal 11')
     DUCK =          (0x00400000, 'Duck') #11
-    #ILL_12 =        (0x00800000, 'Illegal 12')
-    #ILL_13 =        (0x01000000, 'Illegal 13')
     GHOST_DOG =     (0x02000000, 'Ghost Dog') #18
-    #ILL_14 =        (0x04000000, 'Illegal 14')
-    #ILL_15 =        (0x08000000, 'Illegal 15')
     DREAM =         (0x10000000, 'Dream') #12
-    #ILL_16 =        (0x20000000, 'Illegal 16')
     FLOOR_IS_LAVA = (0x40000000, 'Floor Is Lava') #14
     SPIKE_ROOM =    (0x80000000, 'Spike Room') #20
+
+
+class IllegalBunny(LabelEnum):
+    """
+    Illegal Bunnies!  We've got a separate enum for these so that the
+    editor can support clearing them from a slot, to recover a save which
+    would be otherwise unable to solve BDTP.  At time of writing I'm not
+    adding a function to *add* illegal bunnies, though perhaps it'd
+    be worth doing.
+    """
+
+    ILL_01 = (0x00000002, 'Illegal 1')
+    ILL_02 = (0x00000020, 'Illegal 2')
+    ILL_03 = (0x00001000, 'Illegal 3')
+    ILL_04 = (0x00002000, 'Illegal 4')
+    ILL_05 = (0x00004000, 'Illegal 5')
+    ILL_06 = (0x00010000, 'Illegal 6')
+    ILL_07 = (0x00020000, 'Illegal 7')
+    ILL_08 = (0x00040000, 'Illegal 8')
+    ILL_09 = (0x00080000, 'Illegal 9')
+    ILL_10 = (0x00100000, 'Illegal 10')
+    ILL_11 = (0x00200000, 'Illegal 11')
+    ILL_12 = (0x00800000, 'Illegal 12')
+    ILL_13 = (0x01000000, 'Illegal 13')
+    ILL_14 = (0x04000000, 'Illegal 14')
+    ILL_15 = (0x08000000, 'Illegal 15')
+    ILL_16 = (0x20000000, 'Illegal 16')
 
 
 class EggDoor(LabelEnum):
@@ -1595,6 +1607,7 @@ class Slot(Data):
         self.walls_blasted = BitCountData('Walls Blasted', self, UInt32, 1, 10)
         self.detonators_triggered = BitCountData('Detonators Triggered', self, UInt32, 1, 9)
         self.bunnies = NumBitfieldData('Bunnies', self, UInt32, Bunny)
+        self.illegal_bunnies = NumBitfieldData('Illegal Bunnies', self, UInt32, IllegalBunny, 0x198)
         self.squirrels_scared = BitCountData('Squirrels Scared', self, UInt16, 1, 13, 0x19C)
         self.cat_status = NumBitfieldData('Cat Status', self, UInt16, CatStatus)
 

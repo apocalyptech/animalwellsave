@@ -64,6 +64,7 @@ Table of Contents
    - [Bosses](#bosses)
    - [Eggs](#eggs)
    - [Bunnies](#bunnies)
+     - [Illegal Bunnies](#illegal-bunnies)
    - [Respawn Consumables](#respawn-consumables)
    - [Ghosts](#ghosts)
    - [Squirrels](#squirrels)
@@ -803,6 +804,16 @@ Valid values are: `tutorial`, `origami`, `crow`, `ghost`, `fish_mural`, `map`,
 `tv`, `uv`, `bulb`, `chinchilla`, `bunny_mural`, `duck`, `ghost_dog`, `dream`,
 `floor_is_lava`, `spike_room`, `all`.
 
+#### Illegal Bunnies
+
+There are several "illegal" bunnies on the map which can only be acquired via
+cheating (as with the Cheater's Ring) or via other map glitching techniques.
+Collecting these bunnies will prevent the BDTP puzzle from being solveable, so
+the `--illegal-bunny-clear` argument will remove them from your slot, in case
+any have been collected:
+
+    awsave AnimalWell.sav -s 1 --illegal-bunny-clear
+
 ### Respawn Consumables
 
 Ordinarily, fruit and firecrackers only respawn in the game world when you
@@ -1127,10 +1138,15 @@ Changelog
 ---------
 
 **v1.2.0** - *(unreleased)*
- - Added `--nuts` to set stolen-nut count
- - Added `--small-deposits-break` and `--small-deposits-respawn` to manage
-   small stalactites/stalagmites/icicles.
- - Added `--big-stalactites-state` to set all big stalactite states.
+ - New arguments:
+   - `--nuts` is used to set stolen-nut count
+   - `--small-deposits-break` and `--small-deposits-respawn` are used to
+     manage small stalactites/stalagmites/icicles.
+   - `--big-stalactites-state` is used to set all big stalactite states.
+   - `--illegal-bunny-clear` will remove any "illegal" bunnies from the
+     slot.  These can otherwise interfere with the BDTP solution.  (Illegal
+     bunnies can only be acquired via cheating/glitching, as with the Cheater's
+     Ring, etc.)
  - Report on status of Space / Bunny Island buttons and CE Temple chest, and
    alter those states when specifying our button and chest arguments.
  - Added in the chest holding the Golden Egg (at 12,19), which was otherwise
