@@ -75,6 +75,7 @@ Table of Contents
    - [Water Reservoirs](#water-reservoirs)
    - [Detonators](#detonators)
    - [Destroyed Tiles](#destroyed-tiles)
+   - [Big Stalactites](#big-stalactites)
    - [Stalactites / Stalagmites / Icicles](#stalactites--stalagmites--icicles)
    - [Minimap](#minimap)
    - [Map Marks](#map-marks)
@@ -974,6 +975,17 @@ tiles in the map, you can use the `--respawn-destroyed-tiles` argument:
 
     awsave AnimalWell.sav -s 1 --respawn-destroyed-tiles
 
+### Big Stalactites
+
+The state of all big stalactites can be set with the `--big-stalactites-state`
+argument:
+
+    awsave AnimalWell.sav -s 1 --big-stalactites-state floor
+
+Valid values are: `intact`, `cracked_once`, `cracked_twice`, `floor`,
+`floor_cracked_once`, `floor_cracked_twice`, and `broken`.  Note that all
+big stalactites will reset to the "intact" state upon player death.
+
 ### Stalactites / Stalagmites / Icicles
 
 The small stalactites, stalagmites, and icicles in the game can be cleared or
@@ -981,6 +993,8 @@ respawned using `--small-deposits-break` or `--small-deposits-respawn`:
 
     awsave AnimalWell.sav -s 1 --small-deposits-break
     awsave AnimalWell.sav -s 1 --small-deposits-respawn
+
+Note that all small deposits respawn naturally upon player death.
 
 ### Minimap
 
@@ -1116,6 +1130,7 @@ Changelog
  - Added `--nuts` to set stolen-nut count
  - Added `--small-deposits-break` and `--small-deposits-respawn` to manage
    small stalactites/stalagmites/icicles.
+ - Added `--big-stalactites-state` to set all big stalactite states.
  - Report on status of Space / Bunny Island buttons and CE Temple chest, and
    alter those states when specifying our button and chest arguments.
  - Added in the chest holding the Golden Egg (at 12,19), which was otherwise

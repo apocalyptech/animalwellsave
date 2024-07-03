@@ -84,7 +84,7 @@ class Data():
         the parent's offset.  If not passed in, our offset will be the
         current filehandle position.
         """
-        self._debug_label = debug_label
+        self.debug_label = debug_label
         self.parent = parent
         self.__indent = None
         self.df = self.parent.df
@@ -104,10 +104,10 @@ class Data():
             if self.parent is not None:
                 relative = self.offset - self.parent.offset
                 if relative != absolute:
-                    report.append(f'0x{relative:X} from {self.parent._debug_label}')
+                    report.append(f'0x{relative:X} from {self.parent.debug_label}')
             print('{}- {}:\t{}'.format(
                 '  '*self._indent,
-                self._debug_label,
+                self.debug_label,
                 ",\t".join(report),
                 ), file=sys.stderr)
 

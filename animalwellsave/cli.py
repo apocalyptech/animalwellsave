@@ -27,7 +27,8 @@ import collections
 from . import __version__, set_debug
 from .savegame import Savegame, Equipped, Equipment, Inventory, Egg, EggDoor, Bunny, Teleport, \
         QuestState, FlameState, CandleState, KangarooShardState, CatStatus, \
-        Unlockable, ManticoreState, Progress, ElevatorDisabled, has_image_support
+        Unlockable, ManticoreState, Progress, ElevatorDisabled, BigStalactiteState, \
+        has_image_support
 
 
 class EnumSetAction(argparse.Action):
@@ -1028,6 +1029,12 @@ def main():
             help='Respawn any destroyed tiles on the map (such as through detonators, top blocks, Manticore glass)',
             )
 
+    map_options.add_argument('--big-stalactites-state',
+            type=BigStalactiteState,
+            action=EnumChoiceAction,
+            help="Set all big stalactites to the chosen state",
+            )
+
     deposits = map_options.add_mutually_exclusive_group()
 
     deposits.add_argument('--small-deposits-break',
@@ -1269,6 +1276,7 @@ def main():
             args.reservoirs_empty,
             args.detonators_activate,
             args.detonators_rearm,
+            args.big_stalactites_state is not None,
             args.small_deposits_break,
             args.small_deposits_respawn,
             args.respawn_destroyed_tiles,
@@ -1447,6 +1455,11 @@ def main():
                         if Equipment.FIRECRACKER in slot.equipment.enabled:
                             print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')
+                        if any([s != BigStalactiteState.INTACT for s in slot.big_stalactites]):
+                            print('   - Big Stalactite States:')
+                            for idx, stalactite in enumerate(slot.big_stalactites):
+                                if stalactite != BigStalactiteState.INTACT:
+                                    print(f'     - {stalactite.debug_label}: {stalactite}')
                         if slot.deposit_small_broken > 0:
                             print(f'   - Small Stalactites/Stalagmites Broken: {slot.deposit_small_broken}')
                         if slot.icicles_broken > 0:
@@ -2221,6 +2234,11 @@ def main():
                     if args.respawn_destroyed_tiles:
                         print(f'{slot_label}: Respawning all destroyed tiles')
                         slot.destructionmap.clear_map()
+                        do_save = True
+
+                    if args.big_stalactites_state is not None:
+                        print(f'{slot_label}: Setting all big stalactites to state: {args.big_stalactites_state}')
+                        slot.big_stalactites.set_state(args.big_stalactites_state)
                         do_save = True
 
                     if args.small_deposits_break:

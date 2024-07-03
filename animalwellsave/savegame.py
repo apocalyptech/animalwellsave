@@ -479,6 +479,20 @@ class KangarooActivityState(LabelEnum):
     ATTACKING = (2, 'Attacking')
 
 
+class BigStalactiteState(LabelEnum):
+    """
+    The state of an individual big stalactite.
+    """
+
+    INTACT =              (0, 'Intact')
+    CRACKED_ONCE =        (1, 'Cracked Once')
+    CRACKED_TWICE =       (2, 'Cracked Twice')
+    FLOOR =               (3, 'On the Floor')
+    FLOOR_CRACKED_ONCE =  (4, 'On the Floor, Cracked Once')
+    FLOOR_CRACKED_TWICE = (5, 'On the Floor, Cracked Twice')
+    BROKEN =              (6, 'Broken')
+
+
 class Timestamp(Data):
     """
     Timestamp class -- this is only actually seen at the very beginning of
@@ -519,7 +533,7 @@ class Flame(NumChoiceData):
 
     def __init__(self, debug_label, parent, offset=None):
         super().__init__(debug_label, parent, UInt8, FlameState)
-        self.name = self._debug_label
+        self.name = self.debug_label
 
 
 class Flames(Data):
@@ -1358,7 +1372,7 @@ class TileIDs(Data):
         u8 for both, because that makes me itchy, and those fields can't
         hold more than 16 items anyway.
         """
-        self._next_index = NumData(f'{self._debug_label} Index', parent, UInt8, offset)
+        self._next_index = NumData(f'{self.debug_label} Index', parent, UInt8, offset)
 
     def clear(self):
         """
@@ -1450,6 +1464,59 @@ class Elevators(Data):
             self.states.append(ElevatorState(f'Elevator {idx} State', self))
         self.directions = NumBitfieldData('Directions', self, UInt8, ElevatorDirection)
         self.inactive = NumBitfieldData('Inactive', self, UInt8, ElevatorDisabled)
+
+
+class BigStalactites(Data):
+    """
+    Class to hold state information for all of the big stalactites in the game
+    (the ones which can be hit repeatedly to make them drop, and then hit
+    more to destroy entirely).
+    """
+
+    LABELS = {
+            0: 'Stalactite #1 at (7,4)',
+            1: 'Stalactite #1 at (4,6)',
+            2: 'Stalactite #2 at (4,6)',
+            3: 'Stalactite #3 at (4,6)',
+            4: 'Stalactite #4 at (4,6)',
+            5: 'Stalactite #5 at (4,6)',
+            6: 'Stalactite #6 at (4,6)',
+            7: 'Stalactite #7 at (4,6)',
+            8: 'Stalactite #1 at (5,7)',
+            9: 'Stalactite #2 at (5,7)',
+            10: 'Stalactite #3 at (5,7)',
+            11: 'Stalactite #4 at (5,7)',
+            12: 'Stalactite #5 at (5,7)',
+            13: 'Stalactite #6 at (5,7)',
+            }
+
+    def __init__(self, debug_label, parent, offset=None):
+        super().__init__(debug_label, parent, offset=offset)
+        self.stalactites = []
+        for idx in range(len(self)):
+            self.stalactites.append(NumChoiceData(BigStalactites.LABELS[idx], self, UInt8, BigStalactiteState))
+        # The structure is apparently 16 long, even though we only have 14.  Seek
+        # to the end just in case any other data is chained afterwards.
+        self.df.seek(16-len(self), os.SEEK_CUR)
+
+    def __len__(self):
+        """
+        Just hardcoding the number that's on the map
+        """
+        return 14
+
+    def __iter__(self):
+        """
+        Iterate over our values
+        """
+        return iter(self.stalactites)
+
+    def set_state(self, new_state):
+        """
+        Sets the state for all big stalactites
+        """
+        for stalactite in self.stalactites:
+            stalactite.value = new_state
 
 
 class Slot(Data):
@@ -1592,6 +1659,7 @@ class Slot(Data):
         self.destructionmap = Minimap('Destroyed Blocks', self, 0x1A06E)
 
         self.mural = Mural('Bunny Mural', self, 0x26EAF)
+        self.big_stalactites = BigStalactites('Big Stalactites', self)
 
         self.deposit_small_broken = BitCountData('Small Deposits Broken', self, UInt64, 8, 423, 0x26F98)
         self.icicles_broken = BitCountData('Icicles Broken', self, UInt64, 4, 159)
