@@ -27,6 +27,7 @@ Table of Contents
    - [Easiest Method: pip](#easiest-method-pip)
    - [Git Checkout (the proper way)](#git-checkout-the-proper-way)
    - [Git Checkout (the lazy way)](#git-checkout-the-lazy-way)
+   - [Release Archives (not recommended)](#release-archives-not-recommended)
  - [TODO](#todo)
  - [Usage](#usage)
    - [Showing Save Info](#showing-save-info)
@@ -188,6 +189,28 @@ just use the shortcut `awsave.py` script right in the main dir:
 Or, you can call the cli module directly:
 
     python -m animalwellsave.cli --help
+
+### Release Archives (not recommended)
+
+Bundled with official releases on the
+[Github Releases Page](https://github.com/apocalyptech/animalwellsave/releases)
+are Python-produced "source distribution" and "built distribution" (wheel)
+files (these are also available via
+[animalwellsave's pypi area](https://pypi.org/project/animalwellsave/#files)).
+Neither of these are meant to be complete archives of the github repo, and will
+be missing content like the "convenience" `awsave.py` script that's in the gitub
+repo root.  These files *can* be installed via pip, though, using the various
+methods described above:
+
+    pip install animalwellsave-1.1.0.tar.gz
+    pip install animalwellsave-1.1.0-py3-none-any.whl
+
+In general there's probably not much reason to manually download/install these
+files; if you don't want to use `pip` to install the app, just checking out
+the git repo is probably the better method.  Still, if you wanted to install via
+pip but not use its automatic project download features, you're welcome to
+install via that method if you want.  After install, the `awsave` command should
+be available for use.
 
 TODO
 ----
