@@ -8,13 +8,15 @@ to the editing features you'd expect, it's got some features you might not
 expect, including:
 
  - Importing/Exporting specific slots
- - Setting the Bunny Mural to its default, solved, or cleared state
+ - Setting the Bunny Mural to its default, solved, or cleared state, and
+   importing/exporting the mural in raw or image formats
+ - Image import/export of the "pencil" map layer
  - Forcing Kangaroo spawns to a specific room
  - Respawning consumables (fruit, firecrackers) on the map
  - Clearing ghosts / Lighting Candles
- - Clearing out "illegal" pink-button presses (acquired via cheating) to
-   avoid future savefile corruption
- - Image import/export to/from the "pencil" map layer
+ - Clearing out "illegal" pink-button presses and bunnny collection (acquired
+   via cheating or glitching) to avoid future savefile corruption or BDTP
+   puzzle problems
  - And much more!  Read on for the full details
 
 Table of Contents
@@ -89,15 +91,16 @@ Table of Contents
 Overview
 --------
 
-The utility seems quite safe to use -- I've not ever experienced any problems
-with it.  But make sure to backup your saves before using this!
+Make sure to backup your saves before using this!  I've yet to encounter any
+savefile corruption, but it's always possible you could run into a weird
+edge case.
 
 Work on decoding the savegame structure has mostly been done by
 [Kein](https://github.com/Kein/), [just-ero](https://github.com/just-ero),
-lipsum, and myself.  My own contributions were mostly at the beginning of
-the process; Kein, just-ero, and lipsum have been responsible for the
-majority of the save format at this point.  Many thanks to them for filling
-things out!
+lipsum, polinet68, avengah, and myself.  My own contributions were mostly
+at the beginning of the process; Kein, just-ero, and lipsum have been
+responsible for the majority of the save format at this point.  Many thanks
+to them for filling things out!
 
 A complete mapping of the savegame data can be found at
 [Kein's awsgtools repo](https://github.com/Kein/awsgtools).  At time of
@@ -123,35 +126,35 @@ with a simple:
 
     pip install animalwellsave
 
-It's recommended to install in a [virtual environment](https://docs.python.org/3/library/venv.html),
-though.  On Unix/Mac:
+To also pull in the dependencies necessary to support importing/exporting
+images into the "pencil" minimap layer and bunny mural, you can alternately
+specify this for the installation line:
+
+    pip install animalwellsave[Images]
+
+You could also install it for just your user with:
+
+    pip install --user animalwellsave[Images]
+
+Once installed, there will be an `awsave` command available to run, like so:
+
+    awsave --help
+
+Rather than doing a "global" installation as mentioned above, it's recommended
+to install in a [virtual environment](https://docs.python.org/3/library/venv.html),
+though.  (This is true of Python apps in general.)  On Unix/Mac:
 
     cd /wherever/you/want/to/keep/the/virtualenv
     python -m venv virtualenv_dir
     source virtualenv_dir/bin/activate
-    pip install animalwellsave
+    pip install animalwellsave[Images]
 
 Or on Windows:
 
     cd \wherever\you\want\to\keep\the\virtualenv
     python -m venv virtualenv_dir
     virtualenv_dir\Scripts\activate
-    pip install animalwellsave
-
-To also pull in the dependencies necessary to support importing/exporting
-images into the "pencil" minimap layer, you can alternately specify this
-for the installation line:
-
-    pip install animalwellsave[PencilImages]
-
-If you want, you can do without the virtual environment and install it for
-just your user with:
-
-    pip install --user animalwellsave[PencilImages]
-
-Once installed, there will be an `awsave` command available to run, like so:
-
-    awsave --help
+    pip install animalwellsave[Images]
 
 ### Git Checkout (the proper way)
 
@@ -240,12 +243,19 @@ To show information about the save, including for any chosen slots, use
     awsave AnimalWell.sav -i
     awsave AnimalWell.sav --info
 
+The base info output will only show the "global" information which applies to
+all slots.  To show information on a specific slot, use the `-s`/`--slot`
+argument (described in more detail below):
+
+    awsave AnimalWell.sav -i -s 1
+    awsave AnimalWell.sav --info --slot 1
+
 By default, the info output will just show you things that you *have* collected
 or done throughout the game.  To also show information about things you *haven't*
 collected or done (such as missing eggs, etc), use `-v`/`--verbose`:
 
-    awsave AnimalWell.sav -i -v
-    awsave AnimalWell.sav --info --verbose
+    awsave AnimalWell.sav -i -s 1 -v
+    awsave AnimalWell.sav --info --slot 1 --verbose
 
 Additionally, the in-save data offsets for every bit of data that the data
 library knows about can be printed with `-d`/`--debug`.  This will show the
@@ -259,8 +269,8 @@ Finally, by default the info dump will use column outputs when showing long list
 such as unlocked eggs.  To have the utility only output one item per line, use
 the `-1`/`--single-column` argument:
 
-    awsave AnimalWell.sav -i -1
-    awsave AnimalWell.sav --info --single-column
+    awsave AnimalWell.sav -i -s 1 -1
+    awsave AnimalWell.sav --info --slot 1 --single-column
 
 ### Checksum
 
@@ -1212,6 +1222,8 @@ Changelog
  - Exclude Mock Disc from inventory unlocks if the user specifies both
    `--equip-enable all` and `--inventory-enable all` (this can be disabled by
    also using the `--dont-fix-disc-state` argument).
+ - Renamed the "extra" `PencilImages` optional dependency handling to just
+   `Images`
 
 **v1.1.0** - *Jun 6, 2024*
  - Added explicit arguments to set various Quest State flags without having

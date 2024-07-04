@@ -26,7 +26,7 @@ dynamic = ["version"]
 keywords = ["animalwell", "animal well", "save editor"]
 
 [project.optional-dependencies]
-PencilImages = ["pillow"]
+Images = ["pillow"]
 
 [project.urls]
 Repository = "https://github.com/apocalyptech/animalwellsave"
