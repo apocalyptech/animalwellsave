@@ -170,7 +170,7 @@ activation line is different for Windows -- see above):
     pip install --editable .
 
 Optionally, to install the dependencies needed for importing/exporting images
-to the "pencil" minimap layer, you can run:
+to the "pencil" minimap layer and bunny mural, you can run:
 
     pip install -r image-requirements.txt
 
