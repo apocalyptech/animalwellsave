@@ -248,6 +248,11 @@ few other things which would be nice eventually:
    make it into an official release, it'd be nice to convert over to that.
    Something like that is really what I'd wanted to do at the start, rather
    than my own janky weirdness.
+ - Clean up CLI options to be more consistent with pluralizations, noun-verb
+   ordering, abbreviations, etc.  Even I often screw up the CLI options
+   occasionally and need to look at the `--help` output.  I'll probably wait
+   for a Kaitai Struct rewrite to do so, though (which would likely be a 2.0
+   release)
 
 Usage
 -----
@@ -1220,7 +1225,7 @@ themselves would probably be the best way to know how to use 'em.
 Changelog
 ---------
 
-**v1.2.0** - *(unreleased)*
+**v1.2.0** - *Jul 4, 2024*
  - New arguments:
    - `--nuts` is used to set stolen-nut count
    - `--small-deposits-break` and `--small-deposits-respawn` are used to
