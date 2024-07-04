@@ -322,8 +322,9 @@ choosing `0`.
     awsave AnimalWell.sav -i -s 1
     awsave AnimalWell.sav --info --slot 2
 
-Note that a few arguments (namely `--import-slot` and `--export-slot`)
-do not allow using `0` to specify "all slots."
+Note that a few arguments (namely the various import/export arguments for slot
+data, pencil minimap images, and bunny murals) do not allow using `0` to
+specify "all slots."
 
 ### Import/Export Slots
 
