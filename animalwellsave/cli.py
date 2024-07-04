@@ -1338,10 +1338,17 @@ def main():
         else:
             parser.error('Slot actions were specified but no slots were chosen')
 
-    # If the user wants to import/export, only allow a single slot
-    if args.import_slot or args.export_slot:
-        if len(slot_indexes) > 1:
-            parser.error('--import-slot and --export-slot may only be used with a single slot')
+    # If the user uses any import/export functions, only allow a single slot
+    if len(slot_indexes) > 1:
+        if args.import_slot or args.export_slot:
+            parser.error('Slot import/export may only be used with a single slot')
+        if args.mural_raw_import or args.mural_raw_export:
+            parser.error('Mural import/export may only be used with a single slot')
+        if has_image_support:
+            if args.mural_image_import or args.mural_image_export:
+                parser.error('Mural import/export may only be used with a single slot')
+            if args.pencil_image_import or args.pencil_image_export:
+                parser.error('Pencil minimap import/export may only be used with a single slot')
 
     # Load the savegame
     if args.debug:
