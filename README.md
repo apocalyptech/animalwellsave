@@ -549,8 +549,9 @@ Relatedly, if you add all equipment *and* all inventory using the following opti
     awsave AnimalWell.sav -s 1 --equip-enable all --inventory-enable all
 
 ... the utility will by default exclude the Mock Disc from the inventory unlocks, since
-that's not actually a valid gamestate.  As with the other Disc / Mock Disc options, you
-can force both in your inventory at the same time by specifying `--dont-fix-disc-state`.
+that's not actually a valid gamestate in a savegame.  As with the other Disc / Mock
+Disc options, you can force both in your inventory at the same time by specifying
+`--dont-fix-disc-state`.
 
 ### Map Unlocks
 
