@@ -1509,6 +1509,8 @@ def main():
                                 print(f'   - {flame.name}: {flame}')
                         print(f' - Transient Map Data:')
                         print(f'   - Fruit Picked: {slot.picked_fruit}')
+                        if slot.picked_fruit.has_stolen_nut:
+                            print('     - Also has stolen a nut from a squirrel (counts as a picked fruit!)')
                         if Equipment.FIRECRACKER in slot.equipment.enabled:
                             print(f'   - Firecrackers Picked: {slot.picked_firecrackers}')
                         print(f'   - Ghosts Scared: {slot.ghosts_scared}')

@@ -1225,6 +1225,11 @@ themselves would probably be the best way to know how to use 'em.
 Changelog
 ---------
 
+**v1.2.1** - *(unreleased)*
+ - Stealing a nut from a squirrel technically counts as a picked fruit.
+   Separated that bit of information out in the info output so that it's
+   more clear.
+
 **v1.2.0** - *Jul 4, 2024*
  - New arguments:
    - `--nuts` is used to set stolen-nut count

@@ -1664,6 +1664,48 @@ class BigStalactites(Data):
             stalactite.value = new_state
 
 
+class PickedFruitData(BitCountData):
+    """
+    An overridden BitCountData to deal with a kind of weird edge case:
+    stealing a nut from a squirrel apparently counts as having picked
+    up a fruit.  It does sort of make sense since you get health by
+    doing so, though why the game would keep track of it in the same
+    bitfield is beyond me.
+
+    What this does is sets an extra boolean (`has_stolen_nut`) which
+    can be read at any time, and it'll decrease the count by 1 if
+    that bit is present (since IMO the stolen-nut "fruit" shouldn't
+    be considered one of the world fruits picked up).  The CLI will
+    then report on it in the info output.
+
+    We *could* override the constructor here (it seems reasonable to
+    hardcode debug_label, num_type, count, and max_bits at least) --
+    the processing would fail if we don't have at least `2` for `count`,
+    for instance.  But, I like having all those definitions out in the
+    main Slot class along with everything else, and merely setting the
+    new boolean in _fix_count() is enough to ensure that it's always
+    present, so we're just leaving it like that.
+    """
+
+    STOLEN_NUT_BIT = 0x8000000000000
+
+    def _fix_count(self):
+        """
+        We are relying on the fact that _fix_count() will always get called
+        when the class is instantiated, since it's reading in the data from
+        disk.  If that *wasn't* the case, we wouldn't be sure that the
+        `has_stolen_nut` attribute is defined (and we should also be
+        overriding the constructor and setting it there), but I'm being
+        slightly lazier and just letting it happen in here.
+        """
+        super()._fix_count()
+        if self._data[1].value & PickedFruitData.STOLEN_NUT_BIT == PickedFruitData.STOLEN_NUT_BIT:
+            self.count -= 1
+            self.has_stolen_nut = True
+        else:
+            self.has_stolen_nut = False
+
+
 class Slot(Data):
     """
     A savegame slot.  Obviously this is where the bulk of the game data is
@@ -1734,7 +1776,7 @@ class Slot(Data):
         self.purple_buttons_pressed = BitCountData('Purple Buttons Pressed', self, UInt64, 1, 27, 0x160)
         self.green_buttons_pressed = BitCountData('Green Buttons Pressed', self, UInt64, 1, 7)
 
-        self.picked_fruit = BitCountData('Picked Fruit', self, UInt64, 2, 115, 0x170)
+        self.picked_fruit = PickedFruitData('Picked Fruit', self, UInt64, 2, 115, 0x170)
         self.picked_firecrackers = BitCountData('Picked Firecrackers', self, UInt64, 1, 64)
         self.eggs = NumBitfieldData('Eggs', self, UInt64, Egg)
         self.walls_blasted = BitCountData('Walls Blasted', self, UInt32, 1, 10)
