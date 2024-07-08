@@ -1230,6 +1230,9 @@ Changelog
  - Stealing a nut from a squirrel technically counts as a picked fruit.
    Separated that bit of information out in the info output so that it's
    more clear.
+ - Added the pedometer "unicode" chest to global unlocks (had been missing).
+   This is the one that's only accessible if you arrive at the pedometer
+   with zero steps.
 
 **v1.2.0** - *Jul 4, 2024*
  - New arguments:
