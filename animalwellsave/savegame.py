@@ -1688,6 +1688,7 @@ class PickedFruitData(BitCountData):
     present, so we're just leaving it like that.
     """
 
+    STOLEN_NUT_SEGMENT = 1
     STOLEN_NUT_BIT = 0x8000000000000
 
     def _fix_count(self):
@@ -1700,7 +1701,7 @@ class PickedFruitData(BitCountData):
         slightly lazier and just letting it happen in here.
         """
         super()._fix_count()
-        if self._data[1].value & PickedFruitData.STOLEN_NUT_BIT == PickedFruitData.STOLEN_NUT_BIT:
+        if self._data[PickedFruitData.STOLEN_NUT_SEGMENT].value & PickedFruitData.STOLEN_NUT_BIT == PickedFruitData.STOLEN_NUT_BIT:
             self.count -= 1
             self.has_stolen_nut = True
         else:
