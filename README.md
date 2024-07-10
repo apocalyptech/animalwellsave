@@ -378,7 +378,8 @@ all of them at once, and the argument can be specified multiple times.
 
 Valid values are: `stopwatch`, `pedometer`, `pink_phone`, `souvenir_cup`,
 `origami`, `two_rabbits`, `owl`, `cat`, `fish`, `donkey`, `deco_rabbit`,
-`mama_cha`, `giraffe`, `incense`, `peacock`, `otter`, `duck`, `all`.
+`mama_cha`, `giraffe`, `incense`, `peacock`, `otter`, `duck`,
+`pedometer_unicode`, `all`.
 
 ### Health
 
