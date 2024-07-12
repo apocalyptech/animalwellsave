@@ -1227,7 +1227,7 @@ themselves would probably be the best way to know how to use 'em.
 Changelog
 ---------
 
-**v1.2.1** - *(unreleased)*
+**v1.2.1** - *Jul 12, 2024*
  - Stealing a nut from a squirrel technically counts as a picked fruit.
    Separated that bit of information out in the info output so that it's
    more clear.
