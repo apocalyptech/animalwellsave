@@ -220,7 +220,7 @@ class Bunny(LabelEnum):
 
     TUTORIAL =      (0x00000001, 'Tutorial') #4
     ORIGAMI =       (0x00000004, 'Origami') #17
-    CROW =          (0x00000008, 'Crow') #10
+    SPIKE_ROOM =    (0x00000008, 'Spike Room') #10
     GHOST =         (0x00000010, 'Ghost') #9
     FISH_MURAL =    (0x00000040, 'Fish Mural') #8
     MAP =           (0x00000080, 'Map Numbers') #5
@@ -233,7 +233,7 @@ class Bunny(LabelEnum):
     GHOST_DOG =     (0x02000000, 'Ghost Dog') #18
     DREAM =         (0x10000000, 'Dream') #12
     FLOOR_IS_LAVA = (0x40000000, 'Floor Is Lava') #14
-    SPIKE_ROOM =    (0x80000000, 'Spike Room') #20
+    CROW =          (0x80000000, 'Crow') #20
 
 
 class IllegalBunny(LabelEnum):

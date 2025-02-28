@@ -1227,6 +1227,10 @@ themselves would probably be the best way to know how to use 'em.
 Changelog
 ---------
 
+**v1.2.2** - *Feb 28, 2025*
+ - The Crow Bunny and Spike-Room Bunny ordering was swapped.  That has been
+   fixed!
+
 **v1.2.1** - *Jul 12, 2024*
  - Stealing a nut from a squirrel technically counts as a picked fruit.
    Separated that bit of information out in the info output so that it's
