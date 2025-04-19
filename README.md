@@ -621,8 +621,8 @@ The main quest state bitfield can be altered with `--quest-state-enable` and
 more than once, and the special value `all` can be used to operate on them all at
 once.
 
-    awsave AnimalWell.sav -s 1 --quest-enable house_open --quest-enable office-open
-    awsave AnimalWell.sav -s 1 --quest-disable all
+    awsave AnimalWell.sav -s 1 --quest--state-enable house_open --quest--state-enable office-open
+    awsave AnimalWell.sav -s 1 --quest--state-disable all
 
 Valid values are: `house_open`, `office_open`, `closet_open`, `unlock_map`,
 `unlock_stamps`, `unlock_pencil`, `defeated_chameleon`, `cring`,
