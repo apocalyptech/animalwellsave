@@ -274,6 +274,13 @@ directory.
 Usage
 -----
 
+This utility should be run while *not* actually playing the game.
+(Doing so shouldn't cause problems, but the game will be likely to just
+overwrite your changes if the savegame is edited while you're playing.)
+Editing the savegame while you're on the main menu might be okay, though
+you may have to explicitly load the slot instead of just hitting
+"Continue" for the updated save to take effect.
+
 Here is a detailed list of all the arguments available on the CLI editor.
 Note that these arguments can be chained together pretty much as long as
 you want.  For instance:
