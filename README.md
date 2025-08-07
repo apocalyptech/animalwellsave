@@ -29,6 +29,7 @@ Table of Contents
    - [Git Checkout (the lazy way)](#git-checkout-the-lazy-way)
    - [Release Archives (not recommended)](#release-archives-not-recommended)
  - [TODO](#todo)
+ - [Finding Your Saves](#finding-your-saves)
  - [Usage](#usage)
    - [Showing Save Info](#showing-save-info)
    - [Checksum](#checksum)
@@ -253,6 +254,22 @@ few other things which would be nice eventually:
    occasionally and need to look at the `--help` output.  I'll probably wait
    for a Kaitai Struct rewrite to do so, though (which would likely be a 2.0
    release)
+
+Finding Your Saves
+------------------
+
+To use this editor, you'll need to know where your savegames are.  As usual
+nowadays, pcgamingwiki.com tends to be the best source of information for
+that kind of thing: <https://www.pcgamingwiki.com/wiki/Animal_Well#Save_game_data_location>.
+
+As of writing (August 2025), those paths should be:
+
+ - **Windows:** `%USERPROFILE%\AppData\LocalLow\Billy Basso\Animal Well`
+ - **Linux:** `~/.steam/steam/steamapps/compatdata/813230/pfx/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well`
+
+The usage examples below assume that you're "in" the same directory as the
+savegames, generally by using the `cd` command to get into the proper
+directory.
 
 Usage
 -----
